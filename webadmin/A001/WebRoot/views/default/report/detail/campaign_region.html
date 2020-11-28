@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.detail.region.js?${version}"></script>
+<script type="text/javascript">
+	var names = [
+		<#list provinceList as p>
+		"${xss.filter(p.provinceName)}"<#if p_has_next>,</#if>
+		</#list>
+	];
+	var datas = [{
+       	name: "打开人数",
+       	data: [<#list provinceList as p>${p.readUserCount}<#if p_has_next>,</#if></#list>] }, {
+       	name: "点击人数",
+       	data: [<#list provinceList as p>${p.clickUserCount}<#if p_has_next>,</#if></#list>]
+	}];
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix posfix" style="">
+		<div class="posfix">
+			<h1 class="title">地域&nbsp;&nbsp;<span>针对邮件打开及点击用户所在城市提供图表分析</span></h1>
+			<ul class="tab clearfix">
+				<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${campaign.campaignId}">概览</a></li>
+				<li><a href="${ctx}/report/detail/campaign/send?campaignId=${campaign.campaignId}">发送</a></li>
+				<li><a href="${ctx}/report/detail/campaign/open?campaignId=${campaign.campaignId}">打开</a></li>
+				<li><a href="${ctx}/report/detail/campaign/click?campaignId=${campaign.campaignId}">点击</a></li>
+				<li><a href="${ctx}/report/detail/campaign/domain?campaignId=${campaign.campaignId}">域名</a></li>
+				<li class="now"><a href="${ctx}/report/detail/campaign/region?campaignId=${campaign.campaignId}">地域</a></li>
+				<!-- <li><a href="${ctx}/report/detail/campaign/client?campaignId=${campaign.campaignId}">终端</a></li> -->
+				<li><a href="${ctx}/report/detail/campaign/history?campaignId=${campaign.campaignId}">历史</a></li>
+				<li><a href="${ctx}/report/detail/campaign/compare?campaignId=${campaign.campaignId}">对比</a></li>
+				<#if (campaign.touchCount)?if_exists gt 0>
+					<li><a href="${ctx}/report/detail/campaign/touch?campaignId=${campaign.campaignId}&templateId=110">触发</a></li>
+				</#if>
+			</ul>
+			<div class="ribbon clearfix">
+				<ul class="btn">
+					<#if _9>
+						<#if view.funcAuth('mailing/campaign/page', 6)>
+						<li><a class="btn_icon btn_icon_down" href="javascript:campaign_exports('${campaign.campaignId}');">导出</a></li>
+						</#if>
+					</#if>
+				</ul>
+			</div>
+			<#include "/default/report/detail/campaign.html" />
+			<#if recent?? && regionList?size gt 0>
+			<#assign len = 80 />
+			<#if provinceList?size gt 12>
+				<#assign len = 56 />
+			</#if>
+			<#if provinceList?size gt 18>
+				<#assign len = 44 />
+			</#if>
+			<#if provinceList?size gt 24>
+				<#assign len = 32 />
+			</#if>
+			<#assign width = provinceList?size * len + 30 />
+			<div class="charts" style="position:relative">
+				<div id="column" style="width: ${width}px; height: 240px; margin: 0 auto"></div>
+			</div>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+				<tbody>
+					<tr>
+						<th>地域</th>
+						<th>打开人数</th>
+						<th>打开次数</th>
+						<th>点击人数</th>
+						<th>点击次数</th>
+						<th>退订人数</th>
+						<th>转发人数</th>
+					</tr>
+					<#if regionList?? && regionList?size gt 0>
+						<#list regionList as r>
+					<tr>
+						<td>${xss.filter(r.regionName)}</td>
+						<td>${r.readUserCount?default(0)}</td>
+						<td>${r.readCount?default(0)}</td>
+						<td>${r.clickUserCount?default(0)}</td>
+						<td>${r.clickCount?default(0)}</td>
+						<td>${r.unsubscribeCount?default(0)}</td>
+						<td>${r.forwardCount?default(0)}</td>
+					</tr>
+						</#list>
+					</#if>
+				</tbody>
+			</table>
+			<#else>
+			<div class="no_data">没有匹配的数据！</div>
+			</#if>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

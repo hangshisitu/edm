@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Result">
+
+	<typeAlias alias="result" type="cn.edm.model.Result" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Result.mapper">
+		r.corp_id corpId,
+		r.task_id taskId,
+		r.template_id templateId,
+		r.sent_count sentCount,
+		r.reach_count reachCount,
+		r.read_count readCount,
+		r.read_user_count readUserCount,
+		r.click_count clickCount,
+		r.click_user_count clickUserCount,
+		r.unsubscribe_count unsubscribeCount,
+		r.forward_count forwardCount,
+		r.soft_bounce_count softBounceCount,
+		r.hard_bounce_count hardBounceCount,
+		0 beforeNoneCount,
+		r.none_exist_count1 afterNoneCount,
+		r.dns_fail_count dnsFailCount,
+		r.spam_garbage_count spamGarbageCount,
+		r.begin_send_time beginSendTime,
+		r.end_send_time endSendTime
+	</sql>
+	
+	<sql id="Result.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="bindCorpId">
+			t.bind_corp_id = #bindCorpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			t.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="planId">
+			t.plan_id = #planId#
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="types">
+			t.type in <iterate property="types" open="(" close=")" conjunction=",">#types[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userIds">
+			t.user_id in <iterate property="userIds" open="(" close=")" conjunction=",">#userIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="taskIds">
+			t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="planIds">
+			t.plan_id in <iterate property="planIds" open="(" close=")" conjunction=",">#planIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="statuses">
+			t.task_status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="taskName">
+			<isEqual property="nameCnd" compareValue="eq">
+				t.task_name = #taskName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				t.task_name like concat('%', #taskName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.delivery_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+		  	<![CDATA[ t.delivery_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignName">
+			<isEqual property="nameCnd" compareValue="eq">
+				c.campaign_name = #campaignName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				c.campaign_name like concat('%', #campaignName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateName">
+			<isEqual property="nameCnd" compareValue="eq">
+				t.template_name = #templateName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				t.template_name like concat('%', #templateName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="parentId">
+			th.parent_id = #parentId#
+		</isNotNull>
+    </sql>
+	
+	<sql id="Result.trigerWhere">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			a.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="trigerName">
+			a.triger_name = #trigerName#
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.create_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+		  	<![CDATA[ t.create_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+    
+	<select id="Result.query" parameterClass="mb" resultClass="result">
+		select
+			t.task_name taskName,
+			t.subject subject,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			<include refid="Result.mapper" />
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Result.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="deliveryTime">
+				order by t.delivery_time $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="sentCount">
+				order by r.sent_count $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="reachCount">
+				order by (r.reach_count / r.sent_count - r.none_exist_count1) $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="readUserCount">
+				order by (r.read_user_count / r.reach_count) $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="clickUserCount">
+				order by (r.click_user_count / r.read_user_count) $order$
+			</isEqual>
+		</dynamic>
+	</select>
+	
+	<!-- <select id="Result.trigerQuery" parameterClass="mb" resultClass="result">
+		select
+			<include refid="Result.mapper" />
+		from result r
+		inner join triger t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Result.trigerWhere" />
+		</dynamic>
+	</select> -->
+	<select id="Result.trigerQuery" parameterClass="mb" resultClass="result">
+		select
+			<include refid="Result.mapper" />
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Result.trigerWhere" />
+		</dynamic>
+	</select>
+	
+	
+	<select id="Result.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Result.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Result.index" parameterClass="mb" resultClass="result">
+		select
+			t.user_id userId,
+			t.task_name taskName,
+			t.subject subject,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			c.company company,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			(select count(*) from touch_setting s where s.parent_id = t.template_id) bindTouchCount,
+			<include refid="Result.mapper" />
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join corp c on c.corp_id = r.corp_id
+		<dynamic>
+			<include refid="Result.where" />
+			<isEqual property="orderBy" compareValue="deliveryTime">
+				order by t.delivery_time $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="sentCount">
+				order by r.sent_count $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="reachCount">
+				order by (r.reach_count / r.sent_count - r.none_exist_count1) $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="readUserCount">
+				order by (r.read_user_count / r.reach_count) $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="clickUserCount">
+				order by (r.click_user_count / r.read_user_count) $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Result.trigerCount" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from result r
+		inner join triger t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Result.trigerWhere" />
+		</dynamic>
+	</select>
+	
+	<select id="Result.trigerIndex" parameterClass="mb" resultClass="result">
+		select
+			t.task_name taskName,
+			t.subject subject,
+			t.create_time createTime,
+			a.triger_name trigerName,
+			<include refid="Result.mapper" />
+		from result r
+		inner join triger t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Result.trigerWhere" />
+			<isEqual property="orderBy" compareValue="createTime">
+				order by t.create_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Result.planCount" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from (
+			select
+				t.plan_id planId
+			from task t
+			<dynamic>
+				<include refid="Result.where" />
+				and t.plan_id in (
+					select
+						t2.plan_id
+					from result r
+					inner join task t2 on t2.corp_id = r.corp_id and t2.task_id = r.task_id
+					where t2.plan_id is not null and t2.plan_referer != "None"
+					group by t2.plan_id
+				)
+				and t.plan_id is not null and t.plan_referer = "None" 
+			</dynamic>
+		) t
+	</select>
+	
+	<select id="Result.planIndex" parameterClass="mb" resultClass="result">
+		select
+			t.user_id userId,
+			t.task_name taskName,
+			t.plan_id planId,
+			t.task_status status,
+			t.plan_referer plan_referer,
+			c.company company,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			(select count(*) from template_setting s where s.parent_id = t.template_id) bindTouchCount
+		from task t
+		inner join corp c on c.corp_id = t.corp_id
+		<dynamic>
+			<include refid="Result.where" />
+			and t.plan_id in (
+				select
+					t2.plan_id
+				from result r
+				inner join task t2 on t2.corp_id = r.corp_id and t2.task_id = r.task_id
+				where t2.plan_id is not null and t2.plan_referer != "None"
+				group by t2.plan_id
+			)
+			and t.plan_id is not null 
+			and t.plan_referer = "None"
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Result.campaignCount" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from (
+			select
+				c.campaign_id
+			from result r
+			inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+			inner join campaign c on c.campaign_id = t.campaign_id and c.corp_id = t.corp_id and c.user_id = t.user_id
+			<dynamic>
+				<include refid="Result.where" />
+				group by c.campaign_id
+			</dynamic>
+		) t
+	</select>
+	
+	<select id="Result.campaignIndex" parameterClass="mb" resultClass="result">
+		select
+			count(t.task_id) taskCount,
+			c.campaign_id campaignId,
+			c.campaign_name campaignName,
+			c2.company company,
+			(select count(*) from touch th where th.parent_id=t.task_id) touchCount,
+			(select count(*) from template_setting s where s.parent_id = t.template_id) bindTouchCount
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join campaign c on c.campaign_id = t.campaign_id and c.corp_id = t.corp_id and c.user_id = t.user_id
+		inner join corp c2 on c2.corp_id = r.corp_id
+		<dynamic>
+			<include refid="Result.where" />
+			group by c.campaign_id
+			<isEqual property="orderBy" compareValue="deliveryTime">
+				order by t.delivery_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Result.completed" parameterClass="mb" resultClass="Long">
+		select
+			sum(r.email_count)
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Result.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Result.recent" parameterClass="mb" resultClass="mb">
+		select
+			count(*) taskCount,
+			min(t.delivery_time) minDeliveryTime,
+			max(t.delivery_time) maxDeliveryTime
+		from result r
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Result.where" />
+		</dynamic>
+	</select>
+	
+	<sql id="Result.mapperSum">
+		sum(r.sent_count) sentCount,
+		sum(r.reach_count) reachCount,
+		sum(r.read_count) readCount,
+		sum(r.read_user_count) readUserCount,
+		sum(r.click_count) clickCount,
+		sum(r.click_user_count) clickUserCount,
+		sum(r.unsubscribe_count) unsubscribeCount,
+		sum(r.forward_count) forwardCount,
+		sum(soft_bounce_count) softBounceCount,
+		sum(hard_bounce_count) hardBounceCount,
+		sum(0) beforeNoneCount,
+		sum(r.none_exist_count1) afterNoneCount,
+		sum(r.dns_fail_count) dnsFailCount,
+		sum(r.spam_garbage_count) spamGarbageCount
+	</sql>
+	<select id="Result.touchCount" parameterClass="mb" resultClass="Long">
+		SELECT 
+			count(*)
+		FROM ( 
+			select t.template_id from touch t
+			INNER JOIN result r ON r.task_id = t.task_id AND r.template_id = t.template_id
+			<dynamic>
+				<include refid="Result.where" />
+				group by t.user_id, t.template_id
+			</dynamic>
+		) c
+	</select>
+	
+	<select id="Result.touchIndex" parameterClass="mb" resultClass="result">
+		SELECT 
+			MAX(t.task_id) touchId,
+			t.corp_id corpId,
+			t.user_id userId,
+			t.template_id templateId,
+			t.template_name templateName,
+			(select count(DISTINCT(t2.parent_id)) from touch t2 INNER JOIN task tk on t2.parent_id=tk.task_id where t2.template_id = t.template_id and tk.task_status = 27) templateCount,
+			sum(t.touch_count) touchCount,
+			<include refid="Result.mapperSum" />
+		FROM
+			touch t
+			INNER JOIN result r ON r.task_id = t.task_id AND r.template_id = t.template_id
+		<dynamic>
+			<include refid="Result.where" />
+			group by t.user_id, t.template_id
+			order by t.create_time desc
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Result.touchQuery" parameterClass="mb" resultClass="result">
+		SELECT 
+			t.task_id taskId,
+			t.task_name taskName,
+			t.subject subject,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			th.task_id touchId,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			<include refid="Result.mapper" />
+		FROM
+			touch th
+			INNER JOIN result r ON r.task_id = th.task_id AND r.template_id = th.template_id and th.corp_id = r.corp_id
+			INNER JOIN task t ON th.parent_id = t.task_id
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				th.corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				th.user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="templateId">
+				th.template_id = #templateId#
+			</isNotNull>
+			<isNotNull prepend="and" property="templateIds">
+				th.template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+			</isNotNull>
+			<isNotNull prepend="and" property="taskId">
+				th.task_id = #taskId#
+			</isNotNull>
+			order by t.create_time desc
+		</dynamic>
+	</select>
+	
+</sqlMap>

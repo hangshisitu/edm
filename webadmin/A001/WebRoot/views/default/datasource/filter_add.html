@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 过滤器</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.filter.js?${version}"></script>
+<script type="text/javascript">
+	var index = ${propMap?size - 1};
+
+	var props = new Array(
+		<#list propList as p>
+		["${xss.filter(p.propName)}", "${xss.filter(p.propName)}"]<#if p_has_next>,</#if>
+		</#list>
+	);
+	
+	var types = new Array(
+		<#list propList as p>
+		<#assign type = "S" />
+		<#if p.type == "Integer">
+			<#assign type = "I" />
+		<#elseif p.type == "Date (yyyy-MM-dd)">
+			<#assign type = "D" />
+		</#if>
+		["${xss.filter(p.propName)}", "${type}"]<#if p_has_next>,</#if>
+		</#list>
+	);
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title border_b"><#if filter.filterId??>修改<#else>新建</#if>过滤器</h1>
+		<form id="add" action="add" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="filterId" value="${filter.filterId}" />
+			<input type="hidden" name="orgFilterName" value="${xss.filter(filter.filterName)}" />
+			<input type="hidden" id="pos" value="" />
+            <table id="filter" width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+                <tr>
+                    <td width="110" align="right">过滤器名称：</td>
+                    <td width="10" class="red">*</td>
+                    <td width="370">
+                    	<input type="text" class="add_text" name="filterName" value="${xss.filter(filter.filterName)}" />
+                    </td>
+                   	<td></td>
+                </tr>
+                <tr valign="top">
+                    <td align="right">描述：</td>
+                    <td class="red">&nbsp;</td>
+                    <td>
+                    	<textarea class="add_text desc_area" name="filterDesc" value="${xss.filter(filter.filterDesc)}" style="height:19px; margin:5px 0;">${xss.filter(filter.filterDesc)}</textarea>
+                    </td>
+                    <td></td>
+                </tr>
+                <#assign i = 0 />
+                <#list propMap?keys as k>
+                <tr>
+                    <td align="right"><#if i == 0>过滤机制：<#else>&nbsp;</#if></td>
+                    <td class="red"><#if i == 0>*<#else>&nbsp;</#if></td>
+                    <td>
+                    	<input type="text" id="key_${i}" class="add_text" value="${xss.filter(propMap[k])}" readonly="readonly" />
+                    	<input type="hidden" id="val_${i}" class="add_text" name="prop_${i}" value="${xss.filter(k)}" />
+                    </td>
+                    <td>
+                        <span class="input_set" onclick="$('#pos').val('${i}');openPop('setting?prop=' + $('#val_${i}').val(), this)">设置</span><#if i == 0><span class="add_set" title="添加" onclick="add_filter()"></span><#else><span class="del_set" title="删除" onclick="del_filter('${i}')"></span></#if>
+                    </td>
+                </tr>
+                <#assign i = i + 1 />	
+                </#list>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t10">
+                <tr>
+                    <td align="right" width="120">&nbsp;</td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" id="smt" type="submit" value="保存" /></li>
+                            <li><input class="input_no" onclick="location.assign('page')" type="button" value="返回" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </form>
+	</div>
+</div>
+<div class="popBox" id="popBox" style="display:none"></div>
+<div class="select_div"></div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 发件人</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+</head>
+
+<body>
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix ">
+	<#include "/left.html" />
+	<div id="main"  class="clearfix">
+		<h1 class="title">发件人&nbsp;&nbsp;<span>对发件人进行管理</span></h1>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${senderList?size}</span>个发件人</p>
+			</div>
+			<ul class="btn">
+				<li><a href="javascript:open_msg('add',0);" class="btn_icon btn_icon_add">新建发件人</a></li>
+			</ul>
+		</div>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="main_table">
+			<tr>
+				<th width="20%">发件人邮箱</th>
+				<th>发件人昵称</th>
+				<th>状态</th>
+				<th>创建人</th>
+				<th width="12%">创建时间</th>
+				<th width="12%">更新时间</th>
+				<th width="16%">操作</th>
+			</tr>
+			<#list senderList as s>
+			<tr>
+				<td>
+					<input type="hidden" name="checkedIds" value="${xss.filter(s.senderEmail)}" />
+					<a href="javascript:open_msg('add?senderEmail=${xss.filter(s.senderEmail)}',0);">${xss.filter(s.senderEmail)}</a> 
+				</td>
+				<td>${xss.filter(s.senderName)}</td>
+				<td><#if s.status == 1>启用<#elseif s.status == 0>未验证</#if></td>
+				<td>${s.userId}</td>
+				<td><#if s.createTime??>${s.createTime?datetime}</#if></td>
+				<td><#if s.modifyTime??>${s.modifyTime?datetime}</#if></td>
+				<td class="edit">
+					<ul class="f_ul">
+						<li>
+						<#if currentUser.username == s.userId>
+						<a href="javascript:open_msg('add?senderEmail=${xss.filter(s.senderEmail)}',0);">修改</a>
+						<#else>
+						<font color="#f5f5f5">修改</font>
+						</#if>
+						</li>
+						<li>
+						<#if currentUser.username == s.userId>
+						<a href="javascript:open_msg('del?checkedIds=${xss.filter(s.senderEmail)}',0);">删除</a>
+						<#else>
+						<font color="#f5f5f5">删除</font>
+						</#if>
+						</li>
+						<#if s.status == 1>
+						<li>
+						<#if currentUser.username == s.userId>
+						<a href="javascript:open_msg('required?checkedIds=${xss.filter(s.senderEmail)}',0);"><#if s.required == 1>取消<#else>设为</#if>默认</a>
+						<#else>
+						<font color="#f5f5f5"><#if s.required == 1>取消<#else>设为</#if>默认</font>
+						</#if>
+						</li>
+						<#else>
+						<li>
+						<#if currentUser.username == s.userId>
+						<a href="javascript:open_msg('validate?checkedIds=${xss.filter(s.senderEmail)}',0);">重发验证邮件</a>
+						<#else>
+						<font color="#f5f5f5">重发验证邮件</font>
+						</#if>
+						</li>
+						</#if>
+					</ul>
+				</td>
+			</tr>
+			</#list>
+		</table>
+		<#if !senderList?? || senderList?size == 0>
+			<div class="no_data">您还没有发件人，现在就<a href="javascript:open_msg('add',0);" class="green">创建</a>一个</div>
+		</#if>
+		<div class="ribbon clearfix">
+			<ul class="page"><li>&nbsp;</li></ul>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

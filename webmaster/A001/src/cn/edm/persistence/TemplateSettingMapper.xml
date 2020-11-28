@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.TemplateSettingMapper">
+	
+	<resultMap id="TemplateSetting" type="cn.edm.domain.TemplateSetting">
+		<result column="corp_id" property="corpId" />
+		<result column="user_id" property="userId" />
+		<result column="parent_id" property="parentId" />
+		<result column="template_id" property="templateId" />
+		<result column="touch_urls" property="touchUrls" />
+		<result column="after_minutes" property="afterMinutes" />
+		<result column="subject" property="subject" />
+		<result column="device_type" property="deviceType" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		s.corp_id, s.user_id, s.template_id, s.parent_id, s.subject, s.after_minutes, s.touch_urls, s.device_type
+	</sql>
+	
+	<sql id="where">
+		where 1=1
+		<if test="corpId != null">
+			AND s.corp_id = #{corpId}
+		</if>
+		<if test="userId != null">
+			AND s.user_id = #{userId}
+		</if>
+		<if test="parentId != null">
+			AND s.parent_id = #{parentId}
+		</if>
+		<if test="parentIds != null">
+			AND s.parent_id in <foreach collection="parentIds" item="pid" open="(" close=")" separator=",">#{pid}</foreach>
+		</if>
+		<if test="templateId != null">
+			AND s.template_id = #{templateId}
+		</if>
+		<if test="templateIds != null">
+			AND s.template_id in <foreach collection="templateIds" item="tid" open="(" close=")" separator=",">#{tid}</foreach>
+		</if>
+		<if test="touchUrls != null">
+			AND s.touch_urls = #{touchUrls}
+		</if>
+		<if test="afterMinutes != null">
+			AND s.after_minutes = #{afterMinutes}
+		</if>
+		<if test="subject != null">
+			AND s.subject = #{subject}
+		</if>
+		<if test="subjectLike != null">
+			AND s.subject like contact('%', #{subject} , '%')
+		</if>
+	</sql>
+	
+	<select id="selectSetting" parameterType="java.util.Map" resultMap="TemplateSetting">
+		select
+			t.template_name templateName,
+			<include refid="base_columns" />
+		from template_setting s
+		inner join template t on t.template_id = s.template_id
+		<include refid="where"/>
+	</select>
+	
+	<delete id="delTemplateSettingByUserId" parameterType="java.lang.String" >
+   		DELETE FROM template_setting
+   		WHERE 
+   		user_id = #{userId}
+    </delete>
+	
+</mapper>
+
+

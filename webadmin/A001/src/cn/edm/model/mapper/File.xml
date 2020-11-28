@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="File">
+
+	<typeAlias alias="file" type="cn.edm.model.File" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="File.mapper">
+		f.file_id fileId,
+		f.corp_id corpId,
+		f.user_id userId,
+		f.file_name fileName,
+		f.file_desc fileDesc,
+		f.file_path filePath,
+		f.suff suff,
+		f.file_size fileSize,
+		f.email_count emailCount,
+		f.status status,
+		f.create_time createTime,
+		f.modify_time modifyTime
+	</sql>
+	
+	<sql id="File.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			f.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			f.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="fileId">
+			f.file_id = #fileId#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			f.status = #status#
+		</isNotNull>
+		<isNotNull prepend="and" property="fileIds">
+			f.file_id in <iterate property="fileIds" open="(" close=")" conjunction=",">#fileIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="fileName">
+			<isEqual property="nameCnd" compareValue="eq">
+				f.file_name = #fileName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				f.file_name like concat('%', #fileName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="suff">
+			f.suff = #suff#
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ f.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ f.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="File.save" parameterClass="file">
+		insert into file (
+			corp_id,
+			user_id,
+			file_name,
+			file_desc,
+			file_path,
+			suff,
+			file_size,
+			email_count,
+			status,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#fileName#,
+			#fileDesc#,
+			#filePath#,
+			#suff#,
+			#fileSize#,
+			#emailCount#,
+			#status#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="fileId">
+			select @@IDENTITY as file_id
+		</selectKey>
+	</insert>
+	
+	<update id="File.update" parameterClass="file">
+		update file f set
+			f.corp_id = #corpId#,
+			f.file_name = #fileName#,
+			f.file_desc = #fileDesc#,
+			f.file_path = #filePath#,
+			f.suff = #suff#,
+			f.file_size = #fileSize#,
+			f.email_count = #emailCount#,
+			f.status = #status#,
+			f.modify_time = now()
+		where f.user_id = #userId# and f.file_id = #fileId#
+	</update>
+	
+	<delete id="File.delete" parameterClass="mb">
+		delete from file 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="fileId">
+				file_id = #fileId#
+			</isNotNull>
+			<isNotNull prepend="and" property="fileIds">
+				file_id in <iterate property="fileIds" open="(" close=")" conjunction=",">#fileIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="File.query" parameterClass="mb" resultClass="file">
+		select
+			<include refid="File.mapper" />
+		from file f
+		<dynamic>
+			<include refid="File.where" />
+		</dynamic>
+	</select>
+
+	<select id="File.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from file f
+		<dynamic>
+			<include refid="File.where" />
+		</dynamic>
+	</select>
+	
+	<select id="File.index" parameterClass="mb" resultClass="file">
+		select
+			<include refid="File.mapper" />
+		from file f
+		<dynamic>
+			<include refid="File.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by f.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+</sqlMap>

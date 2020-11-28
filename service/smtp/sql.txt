@@ -1,0 +1,5 @@
+alter table smtp drop index index_ip;
+alter table smtp engine=innodb;
+alter table smtp add quarter_count int(11) default 0;
+alter table smtp add hour_count int(11) default 0;
+alter table smtp add day_count int(11) default 0;

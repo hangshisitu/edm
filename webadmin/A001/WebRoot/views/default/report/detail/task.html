@@ -1,0 +1,22 @@
+<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+	<tbody>
+		<tr>
+			<th>邮件主题</th>
+			<th width="12%">当前状态</th>
+			<th width="28%">投递时间</th>
+		</tr>
+		<tr>
+			<th style="border: 0;" title="${xss.filter(task.subject)}">${xss.filter(task.subject)}</th>
+			<th style="border: 0;">${xss.filter(view.task_status(task.status))}</th>
+			<#assign beginTime = "" />
+			<#assign endTime = "现在" />
+			<#if task.deliveryTime??>
+				<#assign beginTime = task.deliveryTime?datetime />
+			</#if>
+			<#if result?? && result.endSendTime??>
+				<#assign endTime = result.endSendTime?datetime />
+			</#if>
+			<th style="border: 0;">${beginTime}&nbsp;至&nbsp;${endTime}</th>
+		</tr>
+	</tbody>
+</table>

@@ -1,0 +1,42 @@
+#监听服务配置
+deliver_bind_ip = "0.0.0.0"
+deliver_bind_port =  "55660"
+#服务最大连接数据
+pool_max_number="1000"
+#socket超时时间
+net_time_out="20"
+#工作目录
+base_dir="/home/fy/edm/maillist"
+log_name="log55660/deliver.log"
+#当前任务保存子目录
+task_file_dir= "task55660"
+#任务备份子目录
+task_backup_dir= "backup55660"
+#任务激活因子，> 6 激活，注：不修改
+active_score= "6"
+
+host_name="test"
+#邮件域名别名映射
+domain_alias_file="alias.txt"
+# 设置任务优先级文件路径
+yxfile = "./yxtask.txt"
+
+#连接允许的最大空闲时间，超过关闭
+keep_alive_time_out="600"
+
+#状态监测定时周期
+check_period="100"
+#完成任务等待移除最大时间
+task_remove_time="1200"
+
+#cache db 服务地址
+cache_ip= "192.168.34.103"
+cache_port="55800"
+#to cache db状态上报间隔
+cache_period= "60"
+#邮件任务保存数据库
+triger_number_db = "trigernumber_55660.db"
+#check_mailbox_ip="api1.edmhr.com"
+#check_mailbox_port="55666"
+
+

@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.DomainMapper">
+	
+	<resultMap id="Domain" type="cn.edm.domain.Domain">
+		<result column="corp_id" property="corpId"/>
+		<result column="task_id " property="taskId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="sent_count" property="sentCount"/>
+		<result column="email_domain" property="emailDomain"/>
+		<result column="reach_count" property="reachCount" />
+		<result column="read_count" property="readCount" />
+		<result column="read_user_count" property="readUserCount" />
+		<result column="click_count" property="clickCount" />
+		<result column="click_user_count" property="clickUserCount" />
+		<result column="unsubscribe_count" property="unsubscribeCount" />
+		<result column="forward_count" property="forwardCount" />
+		<result column="soft_bounce_count" property="softBounceCount" />
+		<result column="hard_bounce_count" property="hardBounceCount" />
+		<result column="none_exist_count" property="beforeNoneCount" />
+		<result column="none_exist_count1" property="afterNoneCount" />
+		<result column="dns_fail_count" property="dnsFailCount" />
+		<result column="spam_garbage_count" property="spamGarbageCount" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		d.corp_id, d.task_id, d.template_id, d.email_domain, d.sent_count, d.reach_count, d.read_count,
+		d.read_user_count, d.click_count, d.click_user_count, d.unsubscribe_count,
+		d.forward_count, d.soft_bounce_count, d.hard_bounce_count, d.none_exist_count,
+		d.none_exist_count1, d.dns_fail_count, d.spam_garbage_count
+	</sql>
+	
+	<sql id="sum">
+		sum(d.sent_count) sentCount,
+		sum(d.reach_count) reachCount,
+		sum(d.read_count) readCount,
+		sum(d.read_user_count) readUserCount,
+		sum(d.click_count) clickCount,
+		sum(d.click_user_count) clickUserCount,
+		sum(d.unsubscribe_count) unsubscribeCount,
+		sum(d.forward_count) forwardCount,
+		sum(d.soft_bounce_count) softBounceCount,
+		sum(d.hard_bounce_count) hardBounceCount,
+		sum(d.none_exist_count) beforeNoneCount,
+		sum(d.none_exist_count1) afterNoneCount,
+		sum(d.dns_fail_count) dnsFailCount,
+		sum(d.spam_garbage_count) spamGarbageCount
+	</sql>
+	
+	<sql id="where">
+		where 1=1 
+		<if test="corpId != null">
+			AND d.corp_id = #{corpId}
+		</if>
+		<if test="taskId != null">
+			AND d.task_id = #{taskId}
+		</if>
+		<if test="taskIds != null">
+			AND d.task_id in <foreach collection="taskIds" item="tId" open="(" close=")" separator=",">#{tId}</foreach>
+		</if>
+		<if test="corpIds != null">
+			AND d.corp_id in <foreach collection="corpIds" item="corpId" open="(" close=")" separator=",">#{corpId}</foreach>
+		</if>
+		<if test="emailDomain != null">
+			AND d.email_domain = #{emailDomain}
+		</if>
+		<if test="userId != null">
+			AND t.user_id = #{userId}
+		</if>
+		<if test="userIdLike != null">
+			AND t.user_id like concat('%',#{userIdLike},'%')
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="types != null">
+			AND t.type in <foreach collection="types" item="tp" open="(" close=")" separator=",">#{tp}</foreach>
+		</if>
+		
+		<if test="taskName != null">
+			AND t.task_name like concat('%',#{taskName},'%')
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="labelStatus != null">
+			<choose>
+				<when test="labelStatus == 0">
+					AND (t.label_status = 0 or t.label_status is null)
+				</when>
+				<when test="labelStatus == 1">
+					AND t.label_status = 1
+				</when>
+				<when test="labelStatus == 2">
+					AND t.label_status = 2
+				</when>
+				<when test="labelStatus == 3">
+					AND t.label_status = 3
+				</when>
+			</choose>
+		</if>
+		<if test="planCnd == 'isNull'">
+			and t.plan_id is null
+		</if>
+		<if test="parentId != null">
+			and t.parent_id = #{parentId}
+		</if>
+		<if test="parentIds != null">
+			AND t.parent_id in <foreach collection="parentIds" item="pId" open="(" close=")" separator=",">#{pId}</foreach>
+		</if>
+		<if test="templateId != null">
+			and t.template_id = #{templateId}
+		</if>
+		<if test="templateIds != null">
+			AND t.template_id in <foreach collection="templateIds" item="tId" open="(" close=")" separator=",">#{tId}</foreach>
+		</if>
+	</sql>
+	
+	<sql id="where_total">
+		where 1=1 
+		<if test="taskName != null">
+			AND t.task_name like concat('%', #{taskName}, '%')
+		</if>
+		<if test="corpId != null">
+			AND d.corp_id = #{corpId}
+		</if>
+		<if test="taskId != null">
+			AND d.task_id = #{taskId}
+		</if>
+		<if test="taskIds != null">
+			AND d.task_id in <foreach collection="taskIds" item="taskId" open="(" close=")" separator=",">#{taskId}</foreach>
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="types != null">
+			AND t.type in <foreach collection="types" item="tp" open="(" close=")" separator=",">#{tp}</foreach>
+		</if>
+		<if test="emailDomain != null">
+			AND d.email_domain = #{emailDomain}
+		</if>
+		<if test="beginTimeStr1 != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr1}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr1 != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr1}, '%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="selectSum" resultMap="Domain" parameterType="map">
+		SELECT 
+			d.task_id taskId,
+		<include refid="sum"/>
+		FROM 
+			result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where_total"/>
+	</select>
+	
+	<select id="selectSumList" resultMap="Domain" parameterType="map">
+		SELECT 
+		d.email_domain,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t 
+		ON t.corp_id = d.corp_id 
+		AND t.task_id = d.task_id
+		<include refid="where_total"/>
+		GROUP BY d.email_domain
+	</select>
+	
+	<select id="selectDomainResultList" resultMap="Domain" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where"/>
+	</select>
+	
+	<select id="selectDomainResultCount" resultType="long" parameterType="map">
+		SELECT count(*) FROM
+		(SELECT 
+		d.corp_id
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where"/>
+		group by d.corp_id) c
+	</select>
+	
+	<select id="selectUserStatList" resultMap="Domain" parameterType="map">
+		SELECT 
+		(select u.user_id from user u LEFT JOIN role r on u.role_id = r.id where u.corp_id = d.corp_id  and r.type = 1 limit 1) userId,
+		(select c.company from corp c where c.corp_id = d.corp_id) companyName,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where"/>
+		group by d.corp_id
+	</select>
+	
+	<select id="selectByTaskIdAndGroupByDomain" resultMap="Domain" parameterType="map">
+		SELECT 
+		d.email_domain emailDomain,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.task_id = d.task_id
+		<include refid="where"/>
+		group by d.email_domain
+		<if test="startIndex!=null and pageSize!=null">
+			limit #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	
+	<select id="selectByTaskIdAndGroupByDomainCount" resultType="long" parameterType="map">
+		SELECT 
+		COUNT(*) FROM
+		(select  d.email_domain
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.task_id = d.task_id
+		<include refid="where"/>
+		group by d.email_domain ) t
+		
+	</select>
+	
+	<select id="selectApiSum" resultMap="Domain" parameterType="map">
+		SELECT 
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN triger t 
+		ON t.corp_id = d.corp_id 
+		AND t.task_id = d.task_id
+		INNER JOIN triger_api ta
+		ON t.corp_id = ta.triger_corp_id
+		<include refid="where_total_api"/>
+	</select>
+	
+	<sql id="where_total_api">
+		where 1=1 
+		<if test="corpId != null">
+			AND d.corp_id = #{corpId}
+		</if>
+		<if test="taskId != null">
+			AND d.task_id = #{taskId}
+		</if>
+		<if test="taskIds != null">
+			AND d.task_id in <foreach collection="taskIds" item="taskId" open="(" close=")" separator=",">#{taskId}</foreach>
+		</if>
+		<if test="emailDomain != null">
+			AND d.email_domain = #{emailDomain}
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="selectSendBackSum" parameterType="map" resultMap="Domain">
+		SELECT 
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		where
+		d.task_id = #{taskId}
+	</select>
+	
+	<!-- 活动发送统计 -->
+	<select id="selectCampaignSendBackSum" parameterType="Integer" resultMap="Domain">
+		SELECT 
+		<include refid="sum"/>
+		FROM
+		result_by_domain d 
+		INNER JOIN task t 
+		ON t.corp_id = d.corp_id 
+		AND t.task_id = d.task_id 
+		AND t.type in (0,4) 
+		AND t.campaign_id = #{campaignId}
+		AND t.task_status IN (26,27)
+	</select>
+	
+	<select id="selectCampaignDomainSum" parameterType="Integer" resultMap="Domain">
+		SELECT 
+		d.email_domain emailDomain,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.task_id = d.task_id AND t.corp_id=d.corp_id
+		WHERE t.campaign_id = #{campaignId}
+		AND t.type in (0,4) 
+		AND t.task_status IN (26,27)
+		group by d.email_domain 
+	</select>
+	
+	<!-- API群发 -->
+	<select id="selectApiGroupsSum" resultMap="Domain" parameterType="map">
+		SELECT 
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t on d.corp_id = t.corp_id and d.task_id = t.task_id
+		<include refid="where_api_groups"/>
+		and d.sent_count > 0
+	</select>
+	
+	<!-- //////////////////////////////////////////////////////////////////////////////////// -->
+	<!-- //////////////////////////////////////////////////////////////////////////////////// -->
+	<select id="selectDomainSumByTask" resultMap="Domain" parameterType="map">
+		SELECT 
+		t.task_id taskId,
+		t.subject subject,
+		t.task_name taskName,
+		t.user_id userId,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where"/>
+		and d.sent_count > 0
+		group by t.task_id, t.user_id
+	</select>
+	
+	<sql id="where_api">
+		where 1=1 
+		<if test="triggerName != null">
+			AND ta.triger_name = #{triggerName}
+		</if>
+		<if test="userId != null">
+			AND ta.user_id = #{userId}
+		</if>
+		<if test="userIdLike != null">
+			AND ta.user_id like concat('%',#{userIdLike},'%')
+		</if>
+		<if test="corpId != null">
+			AND tg.corp_id = #{corpId}
+		</if>
+		<if test="corpIds != null">
+			AND tg.corp_id in <foreach collection="corpIds" item="corpId" open="(" close=")" separator=",">#{corpId}</foreach>
+		</if>
+		
+		<if test="taskIds != null">
+			AND tg.task_id in <foreach collection="taskIds" item="taskId" open="(" close=")" separator=",">#{taskId}</foreach>
+		</if>
+		
+		<if test="taskName != null">
+			AND tg.task_name like concat('%',#{taskName},'%')
+		</if>
+		<if test="beginTimeStr1 != null">
+			<![CDATA[
+			AND	date_format(tg.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr1}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr1 != null">
+			<![CDATA[
+			AND	date_format(tg.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr1}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		
+		<if test="tidContactUid != null">
+			AND CONCAT(tg.task_id, '_', ta.user_id) in <foreach collection="tidContactUid" item="tcu" open="(" close=")" separator=",">#{tcu}</foreach>
+		</if>
+
+	</sql>
+	
+	<select id="selectApiTriggerSum" resultMap="Domain" parameterType="map">
+		SELECT 
+			ta.triger_corp_id corpId,
+			ta.user_id userId, 
+			d.task_id taskId,
+			tg.create_time createTime,
+		<include refid="sum"/>
+		FROM
+			result_by_domain d
+		INNER JOIN triger tg ON tg.corp_id = d.corp_id AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta ON tg.corp_id = ta.triger_corp_id 
+		<include refid="where_api"/>
+		and d.sent_count > 0
+	</select>
+	
+	<select id="selectApiTriggerSumList" resultMap="Domain" parameterType="map">
+		SELECT 
+			ta.triger_corp_id corpId,
+			ta.user_id userId, 
+			d.task_id taskId,
+			tg.create_time createTime,
+		<include refid="sum"/>
+		FROM
+			result_by_domain d
+		INNER JOIN triger tg ON tg.corp_id = d.corp_id AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta ON tg.corp_id = ta.triger_corp_id 
+		<include refid="where_api"/>
+		and d.sent_count > 0
+		group by tg.corp_id, tg.task_id
+	</select>
+	
+	<select id="selectApiTriggerByUserList" resultMap="Domain" parameterType="map">
+		SELECT 
+		d.corp_id corpId,
+		ta.user_id userId,
+		ta.triger_name triggerName,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg 
+		ON tg.corp_id = d.corp_id 
+		AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta 
+		ON tg.corp_id = ta.triger_corp_id 
+		<include refid="where_api"/>
+	</select>
+	
+	<select id="selectApiTriggerByUserCount" resultType="long" parameterType="map">
+		SELECT COUNT(*)
+		from (
+		SELECT 
+		d.corp_id
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg 
+		ON tg.corp_id = d.corp_id 
+		AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta 
+		ON tg.corp_id = ta.triger_corp_id 
+		<include refid="where_api"/>
+		group by d.corp_id) c
+	</select>
+	
+	<select id="selectApiByUserList" resultMap="Domain" parameterType="map">
+		SELECT 
+		d.corp_id corpId,
+		ta.user_id userId,
+		ta.triger_name triggerName,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg 
+		ON tg.corp_id = d.corp_id 
+		AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta 
+		ON tg.corp_id = ta.triger_corp_id 
+		<include refid="where_api"/>
+		and d.sent_count > 0
+		group by d.corp_id
+	</select>
+	
+	<select id="selectApiByTaskList" resultMap="Domain" parameterType="map">
+		SELECT 
+		tg.task_id taskId,
+		tg.subject subject,
+		tg.task_name taskName,
+		ta.user_id userId,
+		tg.create_time createTime,
+		ta.triger_name triggerName,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg ON tg.corp_id = d.corp_id AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta on tg.corp_id = ta.triger_corp_id
+		<include refid="where_api"/>
+		order by tg.create_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectApiByTaskCount" resultType="long" parameterType="map">
+		SELECT 
+			COUNT(*)
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg ON tg.corp_id = d.corp_id AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta on tg.corp_id = ta.triger_corp_id
+		<include refid="where_api"/>
+	</select>
+	
+	<select id="selectAllApi" resultMap="Domain" parameterType="map">
+		SELECT 
+			tg.task_id taskId,
+			tg.subject subject,
+			tg.task_name taskName,
+			tg.create_time createTime,
+			ta.user_id userId,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg ON tg.corp_id = d.corp_id AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta on tg.corp_id = ta.triger_corp_id
+		<include refid="where_api"/>
+	</select>
+	<select id="selectAllApiCount" resultType="long" parameterType="map">
+		SELECT 
+			count(*)
+		FROM
+		result_by_domain d
+		INNER JOIN triger tg ON tg.corp_id = d.corp_id AND tg.task_id = d.task_id
+		INNER JOIN triger_api ta on tg.corp_id = ta.triger_corp_id
+		<include refid="where_api"/>
+	</select>
+	
+	<!-- 活动发送统计 -->
+	<sql id="campaign_sum_sql">
+		sum(my_temp.sent_count) sentCount,
+		sum(my_temp.reach_count) reachCount,
+		sum(my_temp.read_count) readCount,
+		sum(my_temp.read_user_count) readUserCount,
+		sum(my_temp.click_count) clickCount,
+		sum(my_temp.click_user_count) clickUserCount,
+		sum(my_temp.unsubscribe_count) unsubscribeCount,
+		sum(my_temp.forward_count) forwardCount,
+		sum(my_temp.soft_bounce_count) softBounceCount,
+		sum(my_temp.hard_bounce_count) hardBounceCount,
+		sum(my_temp.none_exist_count) beforeNoneCount,
+		sum(my_temp.none_exist_count1) afterNoneCount,
+		sum(my_temp.dns_fail_count) dnsFailCount,
+		sum(my_temp.spam_garbage_count) spamGarbageCount
+	</sql>
+	
+	<sql id="campaign_result_sql">
+		t.task_id,
+		t.campaign_id,
+		d.sent_count,
+		d.reach_count,
+		d.read_count,
+		d.read_user_count,
+		d.click_count,
+		d.click_user_count,
+		d.unsubscribe_count,
+		d.forward_count,
+		d.soft_bounce_count,
+		d.hard_bounce_count,
+		d.none_exist_count,
+		d.none_exist_count1,
+		d.dns_fail_count,
+		d.spam_garbage_count
+	</sql>
+
+	<select id="selectCampaignList" parameterType="java.util.Map" resultMap="Domain">
+		SELECT c.campaign_name campaignName,
+			c.campaign_Id campaignId,
+			my_temp2.taskNum taskNum,
+			my_temp2.sentCount,
+			my_temp2.reachCount,
+			my_temp2.readCount,
+			my_temp2.readUserCount,
+			my_temp2.clickCount,
+			my_temp2.clickUserCount,
+			my_temp2.unsubscribeCount,
+			my_temp2.forwardCount,
+			my_temp2.softBounceCount,
+			my_temp2.hardBounceCount,
+			my_temp2.beforeNoneCount,
+			my_temp2.afterNoneCount
+		 from campaign c RIGHT JOIN
+			(SELECT my_temp.campaign_id,COUNT(*) taskNum,
+			<include refid="campaign_sum_sql"/>
+			FROM
+			(SELECT
+				<include refid="campaign_result_sql"/>
+			FROM
+				task t
+			RIGHT JOIN result_by_domain d ON t.task_id = d.task_id AND t.corp_id=d.corp_id WHERE t.type in (0,4) AND t.task_status IN (26,27) AND t.campaign_id IS NOT NULL) my_temp
+			GROUP BY campaign_id) my_temp2
+		ON c.campaign_id=my_temp2.campaign_id
+		<include refid="campaign_where"/>
+		LIMIT #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectCampaignCount" parameterType="java.util.Map" resultType="long">
+		SELECT COUNT(*) from campaign c RIGHT JOIN
+			(SELECT my_temp.campaign_id,COUNT(*),
+			<include refid="campaign_sum_sql"/>
+			FROM
+			(SELECT
+				<include refid="campaign_result_sql"/>
+			FROM
+				task t
+			RIGHT JOIN result_by_domain d ON t.task_id = d.task_id AND t.corp_id=d.corp_id WHERE t.type in (0,4) AND t.task_status IN (26,27) AND t.campaign_id IS NOT NULL) my_temp
+			GROUP BY campaign_id) my_temp2
+		ON c.campaign_id=my_temp2.campaign_id
+		<include refid="campaign_where"/>
+	</select>
+	
+	<sql id="campaign_where">
+		where 1=1 
+		<if test="campaignName != null">
+			AND c.campaign_name like concat('%',#{campaignName},'%')
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="types != null">
+			AND t.type in <foreach collection="types" item="type" open="(" close=")" separator=",">#{type}</foreach>
+		</if>
+		<if test="campaignId != null">
+			AND t.campaign_id = #{campaignId}
+		</if>
+		<if test="campaignIds != null">
+			AND t.campaign_id in <foreach collection="campaignIds" item="cid" open="(" close=")" separator=",">#{cid}</foreach>
+		</if>
+		<if test="status != null">
+			AND t.task_status = #{status}
+		</if>
+		<if test="statuses != null">
+			AND t.task_status in <foreach collection="statuses" item="s" open="(" close=")" separator=",">#{s}</foreach>
+		</if>
+	</sql>
+	
+	<sql id="single_sum">
+		sum(d.sent_count) sentCount,
+		sum(d.reach_count) reachCount,
+		sum(d.read_count) readCount,
+		sum(d.read_user_count) readUserCount,
+		sum(d.click_count) clickCount,
+		sum(d.click_user_count) clickUserCount,
+		sum(d.unsubscribe_count) unsubscribeCount,
+		sum(d.forward_count) forwardCount,
+		sum(d.soft_bounce_count) softBounceCount,
+		sum(d.hard_bounce_count) hardBounceCount,
+		sum(d.none_exist_count) beforeNoneCount,
+		sum(d.none_exist_count1) afterNoneCount,
+		sum(d.dns_fail_count) dnsFailCount,
+		sum(d.spam_garbage_count) spamGarbageCount
+	</sql>
+	
+	<select id="selectCampaignSum" resultMap="Domain" parameterType="map">
+		SELECT
+		t.task_id taskId,
+		t.campaign_id campaignId,
+		<include refid="single_sum"/>
+		FROM 
+			result_by_domain d
+		LEFT JOIN
+			task t ON d.corp_id=t.corp_id AND d.task_id=t.task_id
+		<include refid="campaign_where"/>
+	</select>
+	<select id="selectCampaignSumList" parameterType="java.util.Map" resultMap="Domain">
+		SELECT
+			t.task_id taskId,
+			t.campaign_id campaignId,
+			<include refid="single_sum"/>
+		FROM result_by_domain d
+		LEFT JOIN task t ON d.corp_id=t.corp_id AND d.task_id=t.task_id
+		<include refid="campaign_where"/>
+		<if test="groupbyType != null">
+			<if test="groupbyType == 'campaign'">
+				GROUP BY t.campaign_id
+			</if>
+			<if test="groupbyType == 'task'">
+				GROUP BY t.task_id
+			</if>
+		</if>
+		
+	</select>
+	
+	<select id="selectCampaignResultCount" parameterType="java.util.Map" resultType="long">
+		SELECT
+		COUNT(*)
+		FROM result_by_domain d
+		LEFT JOIN task t
+		ON d.corp_id=t.corp_id AND d.task_id=t.task_id
+		WHERE t.type in (0,4) 
+		AND t.task_status IN (26,27)
+		AND t.campaign_id = #{campaignId}
+	</select>
+	
+	
+	<select id="selectCampaignResult" parameterType="Integer" resultMap="Domain">
+		SELECT
+		t.task_name taskName,
+		t.delivery_time deliveryTime,
+		t.type taskType,
+		<include refid="base_columns"/>
+		FROM result_by_domain d
+		LEFT JOIN task t
+		ON d.corp_id=t.corp_id AND d.task_id=t.task_id
+		WHERE t.type in (0,4) 
+		AND t.task_status IN (26,27)
+		AND t.campaign_id = #{campaignId}
+	</select>
+	
+	<sql id="selectCampaignRange_sql">
+		IFNULL(sum(d.sent_count),0) sentCount,
+		IFNULL(sum(d.reach_count),0) reachCount,
+		IFNULL(sum(d.read_count),0) readCount,
+		IFNULL(sum(d.read_user_count),0) readUserCount,
+		IFNULL(sum(d.click_count),0) clickCount,
+		IFNULL(sum(d.click_user_count),0) clickUserCount,
+		IFNULL(sum(d.unsubscribe_count),0) unsubscribeCount,
+		IFNULL(sum(d.forward_count),0) forwardCount,
+		IFNULL(sum(d.soft_bounce_count),0) softBounceCount,
+		IFNULL(sum(d.hard_bounce_count),0) hardBounceCount,
+		IFNULL(sum(d.none_exist_count),0) beforeNoneCount,
+		IFNULL(sum(d.none_exist_count1),0) afterNoneCount,
+		IFNULL(sum(d.dns_fail_count),0) dnsFailCount,
+		IFNULL(sum(d.spam_garbage_count),0) spamGarbageCount
+	</sql>
+	
+	<sql id="selectCampaignRangeFrom">
+		FROM result_by_domain d
+		LEFT JOIN
+		task t
+		ON d.corp_id=t.corp_id
+		AND d.task_id=t.task_id
+		WHERE t.type in (0,4) 
+		AND d.sent_count > 0
+		AND t.task_status IN (26, 27)
+		AND t.campaign_id = #{campaignId}
+	</sql>
+
+	<select id="selectCampaignRange" resultMap="Domain" parameterType="map">
+		SELECT
+		<include refid="selectCampaignRange_sql"/>
+		<include refid="selectCampaignRangeFrom"/>
+		<![CDATA[
+		AND  DATE_FORMAT(t.delivery_time, '%Y-%m-%d %T') >= DATE_FORMAT(#{from}, '%Y-%m-%d %T')
+		AND  DATE_FORMAT(t.delivery_time, '%Y-%m-%d %T') <= DATE_FORMAT(#{to}, '%Y-%m-%d %T')
+		]]>
+	</select>
+	<!-- 周期任务 -->
+	<select id="selectPlanTaskList" resultMap="Domain" parameterType="java.util.Map">
+		SELECT
+			t.task_id taskId,
+			t.plan_id planId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			t.create_time createTime,
+			t.type taskType,
+			c.corp_path corpPath,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount
+		FROM
+		task t left join corp c 
+		on t.corp_id = c.corp_id
+		<include refid="where_planTask"/>
+		AND t.type = 2
+		ORDER BY t.modify_time DESC
+		<if test="startIndex != null and pageSize!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	
+	<select id="selectPlanTaskCount" resultType="long" parameterType="java.util.Map">
+		SELECT
+			COUNT(*)
+		FROM 
+		task t left join corp c 
+		on t.corp_id = c.corp_id
+		<include refid="where_planTask"/>
+	</select>
+	
+	<select id="selectPlanResultList" resultMap="Domain" parameterType="java.util.Map">
+		SELECT
+			t.plan_id planId,
+			t.task_id taskId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			t.create_time createTime,
+			t.type taskType,
+			(select c.company from corp c where c.corp_id = t.corp_id) companyName,
+			<include refid="base_columns"/>
+		FROM
+			result_by_domain d
+			LEFT JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+			LEFT JOIN corp c on d.corp_id = c.corp_id
+		<include refid="where_planTask"/>
+		AND d.sent_count > 0
+		ORDER BY t.delivery_time DESC
+		<if test="startIndex != null and pageSize!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	
+	<select id="selectPlanResultSumList" resultMap="Domain" parameterType="java.util.Map">
+		SELECT
+			t.plan_id planId,
+			t.task_id taskId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			t.create_time createTime,
+			t.type taskType,
+			(select c.company from corp c where c.corp_id = t.corp_id) companyName,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			<include refid="sum"/>
+		FROM
+			result_by_domain d
+			LEFT JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+			LEFT JOIN corp c on d.corp_id = c.corp_id
+		<include refid="where_planTask"/>
+		AND d.sent_count > 0
+		GROUP BY t.plan_id
+		ORDER BY t.delivery_time DESC
+		<if test="startIndex != null and pageSize!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<!-- 任务发送-周期任务-报告-投递历史  -->
+	<select id="selectResultHisList" resultMap="Domain" parameterType="java.util.Map">	  
+	        SELECT t.task_id taskId,
+                   t.task_status status, 
+                   t.delivery_time deliveryTime,
+                   d.* 
+                   from 
+                     (select corp_id,task_id,sum(email_count) email_count,
+                     sum(sent_count) sent_count,sum(reach_count) reach_count,
+                     sum(soft_bounce_count) soft_bounce_count,sum(hard_bounce_count) hard_bounce_count,
+                     sum(read_user_count) read_user_count,sum(click_user_count) click_user_count,
+                     sum(none_exist_count) none_exist_count,sum(none_exist_count1) none_exist_count1
+                     from result_by_domain group by task_id,corp_id,template_id) d 
+                   LEFT JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+				   LEFT JOIN corp c on d.corp_id = c.corp_id
+				   <include refid="where_planTask"/>
+				   AND d.sent_count > 0
+				   ORDER BY t.delivery_time DESC		
+	</select>
+	<select id="selectPlanResultSum" resultMap="Domain" parameterType="java.util.Map">
+		SELECT
+			t.plan_id planId,
+			t.task_id taskId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			t.create_time createTime,
+			t.type taskType,
+			(select c.company from corp c where c.corp_id = t.corp_id) companyName,
+			<include refid="sum"/>
+		FROM
+			result_by_domain d
+			LEFT JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+			LEFT JOIN corp c on d.corp_id = c.corp_id
+		<include refid="where_planTask"/>
+		AND d.sent_count > 0
+	</select>
+	
+	<select id="selectPlanTaskByPlanId" resultMap="Domain" parameterType="java.util.Map">
+		SELECT 
+			t.task_id taskId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			t.create_time createTime,
+			t.type taskType,
+			(select c.company from corp c where c.corp_id = t.corp_id) companyName,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where_planTask"/>
+		AND t.type != 2
+	</select>
+	
+	<sql id="where_planTask">
+		where 1=1
+		<if test="taskName != null">
+			AND t.task_name like concat('%',#{taskName},'%')
+		</if>
+		<if test="taskId != null">
+			AND t.task_id = #{taskId}
+		</if>
+		<if test="planIds != null">
+			AND t.plan_id in <foreach collection="planIds" item="pid" open="(" close=")" separator=",">#{pid}</foreach>
+		</if>
+		<if test="planId != null">
+			AND t.plan_id = #{planId}
+		</if>
+		<if test="status != null">
+			AND t.task_status in <foreach collection="status" item="sta" open="(" close=")" separator=",">#{sta}</foreach>
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="corpPath != null">
+			AND c.corp_path like concat('%',#{corpPath},'%')
+		</if>
+		AND t.plan_id IN (
+			SELECT
+				t2.plan_id
+			FROM result_by_domain d
+			INNER JOIN task t2 ON t2.corp_id = d.corp_id AND t2.task_id = d.task_id
+			WHERE t2.plan_id IS NOT NULL
+			AND t2.type != 2
+			GROUP BY t2.plan_id
+		)
+		AND t.plan_id IS NOT NULL 
+	</sql>
+	
+	<select id="selectViewDeliveryTasksByCorpId" resultMap="Domain" parameterType="java.util.Map">
+		SELECT
+			t.task_id taskId,
+			t.plan_id planId,
+			t.corp_id corpId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.task_status status,
+			t.delivery_time deliveryTime,
+			t.create_time createTime,
+			t.type taskType,
+			c.corp_path corpPath,
+			(select count(*) from template_setting s where s.parent_id = t.template_id) touchCount
+		FROM
+			view_delivery_task t 
+			left join corp c on c.corp_id = t.corp_id 
+		<include refid="where_view"/>
+		ORDER BY t.modify_time DESC
+		<if test="pageSize != 0 and pageSize!=null and startIndex!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<select id="selectViewDeliveryTaskCount" resultType="long" parameterType="java.util.Map">
+		SELECT
+			count(*)
+		FROM
+		view_delivery_task t 
+		left join corp c on c.corp_id = t.corp_id 
+		<include refid="where_view"/>
+	</select>
+	<sql id="where_view">
+		where 1=1 
+		<if test="taskName != null">
+			AND t.task_name like concat('%',#{taskName},'%')
+		</if>
+		<if test="corpId != null">
+			AND t.corp_id = #{corpId}
+		</if>
+		<if test="taskId != null">
+			AND t.task_id = #{taskId}
+		</if>
+		<if test="taskIds != null">
+			AND t.task_id in <foreach collection="taskIds" item="taskId" open="(" close=")" separator=",">#{taskId}</foreach>
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="types != null">
+			AND t.type in <foreach collection="types" item="type" open="(" close=")" separator=",">#{type}</foreach>
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="userId != null">
+			AND t.user_id = #{userId}
+		</if>
+		<if test="userIdLike != null">
+			AND t.user_id like concat('%',#{userIdLike},'%')
+		</if>
+		<if test="corpPath != null">
+			AND c.corp_path like concat('%',#{corpPath},'%')
+		</if>
+	</sql>
+	
+	<select id="selectApiGroupsByUserList" resultMap="Domain" parameterType="map">
+		SELECT 
+		d.corp_id corpId,
+		t.user_id userId,
+		t.label_status labelStatus,
+		t.type taskType,
+		<include refid="sum"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t on d.corp_id = t.corp_id and d.task_id = t.task_id
+		<include refid="where_api_groups"/>
+		GROUP BY t.corp_id
+		order by t.create_time desc
+	</select>
+	<select id="selectApiGroupsByUserCount" resultType="long" parameterType="map">
+		SELECT COUNT(*)
+		from (
+		SELECT 
+		d.corp_id
+		FROM
+		result_by_domain d
+		INNER JOIN task t on d.corp_id = t.corp_id and d.task_id = t.task_id
+		<include refid="where_api_groups"/>
+		group by d.corp_id) c
+	</select>
+	<select id="selectApiGroupsByTaskList" resultMap="Domain" parameterType="map">
+		SELECT 
+			t.task_id taskId,
+			t.subject subject,
+			t.task_name taskName,
+			t.user_id userId,
+			t.create_time createTime,
+			t.label_status labelStatus,
+			t.type taskType,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t on d.corp_id = t.corp_id and d.task_id = t.task_id
+		<include refid="where_api_groups"/>
+		and d.sent_count > 0
+		order by t.create_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	<select id="selectApiGroupsByTaskCount" resultType="long" parameterType="map">
+		SELECT 
+		COUNT(*)
+		FROM
+		result_by_domain d
+		INNER JOIN task t on d.corp_id = t.corp_id and d.task_id = t.task_id
+		<include refid="where_api_groups"/>
+		and d.sent_count > 0
+	</select>
+	<sql id="where_api_groups">
+		where 1=1 
+		<if test="emailDomain != null">
+			AND d.email_domain = #{emailDomain}
+		</if>
+		<if test="userId != null">
+			AND t.user_id = #{userId}
+		</if>
+		<if test="userIdLike != null">
+			AND t.user_id like concat('%',#{userIdLike},'%')
+		</if>
+		<if test="corpId != null">
+			AND t.corp_id = #{corpId}
+		</if>
+		<if test="corpIds != null">
+			AND t.corp_id in <foreach collection="corpIds" item="corpId" open="(" close=")" separator=",">#{corpId}</foreach>
+		</if>
+		
+		<if test="taskIds != null">
+			AND t.task_id in <foreach collection="taskIds" item="taskId" open="(" close=")" separator=",">#{taskId}</foreach>
+		</if>
+		
+		<if test="taskName != null">
+			AND t.task_name like concat('%',#{taskName},'%')
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="beginTimeStr1 != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr1}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr1 != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr1}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="labelStatus != null">
+			<choose>
+				<when test="labelStatus == '0'">
+					AND (t.label_status = 0 or t.label_status is null)
+				</when>
+				<otherwise>
+					AND t.label_status = #{labelStatus}
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	
+	<select id="selectResultList" resultMap="Domain" parameterType="map">
+		SELECT 
+		t.task_id taskId,
+		t.task_name taskName,
+		t.subject subject,
+		t.plan_id planId,
+		t.user_id userId,
+		t.label_status labelStatus,
+		t.task_status status,
+		c.company companyName,
+		t.create_time createTime,
+		t.type taskType,
+		(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		LEFT JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		LEFT JOIN corp c ON d.corp_id = c.corp_id
+		<include refid="where"/>
+		and t.plan_id is null
+		order by t.modify_time desc
+		<if test="startIndex != null and pageSize!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	<select id="selectResultCount" resultType="long" parameterType="map">
+		SELECT 
+		COUNT(*)
+		FROM
+		result_by_domain d
+		LEFT JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		LEFT JOIN corp c on d.corp_id = c.corp_id
+		<include refid="where"/>
+		and d.sent_count > 0
+		and t.plan_id is null
+	</select>
+	
+	<!-- 触发任务 -->
+	<sql id="touch_son_sum">
+		rd.task_id task_id, rd.corp_id corp_id, rd.template_id template_id,
+		sum(rd.sent_count) sent_count, sum(rd.reach_count) reach_count, sum(rd.read_count) read_count,
+		sum(rd.read_user_count) read_user_count, sum(rd.click_count) click_count,
+		sum(rd.click_user_count) click_user_count, sum(rd.unsubscribe_count) unsubscribe_count, 
+		sum(rd.forward_count) forward_count, sum(soft_bounce_count) soft_bounce_count, 
+		sum(hard_bounce_count) hard_bounce_count, sum(0) beforeNoneCount,
+		sum(rd.none_exist_count) none_exist_count, sum(rd.none_exist_count1) none_exist_count1, 
+		sum(rd.dns_fail_count) dns_fail_count, sum(rd.spam_garbage_count) spam_garbage_count
+	</sql>
+	<select id="selectTouchSum" parameterType="map" resultMap="Domain">
+		SELECT 
+			MAX(t.task_id) touchId,
+			t.corp_id corpId,
+			t.user_id userId,
+			t.template_id templateId,
+			t.template_name templateName,
+			t.parent_id taskId,
+			sum(t.touch_count) touchCount,
+			<include refid="sum"/>
+		FROM
+			touch t
+		INNER JOIN result_by_domain d on d.task_id = t.task_id AND d.template_id = t.template_id
+		<include refid="where"/>
+		and d.sent_count > 0
+	</select>
+	
+	<select id="selectTouchList" parameterType="map" resultMap="Domain">
+		SELECT 
+			MAX(t.task_id) touchId,
+			t.corp_id corpId,
+			t.user_id userId,
+			t.template_id templateId,
+			t.template_name templateName,
+			t.parent_id taskId,
+			sum(t.touch_count) touchCount,
+			<include refid="sum" />
+		FROM
+			touch t
+		INNER JOIN (
+			select
+				<include refid="touch_son_sum" />
+			from 
+				result_by_domain rd group by rd.task_id, rd.corp_id, rd.template_id
+			) d 
+		ON d.task_id = t.task_id AND d.template_id = t.template_id
+		<include refid="where" />
+			and d.sent_count > 0
+			group by t.user_id, t.template_id
+	</select>
+	<select id="selectCampaignTouchList" parameterType="map" resultMap="Domain">
+		SELECT 
+			MAX(t.task_id) touchId,
+			t.corp_id corpId,
+			t.user_id userId,
+			t.template_id templateId,
+			t.template_name templateName,
+			t.parent_id taskId,
+			tk.task_name taskName,
+			sum(t.touch_count) touchCount,
+			<include refid="sum" />
+		FROM
+			touch t
+		INNER JOIN (
+			select
+				<include refid="touch_son_sum" />
+			from result_by_domain rd group by rd.task_id,rd.corp_id,rd.template_id) d on d.task_id = t.task_id AND d.template_id = t.template_id
+		INNER JOIN task tk on t.parent_id=tk.task_id
+		<include refid="where" />
+			and d.sent_count > 0
+			group by t.user_id, t.template_id, t.parent_id
+	</select>
+	
+	<select id="selectDomainSum" parameterType="map" resultMap="Domain">
+		select
+			t.task_name taskName,
+			(select c.company from corp c where c.corp_id = d.corp_id) companyName,
+			t.create_time createTime,
+			t.user_id userId,
+			d.task_id taskId,
+			<include refid="sum" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<include refid="where" />
+			and d.sent_count > 0
+			group by t.user_id, t.task_id
+	</select>
+	
+	<select id="selectByDomainStat" parameterType="map" resultMap="Domain">
+		SELECT 
+			d.corp_id corpId,
+			d.task_id taskId,
+			d.template_id templateId,
+		<include refid="sum"/>
+		FROM
+			result_by_domain d
+		<include refid="where"/>
+		and d.sent_count > 0
+	</select>
+	<select id="selectByDomainSumByCorp" parameterType="map" resultMap="Domain">
+		SELECT 
+			d.corp_id corpId,
+			d.task_id taskId,
+			d.template_id templateId,
+		<include refid="sum"/>
+		FROM
+			result_by_domain d
+		<include refid="where"/>
+		and d.sent_count > 0
+		group by d.corp_id, d.task_id
+	</select>
+	
+	<select id="selectAll" resultMap="Domain" parameterType="map">
+		SELECT 
+		t.task_id taskId,
+		t.subject subject,
+		t.task_name taskName,
+		t.user_id userId,
+		t.task_status status,
+		t.delivery_time deliveryTime,
+		t.create_time createTime,
+		t.type taskType,
+		(select c.company from corp c where c.corp_id = t.corp_id) companyName,
+		<include refid="base_columns"/>
+		FROM
+		result_by_domain d
+		INNER JOIN task t ON t.corp_id = d.corp_id AND t.task_id = d.task_id
+		<include refid="where"/>
+	</select>
+	
+</mapper>
+
+

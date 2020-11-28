@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.CorpMapper">
+	
+	<resultMap id="Corp" type="cn.edm.domain.Corp">
+		<id column="corp_id" property="corpId"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="cos_id" property="cosId"/>
+		<result column="company" property="company"/>
+		<result column="website" property="website"/>
+		<result column="address" property="address"/>
+		<result column="contact" property="contact"/>
+		<result column="email" property="email" />
+		<result column="telephone" property="telephone" />
+		<result column="mobile" property="mobile" />
+		<result column="fax" property="fax"/>
+		<result column="zip" property="zip" />
+		<result column="industry" property="industry" />
+		<result column="email_quantity" property="emailQuantity" />
+		<result column="send_quantity" property="sendQuantity" />
+		<result column="understand" property="understand" />
+		<result column="promise" property="promise" />
+		<result column="agreement" property="agreement" />
+		<result column="way" property="way" />
+		<result column="audit_path" property="auditPath" />
+		<result column="formal_id" property="formalId" />
+		<result column="tested_id" property="testedId" />
+		<result column="status" property="status" />
+		<result column="create_time" property="createTime" />
+		<result column="expire_time" property="expireTime" />
+		<result column="sender_validate" property="senderValidate"/>
+		<result column="join_api" property="joinApi"/>
+		<result column="modify_time" property="modifyTime" />
+		<result column="open_sms" property="openSms" />
+		<result column="corp_path" property="corpPath" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		corp_id,parent_id,cos_id,company,website,address,contact,email,telephone,mobile,
+		fax,zip,industry,email_quantity,send_quantity,understand,promise,agreement,
+		way,audit_path,formal_id,tested_id,status,create_time,expire_time,sender_validate,join_api,
+		modify_time,open_sms,corp_path
+	</sql>
+	
+	<sql id="where">
+		where 1=1 
+		<if test="parentId != null">
+			AND c.parent_id = #{parentId}
+		</if>
+		<if test="company != null">
+			AND c.company like concat('%',#{company},'%')
+		</if>
+		<if test="corpIds != null">
+			AND c.corp_id in <foreach collection="corpIds" item="corpId" open="(" close=")" separator=",">#{corpId}</foreach>
+		</if>
+		<if test="corpId != null">
+			AND c.corp_id = #{corpId}
+		</if>
+		<if test="corpPath != null">
+			AND c.corp_path like concat('%',#{corpPath},'%')
+		</if>
+	</sql>
+	
+	<!-- 根据企业id查询企业 -->
+	<select id="selectByCorpId" resultMap="Corp" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM corp
+		WHERE 
+		corp_id = #{corpId}
+	</select>
+	
+	<!-- 更新企业状态 -->
+	<update id="updateCorpStatus" parameterType="java.util.Map">
+		UPDATE corp c
+		SET c.status = #{status}
+		WHERE 
+		c.status != 3 AND c.corp_id = #{corpId}
+	</update>
+	
+	<!-- 删除企业 -->
+	<delete id="deleteByCorpId" parameterType="java.lang.Integer">
+		DELETE FROM corp WHERE corp_id = #{corpId}
+	</delete>
+	<delete id="deleteCampaignByCorpId" parameterType="java.lang.String">
+	    DELETE FROM campaign WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteCategoryByCorpId" parameterType="java.lang.String">
+	    DELETE FROM category WHERE corp_id = #{corpId};
+	</delete>	
+
+	<delete id="deleteFileByCorpId" parameterType="java.lang.String">
+	    DELETE FROM file WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteFilterByCorpId" parameterType="java.lang.String">
+	    DELETE FROM filter WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteFormByCorpId" parameterType="java.lang.String">
+	    DELETE FROM form WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteLabelHistoryByCorpId" parameterType="java.lang.String">
+	    DELETE FROM label_history WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteLoginHistoryByCorpId" parameterType="java.lang.String">
+	    DELETE FROM login_history WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deletePlanByCorpId" parameterType="java.lang.String">
+	    DELETE FROM plan WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deletePropByCorpId" parameterType="java.lang.String">
+	    DELETE FROM prop WHERE corp_id = #{corpId};
+	</delete>	
+	
+	<delete id="deleteResultByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByBrowserByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_browser WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByDomainByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_domain WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByHourByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_hour WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByLangByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_lang WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByOsByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_os WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByRegionByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_region WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteResultByUrlByCorpId" parameterType="java.lang.String">
+	    DELETE FROM result_by_url WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteRobotByCorpId" parameterType="java.lang.String">
+	    DELETE FROM robot WHERE corp_id = #{corpId};
+	</delete>
+	
+	<delete id="deleteSelectionByCorpId" parameterType="java.lang.String">
+	    DELETE FROM selection WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteSenderByCorpId" parameterType="java.lang.String">
+	    DELETE FROM sender WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteStatHaviorByCorpId" parameterType="java.lang.String">
+	    DELETE FROM stat_havior WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteTagByCorpId" parameterType="java.lang.String">
+	    DELETE FROM tag WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteTaskByCorpId" parameterType="java.lang.String">
+	    DELETE FROM task WHERE corp_id = #{corpId};
+	</delete>	
+	
+	<delete id="deleteTemplateByCorpId" parameterType="java.lang.String">
+	    DELETE FROM template WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteTemplateSettingByCorpId" parameterType="java.lang.String">
+	    DELETE FROM template_setting WHERE corp_id = #{corpId};	
+	</delete>	
+	<delete id="deleteTouchByCorpId" parameterType="java.lang.String">
+	    DELETE FROM touch WHERE corp_id = #{corpId};
+	</delete>	
+	<delete id="deleteTrigerApiByCorpId" parameterType="java.lang.String">
+	    DELETE FROM triger_api WHERE corp_id = #{corpId};
+	</delete>
+	
+	<delete id="deleteUnsubscribeByCorpId" parameterType="java.lang.String">
+	    DELETE FROM unsubscribe WHERE corp_id = #{corpId};
+	</delete>
+	<delete id="deleteUserByCorpId" parameterType="java.lang.String">
+	    DELETE FROM user WHERE corp_id = #{corpId};
+	</delete>
+	
+	 <insert id="insertCorp" parameterType="cn.edm.domain.Corp">
+		insert into corp(
+		    parent_id,
+			cos_id,
+			company,
+			website,
+			address,
+			contact,
+			email,
+			telephone,
+			mobile,
+			fax,
+			zip,
+			industry,
+			email_quantity,
+			send_quantity,
+			understand,
+			promise,
+			agreement,
+			way,
+			audit_path,
+			formal_id,
+			tested_id,
+			status,
+			create_time,
+			expire_time,
+			sender_validate,
+			join_api,
+			open_sms,
+			modify_time,
+			corp_path
+		)values(
+		    #{parentId},
+			#{cosId},
+			#{company},
+			#{website},
+			#{address},
+			#{contact},
+			#{email},
+			#{telephone},
+			#{mobile},
+			#{fax},
+			#{zip},
+			#{industry},
+			#{emailQuantity},
+			#{sendQuantity},
+			#{understand},
+			#{promise},
+			#{agreement},
+			#{way},
+			#{auditPath},
+			#{formalId},
+			#{testedId},
+			#{status},
+			#{createTime},
+			#{expireTime},
+			#{senderValidate},
+			#{joinApi},
+			#{openSms},
+			#{modifyTime},
+			#{corpPath}
+		)
+		<selectKey resultType="java.lang.Integer" keyProperty="corpId">
+			select @@IDENTITY as corp_id
+		</selectKey>
+	</insert>
+	
+	<update id="updateCorp" parameterType="cn.edm.domain.Corp">
+		update corp set 
+			cos_id = #{cosId},
+			company = #{company},
+			website = #{website},
+			address = #{address},
+			contact = #{contact},
+			email = #{email},
+			telephone = #{telephone},
+			mobile = #{mobile},
+			fax = #{fax},
+			zip = #{zip},
+			industry = #{industry},
+			email_quantity = #{emailQuantity},
+			send_quantity = #{sendQuantity},
+			understand = #{understand},
+			promise = #{promise},
+			agreement = #{agreement},
+			way = #{way},
+			audit_path = #{auditPath},
+			formal_id = #{formalId},
+			tested_id = #{testedId},
+			status = #{status},
+			create_time = #{createTime},
+			expire_time = #{expireTime},
+			sender_validate= #{senderValidate},
+			join_api = #{joinApi},
+			open_sms = #{openSms},
+			modify_time = #{modifyTime} ,
+			corp_path = #{corpPath}
+		where corp_id = #{corpId} and status != 3
+	</update>
+	
+	<update id="changeRes" parameterType="map">
+		UPDATE corp SET
+		formal_id = #{resId}
+		WHERE 
+		corp_id IN <foreach collection="corpIdsArray" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+	</update>
+	
+	<select id="isCorpExist" resultMap="Corp" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM corp
+		WHERE 
+		company = #{company}
+		<if test="corpId != null">
+			and corp_id != #{corpId}
+		</if>
+		LIMIT 1
+	</select>
+	
+	<update id="changeSenderValid" parameterType="map">
+		UPDATE corp SET
+		sender_validate = #{senderValidate}
+		WHERE 
+		corp_id = #{corpId}
+	</update>
+	
+	<select id="getSubCorp" resultMap="Corp" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM corp
+		WHERE 
+		parent_id = #{corpId}
+	</select>
+	
+	<select id="getAllCorp" resultMap="Corp" >
+		SELECT
+		<include refid="base_columns"/>
+		FROM corp
+		order by corp_id asc
+	</select>
+	
+	<select id="getCorpList" resultMap="Corp" parameterType="map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM corp c
+		<include refid="where"/>
+		order by corp_id asc
+		<if test="startIndex != null and pageSize!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+	
+	<select id="getCorpCount" resultType="Long" parameterType="map">
+	    SELECT COUNT(*) FROM corp c	
+	    <include refid="where"/>
+	</select>
+	
+</mapper>
+
+

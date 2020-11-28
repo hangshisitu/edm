@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.TriggerMapper">
+	
+	<resultMap id="Trigger" type="cn.edm.domain.Trigger">
+		<id column="task_id" property="taskId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="task_name" property="taskName"/>
+		<result column="subject" property="subject" />
+		<result column="sender_name" property="senderName" />
+		<result column="sender_email" property="senderEmail" />
+		<result column="email_count" property="emailCount" />
+		<result column="resource_id" property="resourceId" />
+<!-- 		<result column="type" property="type" /> -->
+		<result column="create_time" property="createTime" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		task_id,corp_id,template_id,task_name,subject,sender_name,
+		sender_email,email_count,resource_id,create_time
+	</sql>
+	
+	<select id="selectByTaskId" parameterType="int" resultMap="Trigger">
+		select 
+		<include refid="base_columns"/>
+		from triger
+		where 
+		task_id = #{taskId}
+	</select>
+	
+	<select id="selectByParams" parameterType="java.util.Map" resultMap="Trigger">
+		select 
+		<include refid="base_columns"/>
+		from triger
+		<include refid="where"/>
+	</select>
+	
+	<sql id="where">
+		where 1=1
+		<if test="taskId != null">
+			AND task_id = #{taskId}
+		</if>
+		<if test="corpId != null">
+			AND corp_id = #{corpId}
+		</if>
+		<if test="templateId != null">
+			AND template_id = #{templateId}
+		</if>
+	</sql>
+	
+</mapper>
+
+

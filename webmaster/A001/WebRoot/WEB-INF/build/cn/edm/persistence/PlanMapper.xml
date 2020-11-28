@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.PlanMapper">
+	
+	<resultMap id="Plan" type="cn.edm.domain.Plan">
+		<id column="plan_id" property="planId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="user_id" property="userId"/>
+		<result column="cron" property="cron"/>
+		<result column="begin_time" property="beginTime"/>
+		<result column="end_time" property="endTime" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		plan_id, corp_id, user_id, cron, begin_time, end_time
+	</sql>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="planId != null">
+			AND p.plan_id = #{planId}
+		</if>
+		<if test="planIds != null">
+			AND p.plan_id in <foreach collection="planIds" item="pid" open="(" close=")" separator=",">#{pid}</foreach>
+		</if>
+		<if test="userId != null">
+			AND p.user_id = #{userId}
+		</if>
+		<if test="beginTime != null">
+			AND p.begin_time = #{beginTime}
+		</if>
+		<if test="endTime != null">
+			AND p.end_time = #{endTime}
+		</if>
+	</sql>
+	
+	<select id="selectPlan" resultMap="Plan" parameterType="java.util.Map">
+		select 
+			<include refid="base_columns"/>
+		from plan p
+			<include refid="where"/>
+	</select>
+	
+	<select id="selectPlanList" resultMap="Plan" parameterType="java.util.Map">
+		select 
+			<include refid="base_columns"/>
+		from plan p
+			<include refid="where"/>
+		order by plan_id desc
+	</select>
+	
+	<select id="selectPlanCount" resultType="Long" parameterType="java.util.Map">
+		select 
+			count(*)
+		from plan p
+			<include refid="where"/>
+	</select>
+	
+</mapper>
+
+

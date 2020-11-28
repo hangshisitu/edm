@@ -1,0 +1,191 @@
+body{
+	margin:0; 
+	padding:0; 
+	font-size:10pt;
+	font-family: "微软雅黑","宋体",Arial, Helvetica, sans-serif;
+	background:url(../../img/bg.jpg) repeat-x 0 0;
+}
+.limiter{
+	margin:130px auto  0;
+}
+#login{
+	margin:0 auto; 
+	width:370px; 
+	box-shadow: 2px 2px 5px #333;
+}
+#login .lg_top{
+	height:60px;
+	line-height:60px;
+	padding-left:10px;
+	color: #2D5E73;
+	font-size:22px;
+	background: none repeat scroll 0 0 #C5E6EA;
+    border-bottom: 1px solid #B2CCD0;
+}
+#login  img{
+	vertical-align:middle;
+}
+#login .lg_top img{
+	margin: -3px 20px 0 0;
+}
+#login .lg_content{
+	padding-top:1px;
+	background-color:#fff;
+	position:relative;
+	zoom:1;
+}
+h2 {
+    color: #FFFFFF;
+    display: inline;
+    font: bold 24px helvetica,arial,sans-serif;
+    margin-left: 10px;
+}
+#darkbannerwrap {
+    background: url("../../img/aiwrap.png") repeat scroll 0 0 transparent;
+    height: 10px;
+    margin: 0 0 0 -18px; 
+    width: 18px;
+}
+#darkbanner {
+    background: none repeat scroll 0 0 #424242;
+    margin: 15px 0 0 -18px;
+    padding: 8px 10px 10px 40px;
+    position: relative;
+	width:320px;
+}
+#login .lg_bottom{
+	height:15px;
+	background-color:#fff;
+	border-bottom-left-radius:3px;
+	border-bottom-right-radius:3px;
+}
+.item{
+	padding:10px 0 8px 35px; 
+	overflow:hidden;
+}
+input{
+	width:238px; 
+	height:23px; 
+	font-size:12pt;
+	vertical-align:middle;
+}
+.item label{
+	font-weight:bold;
+	font-size:14px;
+}
+#kaptchaimg {
+	cursor:pointer;
+}
+#remenber,#promt{
+	padding:2px 0 2px 95px; 
+}
+#loginbtn{
+	padding-left:95px; 
+	display:inline-block;
+}
+#btn a{
+	display:block; 
+	line-height:25px; 
+	background: url(bt_bg.gif); 
+	border: solid 1px #b6b6b6; 
+	width:65px; float:left;
+	margin-left:44px; 
+	text-decoration:none; 
+	color:#000;
+}
+#loginbtn input{
+	display:block;  
+	float:left; 
+	margin-right:10px;  
+	background-color: #92C97C;
+    border: 1px solid #73B35A;
+    color: #E8F7DF;
+    cursor: pointer;
+    font-weight: bold;
+	font-size:14px;
+	height:29px;
+    line-height: 1;
+	width:90px;
+	border-radius:2px;
+}
+#loginbtn input:hover {
+    background-color: #E8F7DF;
+    border: 1px solid #92C97C;
+    color: #31940C;
+}
+#loginbtn img{
+	display:none; 
+	float:left; 
+	margin-top:3px
+}
+.inx_check{
+	width:auto;
+	height:auto;
+	background:none;
+	border:none;
+	position: relative;
+    top: -1px;
+	*top:1px;
+}
+
+/*错误抖动效果*/
+.wt_shake{
+	-webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+	-ms-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-animation-duration: .8s;
+	-webkit-animation-delay: .2s;
+	-webkit-animation-timing-function: ease;
+	-webkit-animation-fill-mode: both;
+	-moz-animation-duration: .8s;
+	-moz-animation-delay: .2s;
+	-moz-animation-timing-function: ease;
+	-moz-animation-fill-mode: both;
+	-ms-animation-duration: .8s;
+	-ms-animation-delay: .2s;
+	-ms-animation-timing-function: ease;
+	-ms-animation-fill-mode: both;
+	animation-duration: .8s;
+	animation-delay: .2s;
+	animation-timing-function: ease;
+	animation-fill-mode: both;
+}
+.shake{
+	-moz-animation-name: shake;
+	-webkit-animation-name: shake;
+	-ms-animation-name: shake;
+}
+@-moz-keyframes shake {
+	0%, 100% {
+	    -moz-transform: translateX(0px);
+	}
+	10%, 30%, 50%, 70%, 90% {
+	    -moz-transform: translateX(-10px);
+	}
+	20%, 40%, 60%, 80% {
+	    -moz-transform: translateX(10px);
+	}
+}
+@-webkit-keyframes shake {
+	0%, 100% {
+	    -webkit-transform: translateX(0px);
+	}
+	10%, 30%, 50%, 70%, 90% {
+	    -webkit-transform: translateX(-10px);
+	}
+	20%, 40%, 60%, 80% {
+	    -webkit-transform: translateX(10px);
+	}
+}
+@-ms-keyframes shake {
+	0%, 100% {
+	    -ms-transform: translateX(0px);
+	}
+	10%, 30%, 50%, 70%, 90% {
+	    -ms-transform: translateX(-10px);
+	}
+	20%, 40%, 60%, 80% {
+	    -ms-transform: translateX(10px);
+	}
+}

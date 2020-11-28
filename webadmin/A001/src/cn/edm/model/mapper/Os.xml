@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Os">
+
+	<typeAlias alias="os" type="cn.edm.model.Os" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Os.mapperSum">
+		o.os os,
+		sum(o.open_count) openCount,
+		sum(o.click_count) clickCount
+	</sql>
+	
+	<sql id="Os.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskIds">
+			t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+    </sql>
+	
+	<select id="Os.sum" parameterClass="mb" resultClass="os">
+		select
+			<include refid="Os.mapperSum" />
+		from result_by_os o
+		inner join task t on t.corp_id = o.corp_id and t.task_id = o.task_id 
+		<dynamic>
+			<include refid="Os.where" />
+			group by o.os
+			order by o.os asc
+		</dynamic>
+	</select>
+</sqlMap>

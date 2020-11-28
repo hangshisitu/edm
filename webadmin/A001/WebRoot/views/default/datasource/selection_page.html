@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 筛选</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.file.js?${version}"></script>
+<script type="text/javascript">
+var selectionData  = {
+	<#if page.result?? && page.result?size gt 0>
+	<#list page.result as s>
+	<#assign repeat = "未过滤去重" />
+	<#if s.status == 1>
+		<#assign repeat = "已过滤去重" />
+	</#if>
+	${s.selectionId}: {
+	    includes: "${view.value(s.includes, '无')}", 
+	    activeCnd: "${view.active_cnd(s.activeCnd)}", 
+	    inCnd: "${view.in_cnd(s.inCnd)}",
+	    excludes: "${view.value(s.excludes, '无')}",
+	    filter: "${view.value(s.filter, '无')}",
+	    emailCount: "${s.emailCount}",
+	    repeat: "${repeat}"
+	}<#if s_has_next>,</#if>
+	</#list>
+	</#if>
+}
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title">筛选&nbsp;&nbsp;<span>对收件人数据进行筛选（最近<font class="green">7</font>天筛选的记录）</span></h1>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个筛选</p>
+			</div>
+			<ul class="btn">
+			   <#if view.funcAuth('datasource/selection/page', 2)>
+				<li>
+					<a class="btn_icon btn_icon_add" href="export">筛选</a>
+				</li>
+			   </#if>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25">编号</th>
+					<th width="20%">筛选条件</th>
+					<th>存储类型</th>
+					<th>收件人数</th>
+					<th>状态</th>
+					<th>创建人</th>
+					<th width="12%">创建时间</th>
+					<th>操作</th>
+				</tr>
+				<#assign i = 0 />
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as s>
+					<#assign i = i + 1 />
+				<tr>
+					<td>${i + page.offset}<input type="hidden" name="checkedIds" value="${s.selectionId}" /></td>
+					<td><a class="list_select" data-id="${s.selectionId}" href="javascript:void(0);">${s.includes}</a></td>
+					<td>${view.selection_type(s.type)}</td>
+					<td><#if s.status == 1>${s.emailCount}<#else>-</#if></td>
+					<td><#if s.status == 0>处理中<#else>处理完成</#if></td>
+					<td>${s.userId}</td>
+					<td><#if s.createTime??>${s.createTime?datetime}</#if></td>
+					<td class="edit">
+						<ul class="f_ul">
+						   <#if view.funcAuth('datasource/selection/page', 1)>
+							<#if s.status == 1>
+							<#if [0,1]?seq_contains(s.type)>
+							<li><a href="${ctx}/datasource/recipient/page?tagId=${s.tagId}">查看</a></li>
+							<#else>
+							<li><a href="download?checkedIds=${s.selectionId}&token=${token}">下载</a></li>
+							</#if>
+							<#else>-</#if>
+						   </#if>
+						</ul>
+					</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data"><#if page.search>没有匹配的筛选列表！<#else>您还没有筛选列表
+			   <#if view.funcAuth('datasource/selection/page', 2)>
+			            ，现在就<a href="export" class="green">筛选</a>一个
+			   </#if>        
+			 </#if></div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

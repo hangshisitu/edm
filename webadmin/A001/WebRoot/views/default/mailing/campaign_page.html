@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>活动 &nbsp;&nbsp;<span>对任务进行归类管理，便于查询活动下的整体任务数据</span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>活动名称</li>
+				<li>
+					<input type="text" name="campaignName" value="${xss.filter(mb.campaignName)}" maxlength="20" />
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个活动</p>
+			</div>
+			<ul class="btn">
+				<#if view.funcAuth('mailing/campaign/page', 2)>
+				<li>
+					<a class="btn_icon btn_icon_add" href="javascript:open_msg('add',0);">新建活动</a>
+				</li>
+				</#if>
+				<#if view.funcAuth('mailing/task/page', 2) && view.funcAuth('mailing/campaign/page', 2)>
+				<li>
+					<a class="btn_icon btn_icon_imp" href="import">导入任务</a>
+				</li>
+				</#if>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th>活动名称</th>
+					<th>活动ID</th>
+					<th>描述</th>
+					<th>任务数</th>
+					<th>创建人</th>
+					<th width="12%">创建时间</th>
+					<th width="12%">更新时间</th>
+					<th width="16%">操作</th>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as c>
+				<tr>
+					<td>
+						<input type="hidden" name="checkedIds" value="${c.campaignId}" />
+						<a href="${ctx}/mailing/task/page?action=campaign&campaignId=${c.campaignId}" title="${xss.filter(c.campaignName)}">${xss.filter(c.campaignName)}</a>
+					</td>
+					<td title="${c.campaignId}">${c.campaignId}</td>
+					<td title="${xss.filter(c.campaignDesc)}">${xss.filter(c.campaignDesc)}</td>
+					<td><a href="${ctx}/mailing/task/page?action=campaign&campaignId=${c.campaignId}">${c.taskCount?string(",###")}</a></td>
+					<td>${c.userId}</td>
+					<td><#if c.createTime??>${c.createTime?datetime}</#if></td>
+					<td><#if c.modifyTime??>${c.modifyTime?datetime}</#if></td>
+					<td class="edit">
+						<ul class="f_ul">
+							<#if view.funcAuth('report/campaign/page', 1)>
+								<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${c.campaignId}">报告</a></li>
+							</#if>
+							<#if view.funcAuth('mailing/campaign/page', 3)>
+								<li>
+								<#if currentUser.username == c.userId>
+									<a href="javascript:open_msg('add?campaignId=${c.campaignId}',0);">修改</a>
+									<#else>
+									<font color="#f5f5f5">修改</font>
+									</#if>
+									</li>
+									
+							</#if>
+							<#if view.funcAuth('mailing/campaign/page', 4)>
+								<li>
+								<#if currentUser.username == c.userId>
+								<a href="javascript:open_msg('del?checkedIds=${c.campaignId}',0);">删除</a>
+								<#else>
+									<font color="#f5f5f5">删除</font>
+									</#if>
+								</li>
+							</#if>
+						</ul>
+					</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data"><#if page.search>没有匹配的活动列表！<#else>您还没有活动，现在就<a href="javascript:open_msg('add',0);" class="green">创建</a>一个</#if></div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

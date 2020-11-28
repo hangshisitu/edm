@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 预览</title>
+<style>
+	body {
+		margin: 0;
+		padding: 0;
+	}
+	#header *, #footer * {
+		margin: 0;
+		padding: 0;
+	}
+	#header, #footer {
+		font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+		line-height: 20px;
+	}
+	#header .ribbon, #footer .ribbon {
+		background-color: #EFEFEF;
+		padding: 5px 15px;
+		
+	}
+	#header .ribbon {
+		margin-bottom: 20px;
+	}
+	#footer .ribbon {
+		margin-top: 20px;
+	}
+	#header .clearfix, #footer .clearfix {
+		overflow: hidden;
+		_zoom: 1;
+	}
+	.btn {
+	    border: medium none;
+	    cursor: pointer;
+	    display: block;
+		text-align: center;
+	    height: 24px;
+	    width: 60px;
+	    background-color: #5DA6D7;
+	    font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+	    color: white;
+	}
+</style>
+<script src="${ctx}/static/js/jquery/jquery-1.7.1.min.js?${version}"></script>
+</head>
+<body>
+	<div id="header">
+		<div class="ribbon clearfix">
+			<p>主　题：${xss.filter(subject)}</p>
+			<p>发件人：${xss.filter(senderName?default("邮箱"))}&lt${xss.filter(senderEmail?default("邮箱"))}&gt</p>
+			<#assign receiverEmail = "邮箱" />
+	    	<#if receiver == "email_pre">
+	    		<#assign receiverEmail = "邮箱前缀" />
+	    	<#elseif receiver == "true_name">
+	    		<#assign receiverEmail = "姓名" />
+	    	<#elseif receiver == "nick_name">
+	    		<#assign receiverEmail = "昵称" />
+	    	</#if>
+			<p>收件人：${receiverEmail}&lt邮箱&gt</p>
+			<p>时　间：<#if createTime??>${createTime?datetime}</#if></p>
+			<#if settingList?? && settingList?size gt 0>
+			<p>模　板：<select id="templateSelect" onchange="window.open(this.options[this.selectedIndex].value)" style="min-width: 280px;">
+					<option value='#'>（主模板）${templateName}</option>
+					<#if action?? && (action == "touch" || action == "task")>
+					<#list settingList as s>
+					<option value='/mailing/template/view?action=touch&touchId=${100000000+taskId}&templateId=${s.templateId}'>（子模板）${s.templateName}</option>
+					</#list>
+					<#else>
+					<#list settingList as s>
+					<option value='/mailing/template/view?templateId=${s.templateId}'>（子模板）${s.templateName}</option>
+					</#list>
+					</#if>
+				</select>
+			</p>
+			</#if>
+			<#if adapter.joinPhone == 1 || adapter.joinSms == 1>
+			<p>终　端：<select style="width:150px" id="deviceSelect"><option value="0">PC</option>
+			<#if adapter.joinPhone == 1>
+			<option value="1">Phone</option>
+			</#if>
+			<#if adapter.joinSms == 1>
+			<option value="2">短信</option>
+			</#if>
+			</select>
+			</p>
+			</#if>
+		</div>
+	</div>
+	${content}
+	<div id="footer">
+		<div class="ribbon clearfix">
+			<input type="button" class="btn" value="关闭" onclick="javascript:closeWin()"/>
+		</div>
+	</div>
+	<script>
+	function closeWin(){
+		if(navigator.userAgent.indexOf("Chrome") >0 ){
+			window.close();
+		}else{
+		    window.open('about:blank','_self').close();
+		}
+	}
+	
+	$(document).ready(function(){
+		$("#deviceSelect").val("${device}");
+		
+		$("#deviceSelect").change(function(){
+			var url = "/mailing/template/view?templateId=${templateId}";
+			<#if action??>
+				<#if action == "task">
+					url = "/mailing/template/view?action=task&taskId=${taskId}";
+				<#elseif action == "audit">
+					url = "/mailing/template/view?action=audit&taskId=${taskId}";
+				<#elseif action == "touch">
+					url = "/mailing/template/view?action=touch&touchId=${touchId}&templateId=${templateId}"; // 读当前页面url
+				</#if>
+			</#if>
+			
+			/*
+			if($("#templateSelect").length > 0 && $("#templateSelect").val() != "#") {
+				url = $("#templateSelect").val();
+			}
+			*/
+			
+			url += "&device=" + $("#deviceSelect").val();
+			window.location.href = url;
+		});
+	});
+	</script>
+	
+</body>
+</html>

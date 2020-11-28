@@ -1,0 +1,87 @@
+<script type="text/javascript">
+var m = "${m}";
+var t = $("input[name=t]").val();
+var skipUrl = "/mailing/task/page";
+
+var headers = {};
+headers['token'] = "${token}";
+
+if(t != "all") {
+	if(m == "cancel" || m == "stop") {
+		skipUrl = "/mailing/task/page?m=completed";
+	} else if(m == "pause" || m == "restart") {
+		skipUrl = "/mailing/task/page?m=processing";
+	}
+}
+
+$(document).ready(function() {
+	$('#common').ajaxForm({
+		url: '${m}',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json',
+		beforeSubmit: function(formData, jqForm, options) {
+			loading(".msg_content",".load_img_open");
+		},
+		success: function(data) {
+			clearInterval(time_id);
+			
+			if (data.code == 1) {
+				time_id = setInterval(function() { callback() }, 2000);
+			} else {
+				$(".msg_ul .err").html(data.message);
+				del_loading(".load_img_open");
+			}
+		}
+	}); 
+});
+
+function callback() {
+	$.ajax({
+		url: "/mailing/task/callback?m=${m}&taskId=${value}&token=${token}",
+		type: "post",
+		headers: headers,
+		dataType: "json",
+		success: function(data) {
+			if (data.code == 1) {
+				if (data.status != $("input[name=status]").val()) {
+					del_loading(".load_img_open");
+					close_msg();
+					error_message(data.message, 0, 0, 1000, skipUrl);
+				}
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				clearInterval(time_id);
+				del_loading(".load_img_open");
+			}
+		}					
+	});
+}
+</script>
+<form id="common" action="${m}" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="t" value="${t}" />
+	<input type="hidden" name="${name}" value="${value}" />
+	<input type="hidden" name="status" value="${status}" />
+	<div class="msg_content">
+		<h1 class="title">${operate}${message}</h1>
+		<ul class="msg_ul">
+			<li>您确定${operate}“<span class="green">${xss.filter(checkedName)}</span>”吗？</li>
+			<li class="err"></li>
+		</ul>
+		<div class="msg_foot m_t20 clearfix">
+			<ul class="f_l">
+				<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+			<ul class="msg_btn">
+				<li>
+					<input type="submit" value="确定" class="input_yes" />
+				</li>
+				<li>
+					<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+				</li>
+			</ul>
+		</div>
+	</div>
+</form>

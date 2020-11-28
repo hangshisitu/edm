@@ -1,0 +1,47 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	$('#common').ajaxForm({
+		url: 'passed',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json',
+		success: function(data) {
+			if (data.code == 1) {
+				$(".main_tr_" + data.taskId).remove();
+				del_loading();
+				close_msg();
+				error_message(data.message, 0, 0, 1000, '/mailing/audit/page?m=completed');
+			} else {
+				 $(".msg_ul .err").html(data.message); 
+				 del_loading();
+			}
+		}   
+	}); 
+}); 
+</script>
+<form id="common" action="passed" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="taskId" value="${taskId}" />
+	<div class="msg_content">
+		<h1 class="title">审核通过</h1>
+		<ul class="msg_ul">
+			<#if checkedName??>
+			<li>您确定审核“<span class="green">${xss.filter(checkedName)}</span>”通过吗？审核后无法恢复。</li>
+			<#else>
+			<li>您确定审核所选任务通过吗？审核后无法恢复。</li>
+			</#if>
+			<li class="err"></li>
+		</ul>
+		<ul class="msg_btn clearfix m_t20">
+			<li>
+				<input type="submit" value="确定" class="input_yes" />
+			</li>
+			<li>
+				<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+			</li>
+		</ul>
+	</div>
+</form>

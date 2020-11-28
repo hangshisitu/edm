@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.LabelCategoryMapper">
+	
+	<resultMap id="LabelCategory" type="cn.edm.domain.LabelCategory">
+		<result column="category_id" property="categoryId"/>
+		<result column="category_name" property="categoryName"/>
+	</resultMap>
+	
+	<sql id="base_columns">
+		category_id,category_name
+	</sql>
+	
+	<select id="selectAll" resultMap="LabelCategory">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM label_category
+		ORDER BY category_id ASC
+	</select>
+	
+	<select id="selectById" resultMap="LabelCategory" parameterType="int">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM label_category
+		WHERE 
+		category_id = #{id}
+	</select>
+	
+</mapper>
+
+

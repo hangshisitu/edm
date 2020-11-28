@@ -1,0 +1,111 @@
+<script>
+$(function(){
+	$('#im_type_list').UIselect({
+		width: 110,
+		id_id: "#imTypeId",
+		arrdata: new Array(["red", "红名单"], ["black", "黑名单"], ["refuse", "拒收"], ["expose", "举报"])
+	});
+	
+	//导入
+	$('#importForm').ajaxForm({
+		url: '/filter/selection/import',
+		type: 'post',
+		resetForm: false,
+		dataType: 'json',
+		beforeSubmit: function(formData, jqForm, options) {
+			$('#importForm').find('.err').html('');
+			var form = jqForm[0]; 
+			if(!form.file.value){
+				$('#importForm').find('.err').html('请选择文件');
+				return false;
+			}
+			if(!form.imTypeId.value){
+				$('#importForm').find('.err').html('请选择类别');
+				return false;
+			}
+		},
+		success: function(data) {	
+			if(data.code == 1) {		
+				var sum = data.counter.end - data.counter.start;
+				$('#importForm').find('.err').html('<span style="color:green">过滤重后成功导入:'+sum+'个</span>');
+				setTimeout(function(){
+					location.reload(true);
+				},1500);	
+			} else {
+				$('#importForm').find('.err').html(data.message);
+			}
+		},
+		error: function(){
+			$('#importForm').find('.err').html('提交失败，请重试');
+			location.reload(true);
+		}  
+	});
+});
+</script>
+
+<div style="width:400px" class="limiter">
+	<div class="pop_title">导入</div>
+	<div class="pop_content">
+		<form id="importForm" method="post" action="/filter/selection/import" autocomplete="off" enctype="multipart/form-data">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" value="GB2312" name="charset"/>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" style="" class="edit_tab">
+				<tbody>
+					<tr>
+						<td width="62">
+							选择文件
+						</td>
+						<td width='10' class='red'>*</td>
+						<td>
+							<input class="input_txt" type="file" name="file">
+						</td>
+					</tr>
+					<tr>
+						<td width="62">
+							&nbsp;
+						</td>
+						<td width='10' class='red'>&nbsp;</td>
+						<td valign='top'>
+							<span class='f666'>文件的格式为xls\xlsx\csv\txt</span>
+						</td>
+					</tr>
+					<tr>
+						<td width="62">
+							描述
+						</td>
+						<td width='10' class='red'>&nbsp;</td>
+						<td>
+							<input class="input_txt" type="text" maxlength="60" name="desc">
+						</td>
+					</tr>
+					<tr>
+						<td>
+							类型
+						</td>
+						<td width='10' class='red'>*</td>
+						<td>
+							<a style="width:240px" id='im_type_list' class="a_select b_select"></a>
+							<input type='hidden' id='imTypeId' name='type' value="${type}" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tbody>
+					<tr>
+						<td width="75">&nbsp;</td>
+						<td><span class="err"></span>
+						<ul class="f_ul">
+							<li>
+								<input type="submit" value="确定" class="input_yes" />
+							</li>
+							<li>
+								<input type="button" value="取消" onclick="close_msg()" class="input_no" />
+							</li>
+						</ul></td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
+</div>

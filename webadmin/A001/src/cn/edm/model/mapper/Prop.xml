@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Prop">
+
+	<typeAlias alias="prop" type="cn.edm.model.Prop" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Prop.mapper">
+		p.prop_id propId,
+		p.corp_id corpId,
+		p.user_id userId,
+		p.prop_name propName,
+		p.prop_desc propDesc,
+		p.type type,
+		p.length length,
+		p.required required,
+		p.default_value defaultValue,
+		p.relation relation,
+		p.create_time createTime,
+		p.modify_time modifyTime
+	</sql>
+	
+	<sql id="Prop.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			p.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			p.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			p.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="propId">
+			p.prop_id = #propId#
+		</isNotNull>
+		<isNotNull prepend="and" property="propIds">
+			p.prop_id in <iterate property="propIds" open="(" close=")" conjunction=",">#propIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="propNames">
+			p.prop_name in <iterate property="propNames" open="(" close=")" conjunction=",">#propNames[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="propName">
+			<isEqual property="nameCnd" compareValue="eq">
+				p.prop_name = #propName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				(
+				p.prop_name like concat('%', #propName#, '%')
+				<isNotNull prepend="or" property="propVals">
+				p.prop_name in <iterate property="propVals" open="(" close=")" conjunction=",">#propVals[]#</iterate>
+				</isNotNull>
+				)
+				<isNotNull prepend="and" property="propKeys">
+				p.prop_name not in <iterate property="propKeys" open="(" close=")" conjunction=",">#propKeys[]#</iterate>
+				</isNotNull>
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ p.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ p.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Prop.save" parameterClass="prop">
+		insert into prop (
+			corp_id,
+			user_id,
+			prop_name,
+			prop_desc,
+			type,
+			length,
+			required,
+			default_value,
+			relation,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#propName#,
+			#propDesc#,
+			#type#,
+			#length#,
+			#required#,
+			#defaultValue#,
+			#relation#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="propId">
+			select @@IDENTITY as prop_id
+		</selectKey>
+	</insert>
+	
+	<insert id="Prop.batchSave" parameterClass="List">
+		insert ignore into prop (
+			corp_id,
+			user_id,
+			prop_name,
+			prop_desc,
+			type,
+			length,
+			required,
+			default_value,
+			relation,
+			create_time,
+			modify_time
+		) 
+		values 
+		<iterate conjunction=",">
+		(
+			#props[].corpId#,
+			#props[].userId#,
+			#props[].propName#,
+			#props[].propDesc#,
+			#props[].type#,
+			#props[].length#,
+			#props[].required#,
+			#props[].defaultValue#,
+			#props[].relation#,
+			now(),
+			now()
+		)
+		</iterate>
+	</insert>
+	
+	<update id="Prop.update" parameterClass="prop">
+		update prop p set
+			p.corp_id = #corpId#,
+			p.prop_name = #propName#,
+			p.prop_desc = #propDesc#,
+			p.type = #type#,
+			p.length = #length#,
+			p.required = #required#,
+			p.default_value = #defaultValue#,
+			p.relation = #relation#,
+			p.modify_time = now()
+		where p.user_id = #userId# and p.prop_id = #propId#
+	</update>
+	
+	<delete id="Prop.delete" parameterClass="mb">
+		delete from prop 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="propId">
+				prop_id = #propId#
+			</isNotNull>
+			<isNotNull prepend="and" property="propIds">
+				prop_id in <iterate property="propIds" open="(" close=")" conjunction=",">#propIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Prop.query" parameterClass="mb" resultClass="prop">
+		select
+			<include refid="Prop.mapper" />
+		from prop p
+		<dynamic>
+			<include refid="Prop.where" />
+		</dynamic>
+	</select>
+
+	<select id="Prop.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from prop p
+		<dynamic>
+			<include refid="Prop.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Prop.index" parameterClass="mb" resultClass="prop">
+		select
+			<include refid="Prop.mapper" />
+		from prop p
+		<dynamic>
+			<include refid="Prop.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by p.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+</sqlMap>

@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Setting">
+
+	<typeAlias alias="setting" type="cn.edm.model.Setting" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="TaskSetting.mapper">
+		s.task_id taskId,
+		s.ad ad,
+		s.send_code sendCode,
+		s.sms sms,
+		s.replier replier,
+		s.rand rand,
+		s.robot robot,
+		s.tag_ids tagIds,
+		s.unsubscribe_id unsubscribeId,
+		s.label_ids labelIds,
+		s.unsubscribe unsubscribe,
+		s.template template,
+		s.campaign campaign
+	</sql>
+	
+	<sql id="TemplateSetting.mapper">
+		s.corp_id corpId,
+		s.parent_id parentId,
+		s.template_id templateId,
+		s.touch_urls touchUrls,
+		s.after_minutes afterMinutes,
+		s.subject subject,
+		s.device_type deviceType
+	</sql>
+	
+	<sql id="TouchSetting.mapper">
+		s.task_id taskId,
+		s.parent_id parentId,
+		s.template_id templateId,
+		s.parent_name parentName,
+		s.template_name templateName,
+		s.touch_urls touchUrls,
+		s.subject subject,
+		s.after_minutes afterMinutes,
+		s.device_type deviceType
+	</sql>
+	
+	<sql id="TaskSetting.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="taskId">
+			s.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			t.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="statuses">
+			t.task_status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+		</isNotNull>
+    </sql>
+    
+    <sql id="TemplateSetting.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			s.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			s.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="parentId">
+			s.parent_id = #parentId#
+		</isNotNull>
+		<isNotNull prepend="and" property="parentIds">
+			s.parent_id in <iterate property="parentIds" open="(" close=")" conjunction=",">#parentIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			s.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateIds">
+			s.template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="deviceType">
+			s.device_type = #deviceType#
+		</isNotNull>
+    </sql>
+    <sql id="TouchSetting.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			s.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="touchParentId">
+			t.parent_id = #touchParentId#
+		</isNotNull>
+		<isNotNull prepend="and" property="touchParentIds">
+			t.parent_id in <iterate property="touchParentIds" open="(" close=")" conjunction=",">#touchParentIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="parentId">
+			s.parent_id = #parentId#
+		</isNotNull>
+		<isNotNull prepend="and" property="parentIds">
+			s.parent_id in <iterate property="parentIds" open="(" close=")" conjunction=",">#parentIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			s.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateIds">
+			s.template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="deviceType">
+			s.device_type = #deviceType#
+		</isNotNull>
+    </sql>
+    
+	<insert id="TaskSetting.save" parameterClass="setting">
+		insert into task_setting (
+			task_id,
+			ad,
+			send_code,
+			sms,
+			replier,
+			rand,
+			robot,
+			tag_ids,
+			unsubscribe_id,
+			label_ids,
+			unsubscribe,
+			template,
+			campaign
+		) values (
+			#taskId#,
+			#ad#,
+			#sendCode#,
+			#sms#,
+			#replier#,
+			#rand#,
+			#robot#,
+			#tagIds#,
+			#unsubscribeId#,
+			#labelIds#,
+			#unsubscribe#,
+			#template#,
+			#campaign#
+		)
+		on duplicate key update
+		ad = values(ad),
+		send_code = values(send_code),
+		sms = values(sms),
+		replier = values(replier),
+		rand = values(rand),
+		robot = values(robot),
+		tag_ids = values(tag_ids),
+		unsubscribe_id = values(unsubscribe_id),
+		label_ids = values(label_ids),
+		unsubscribe = values(unsubscribe),
+		template = values(template),
+		campaign = values(campaign)
+	</insert>
+	
+	<insert id="TemplateSetting.batchSave" parameterClass="List">
+		insert into template_setting (
+			corp_id,
+			user_id,
+			parent_id,
+			template_id,
+			touch_urls,
+			after_minutes,
+			subject,
+			device_type
+		) values 
+		<iterate conjunction=",">
+		(
+			#list[].corpId#,
+			#list[].userId#,
+			#list[].parentId#,
+			#list[].templateId#,
+			#list[].touchUrls#,
+			#list[].afterMinutes#,
+			#list[].subject#,
+			#list[].deviceType#
+		)
+		</iterate>
+		on duplicate key update
+		touch_urls = values(touch_urls),
+		after_minutes = values(after_minutes),
+		subject = values(subject),
+		device_type = values(device_type)
+	</insert>
+	
+	<insert id="TouchSetting.batchSave" parameterClass="List">
+		insert into touch_setting (
+			task_id,
+			parent_id,
+			template_id,
+			parent_name,
+			template_name,
+			touch_urls,
+			subject,
+			after_minutes,
+			device_type 
+		) values 
+		<iterate conjunction=",">
+		(
+			#list[].taskId#,
+			#list[].parentId#,
+			#list[].templateId#,
+			#list[].parentName#,
+			#list[].templateName#,
+			#list[].touchUrls#,
+			#list[].subject#,
+			#list[].afterMinutes#,
+			#list[].deviceType#
+		)
+		</iterate>
+		on duplicate key update
+		parent_name = values(parent_name),
+		template_name = values(template_name),
+		touch_urls = values(touch_urls),
+		subject = values(subject),
+		after_minutes = values(after_minutes),
+		device_type = values(device_type)
+	</insert>
+	
+	<delete id="TemplateSetting.delete" parameterClass="mb">
+		delete from template_setting
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="parentId">
+				parent_id = #parentId#
+			</isNotNull>
+			<isNotNull prepend="and" property="parentIds">
+				parent_id in <iterate property="parentIds" open="(" close=")" conjunction=",">#parentIds[]#</iterate>
+			</isNotNull>
+			<isNotNull prepend="and" property="deviceType">
+				device_type = #deviceType#
+		</isNotNull>
+		</dynamic>
+	</delete>
+	
+	<delete id="TouchSetting.delete" parameterClass="mb">
+		delete from touch_setting
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="taskId">
+				task_id = #taskId#
+			</isNotNull>
+			<isNotNull prepend="and" property="taskIds">
+				task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="TaskSetting.query" parameterClass="mb" resultClass="setting">
+		select
+			t.task_status status,
+			<include refid="TaskSetting.mapper" />
+		from task_setting s
+		left join task t on t.task_id = s.task_id
+		<dynamic>
+			<include refid="TaskSetting.where" />
+		</dynamic>
+	</select>
+	
+	<select id="TemplateSetting.query" parameterClass="mb" resultClass="setting">
+		select
+			p.template_name parentName,
+			t.template_name templateName,
+			t.file_path filePath,
+			<include refid="TemplateSetting.mapper" />
+		from template_setting s
+		inner join template t on t.template_id = s.template_id
+		inner join template p on p.template_id = s.parent_id
+		<dynamic>
+			<include refid="TemplateSetting.where" />
+		</dynamic>
+	</select>
+	
+	<select id="TemplateSetting.lockTemplate" parameterClass="mb" resultClass="Integer">
+		select
+			s.template_id
+		from template_setting s
+		<dynamic>
+			<include refid="TemplateSetting.where" />
+			group by s.template_id
+		</dynamic>
+	</select>
+	
+	<select id="TouchSetting.query" parameterClass="mb" resultClass="setting">
+		SELECT
+			t.user_id userId,
+			<include refid="TouchSetting.mapper" />
+		FROM touch_setting s
+		INNER JOIN touch t ON t.template_id=s.template_id and s.task_id=t.task_id
+		<dynamic>
+			<include refid="TouchSetting.where" />
+		</dynamic>
+	</select>
+	
+	<select id="TouchSetting.touchQuery" parameterClass="mb" resultClass="setting">
+		SELECT
+			t.corp_id corpId,
+			<include refid="TouchSetting.mapper" />
+		FROM touch_setting s
+		INNER JOIN touch t ON t.template_id=s.template_id and s.task_id=t.task_id
+		INNER JOIN result r on t.task_id=r.task_id and t.template_id=r.template_id and t.corp_id=r.corp_id
+		<dynamic>
+			<include refid="TouchSetting.where" />
+			group by t.user_id, s.template_id
+		</dynamic>
+	</select>
+	
+</sqlMap>

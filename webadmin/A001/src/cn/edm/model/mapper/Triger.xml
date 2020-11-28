@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Triger">
+
+	<typeAlias alias="triger" type="cn.edm.model.Triger" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Triger.mapper">
+		t.task_id taskId,
+		t.corp_id corpId,
+		t.template_id templateId,
+		t.task_name taskName,
+		t.sender_name senderName,
+		t.sender_email senderEmail,
+		t.subject subject,
+		t.email_count emailCount,
+		t.resource_id resourceId,
+		t.create_time createTime
+	</sql>
+	
+	<sql id="Triger.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			a.user_id = #userId#
+		</isNotNull>
+    </sql>
+    
+    <sql id="TrigerApi.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="trigerCorpId">
+			a.triger_corp_id = #trigerCorpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpId">
+			a.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			a.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			a.status = #status#
+		</isNotNull>
+    </sql>
+
+	<insert id="TrigerApi.save" parameterClass="triger">
+		insert into triger_api (
+			corp_id,
+			user_id,
+			triger_name,
+			status
+		) values (
+			#corpId#,
+			#userId#,
+			#trigerName#,
+			#status#
+		)
+		on duplicate key update
+		triger_name = values(triger_name),
+		status = values(status)
+	</insert>
+	
+	<select id="Triger.query" parameterClass="mb" resultClass="triger">
+		select
+			<include refid="Triger.mapper" />
+		from triger t
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Triger.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Triger.queryApi" parameterClass="mb" resultClass="triger">
+		select
+			a.triger_corp_id trigerCorpId,
+			a.corp_id corpId,
+			a.user_id userId,
+			a.triger_name trigerName,
+			a.status status
+		from triger_api a
+		<dynamic>
+			<include refid="TrigerApi.where" />
+		</dynamic>
+	</select>
+
+	<select id="Triger.countApi" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from triger_api a
+		<dynamic>
+			<include refid="TrigerApi.where" />
+		</dynamic>
+	</select>
+</sqlMap>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Copy">
+
+	<typeAlias alias="copy" type="cn.edm.model.Copy" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<insert id="CopyTag.save" parameterClass="copy">
+		insert into copy_tag_trigger (
+			corp_id,
+			db_id,
+			coll,
+			action,
+			modify_time
+		) values (
+			#corpId#,
+			#dbId#,
+			#coll#,
+			#action#,
+			now()
+		)
+		on duplicate key update
+		modify_time=values(modify_time)
+	</insert>
+	
+	<insert id="CopyTag.batchSave" parameterClass="List">
+		insert into copy_tag_trigger (
+			corp_id,
+			db_id,
+			coll,
+			action,
+			modify_time
+		) values
+		<iterate conjunction=",">
+		(
+			#list[].corpId#,
+			#list[].dbId#,
+			#list[].coll#,
+			#list[].action#,
+			now()
+		)
+		</iterate>
+		on duplicate key update
+		modify_time=values(modify_time)
+	</insert>
+	
+	<insert id="CopyRecipient.save" parameterClass="copy">
+		insert into copy_recipient_trigger (
+			corp_id,
+			db_id,
+			coll,
+			action,
+			modify_time
+		) values (
+			#corpId#,
+			#dbId#,
+			#coll#,
+			#action#,
+			now()
+		)
+		on duplicate key update
+		modify_time=values(modify_time)
+	</insert>
+	
+	<insert id="CopyRecipient.batchSave" parameterClass="List">
+		insert into copy_recipient_trigger (
+			corp_id,
+			db_id,
+			coll,
+			action,
+			modify_time
+		) values
+		<iterate conjunction=",">
+		(
+			#list[].corpId#,
+			#list[].dbId#,
+			#list[].coll#,
+			#list[].action#,
+			now()
+		)
+		</iterate>
+		on duplicate key update
+		modify_time=values(modify_time)
+	</insert>
+	
+</sqlMap>

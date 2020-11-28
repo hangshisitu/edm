@@ -1,0 +1,57 @@
+
+[smtpsvr]
+local_host = "0.0.0.0"  
+listen_port = @SMTP_PORT@
+socket_ttl = "60"			 #网络超时时长
+ip_white_list = "0.0.0.0/0"  #白名单列表, 分号（，）分隔："127.0.0.1,0.0.0.0/0"
+dns_ttl = "86400"            #MX-DNS更新频率 单位：秒
+smtp_helo = "139edm.com"
+ignore_auth = "0"			#1：忽略密码认证
+work_thread_num = "2"		#投递工作线程数，保留备用
+limit_client_num = "0"      #限制客户端发送开启
+max_connect_num = "10000"   #<=0 不限制
+
+# for mysql
+mysql_host = @DB_IP@
+mysql_port = @DB_PORT@
+mysql_user = @DB_USER@
+mysql_passwd = @DB_PW@
+mysql_dbname = @DB_NAME@
+mysql_charset = @DB_CHARSET@
+
+[smtpsvr/log]
+path = "./logs/"
+file_size = 10240000  #bytes 分隔大小
+
+#AUTH LOGIN 替换发件人列表
+# 邮箱 = 密码(base64)
+[smtpsvr/auth]
+#sxchinamobile = "djg5bzA1NW5GT3B0aGk="
+
+#连接数量控制,interval秒内允许number个连接
+[smtpsvr/control]
+interval = "600"			 #服务间隔时间允许的最大连接数；600s内最多10000个连接会话
+number   = "10000"			 #（2）发件人投递到某个域的邮件在时间范围内有数量上的限制
+send_retry = "3"		     #丢弃，首次尝试3次后失败，备份重试
+recv_retry = "5"		     #收信过程允许的异常指令次数
+send_time_interval = "60"    #重试间隔60s
+fail_count = "3"		     #备份后重试3次
+save_dir = "data/"		     #重试邮件备份目录
+
+[smtpsvr/sender]
+#可用发件人以及投递数量控制
+#配置可以使用的发件人，以及对目标域的投递频率控制
+#如果目标域不在下列定义,则按照[smtpsvr/control]来控制
+#e.g: 发件人 = "目标域|秒内|最大投递数量"
+#abc@139.com = "139.com|60|1000"
+#abc@139.com = "other|60|1000"
+
+#加速dns解析
+[smtpsvr/transport]
+#转发域名配置 = ip:端口(默认25)
+all = "192.168.34.103:55300"
+
+#发送域名映射，将163.com发送中至mopen.163.com
+[smtpsvr/domain_map]
+#163.com="mopen.163.com"
+#126.com="mopen.126.com"

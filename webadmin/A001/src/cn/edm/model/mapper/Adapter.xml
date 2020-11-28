@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Adapter">
+
+	<typeAlias alias="adapter" type="cn.edm.model.Adapter" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Adapter.mapper">
+		a.template_id templateId,
+		a.join_phone joinPhone,
+		a.join_sms joinSms,
+		a.phone_path phonePath,
+		a.sms_path smsPath,
+		a.phone_attrs phoneAttrs
+	</sql>
+	
+	<sql id="Adapter.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			a.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="joinPhone">
+			a.join_phone = #joinPhone#
+		</isNotNull>
+    </sql>
+	
+	<insert id="Adapter.save" parameterClass="adapter">
+		insert into template_adapter (
+			template_id,
+			join_phone,
+			join_sms,
+			phone_path,
+			sms_path,
+			phone_attrs
+		) values (
+			#templateId#,
+			#joinPhone#,
+			#joinSms#,
+			#phonePath#,
+			#smsPath#,
+			#phoneAttrs#
+		)
+		on duplicate key update
+		join_phone = values(join_phone),
+		join_sms = values(join_sms),
+		phone_path = values(phone_path),
+		sms_path = values(sms_path),
+		phone_attrs = values(phone_attrs)
+	</insert>
+	
+	<delete id="Adapter.delete" parameterClass="mb">
+		delete from template_adapter 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="templateId">
+				template_id = #templateId#
+			</isNotNull>
+			<isNotNull prepend="and" property="templateIds">
+				template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Adapter.query" parameterClass="mb" resultClass="adapter">
+		select
+			t.template_name templateName,
+			<include refid="Adapter.mapper" />
+		from template_adapter a
+		inner join template t on t.template_id = a.template_id
+		<dynamic>
+			<include refid="Adapter.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+	
+</sqlMap>

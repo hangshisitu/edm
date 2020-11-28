@@ -1,0 +1,15 @@
+100915£º
+class DwString
+add typedef	char	value_type;
+to support template compile
+
+101015£º
+class DwText
+add DwBool m_bHeaderSubjectField;
+to fix decode quotedprintable encode '_' in header
+
+101111
+add DwStamp::Date const
+
+101202
+add DwString::begin() DwString::end()

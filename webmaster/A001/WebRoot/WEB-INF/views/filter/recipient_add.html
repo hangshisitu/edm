@@ -1,0 +1,131 @@
+<script>
+$(function(){
+	$('#new_type_list').UIselect({
+		width: 110,
+		id_id: "#newTypeId",
+		arrdata: new Array(["red", "红名单"], ["black", "黑名单"], ["refuse", "拒收"], ["expose", "举报"])
+	});
+	
+	$('#mod_type_list').UIselect({
+		width: 110,
+		id_id: "#modTypeId",
+		arrdata: new Array(["red", "红名单"], ["black", "黑名单"])
+	});
+	
+	//新建
+	$('#newForm').ajaxForm({
+		url: 'add',
+		type: 'post',
+		resetForm: false,
+		dataType: 'json',
+		beforeSubmit: function(formData, jqForm, options) {
+			$('#newForm').find('.err').html('');
+			var form = jqForm[0]; 
+			if(!/.+@.+\.[a-zA-Z]{2,4}$/ig.test(form.email.value)){
+				$('#newForm').find('.err').html('请输入正确邮箱地址');
+				form.email.focus();
+				return false;
+			}
+			if(!form.newTypeId.value){
+				$('#newForm').find('.err').html('请选择类别');
+				return false;
+			}
+		},
+		success: function(data) {
+			if(data.code == 1) {
+				location.reload(true);
+			} else {
+				$('#newForm').find('.err').html(data.message);
+			}
+		},
+		error: function(){
+			$('#newForm').find('.err').html('提交失败，请重试');
+			location.reload(true);
+		}  
+	});
+});
+</script>
+<div style="width:400px" class="limiter">
+	<div class="pop_title"><#if recipient.email??>修改<#else>新建</#if></div>
+	<div class="pop_content">
+		<form id="newForm" method="post" action="add" autocomplete="off">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="orgEmail" value="${xss.filter(recipient.email)}" />
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" style="" class="edit_tab">
+				<tbody>
+					<tr>
+						<td width="62">
+							邮箱地址
+						</td>
+						<td width='10' class='red'>*</td>
+						<td>
+							<input class="input_txt" type="text" maxlength="64" name="email" value="${xss.filter(recipient.email)}">
+						</td>
+					</tr>
+					<tr>
+						<td width="62">
+							描述
+						</td>
+						<td width='10' class='red'>&nbsp;</td>
+						<td>
+							<input class="input_txt" type="text" maxlength="60" name="desc" value="${xss.filter(recipient.desc)}">
+						</td>
+					</tr>
+					<tr>
+						<td>
+							类型
+						</td>
+						<td width='10' class='red'>*</td>
+						<td>
+							<#if recipient.email??>
+							<div id='modBox'></div>
+							<script>
+								var type = '${type}';
+								var html = '';
+								switch(type){
+									case "red":
+										html = '<a style="width:240px" class="a_select b_select">红名单</a>';
+										break;
+									case "black":
+										html = '<a style="width:240px" class="a_select b_select">黑名单</a>';
+										break;
+									case "refuse":
+										html = '<a style="width:240px" class="a_select b_select">拒收</a>';
+										break;
+									case "expose":
+										html = '<a style="width:240px" class="a_select b_select">举报</a>';
+										break;
+									default:
+										break;
+									
+								}
+								document.getElementById('modBox').innerHTML = html;
+							</script>
+							
+							<#else>
+							<a style="width:240px" id='new_type_list' class="a_select b_select"></a>
+							</#if>
+							<input type='hidden' id='newTypeId' name='type' value="${type}" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tbody>
+					<tr>
+						<td width="75">&nbsp;</td>
+						<td><span class="err"></span>
+						<ul class="f_ul">
+							<li>
+								<input type="submit" value="确定" class="input_yes" />
+							</li>
+							<li>
+								<input type="button" value="取消" onclick="close_msg();" class="input_no" />
+							</li>
+						</ul></td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
+</div>

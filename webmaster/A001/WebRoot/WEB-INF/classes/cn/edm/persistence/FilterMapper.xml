@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.FilterMapper">
+
+	<resultMap id="Filter" type="cn.edm.domain.Filter">
+		<id column="filter_id" property="filterId" />
+		<result column="corp_id" property="corpId" />
+		<result column="user_id" property="userId" />
+		<result column="filter_name" property="filterName" />
+		<result column="filter_desc" property="filterDesc" />
+		<result column="props" property="props" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+	</resultMap>
+
+
+	<delete id="delFilterByUserId" parameterType="java.lang.String">
+		DELETE FROM filter
+		WHERE
+		user_id = #{userId}
+	</delete>
+
+</mapper>
+
+

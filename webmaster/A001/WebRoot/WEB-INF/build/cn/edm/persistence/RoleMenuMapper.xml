@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.RoleMenuMapper">
+	
+	<resultMap id="RoleMenu" type="cn.edm.domain.RoleMenu">
+		<result column="id" property="id"/>
+		<result column="role_id" property="roleId"/>
+		<result column="menu_id" property="menuId"/>
+		<result column="func_auth" property="funcAuth"/>
+	</resultMap>
+	
+	<sql id="base_columns">
+		r.id id,r.role_id roleId,r.menu_id menuId,r.func_auth funcAuth
+	</sql>
+				
+	<sql id="where">
+		where 1=1 		
+	</sql>
+	
+	<insert id="insertRoleMenu" parameterType="cn.edm.domain.RoleMenu">
+	    insert into role_menu(
+	       role_id,
+	       menu_id,
+	       func_auth
+	    ) values(
+	       #{roleId},
+	       #{menuId},
+	       #{funcAuth}
+	    )
+	</insert>
+	
+	<select id="delRoleMenuById"  parameterType="java.lang.String">
+	    delete 
+		FROM role_menu 
+		where role_id = #{roleId}	    
+	</select>
+	
+	<insert id="insertRoleMenuByType" parameterType="map">
+	    insert into
+	    role_menu(role_id,menu_id,func_auth) 
+	    select #{roleId},id,'0'
+	    from menu m
+	    where m.type=#{type}; 
+	</insert>
+	
+</mapper>
+
+

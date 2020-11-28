@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 设计模板</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script src="${ctx}/static/js/kindeditor-4.1.10/kindeditor.js?${version}"></script>
+<script src="${ctx}/static/js/kindeditor-4.1.10/lang/zh_CN.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/mailing.template.common.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/datasource.form.4.js?${version}"></script>
+<script type="text/javascript">
+	var appUrl = "${appUrl}";
+	var category_list = new Array([1022, "fghfgh"],[1021, "windtestone"],[1020, "iuuyi"],[998, "jjjhjh"],[997, "sdfd"],[961, "linnewtempcate"],[959, "fhfgh"],[958, "fghfg"],[957, "就规划局规划局"],[956, "dfgdfg"],[955, "newcate"],[936, "nnn4"],[935, "nnn"],[934, "bbfb"],[933, "sdfsd"],[932, "ggg"],[931, "fff"],[930, "ttt"],[929, "jjj"],[928, "vvv"],[927, "bnbnb"],[926, "mmm"],[925, "ghgh"],[924, "zzzzzz"],[923, "hahaha"],[1, "促销推广"],[6, "客户关怀"],[4, "欢迎信"],[2, "电子期刊"],[5, "节日祝福"],[3, "订单"],[7, "邀请和通知"]);
+
+	var prop_list = new Array(
+	<#assign i = 0 />
+	<#list propList as p>
+	["$${xss.filter(p.propName)}$","${xss.filter(view.prop_name(p.propName))}"]<#if p_has_next>,</#if>
+	<#assign i = i + 1 />
+	</#list>
+	);
+	
+	var rcmTempData = [
+		<#list recommendMap?keys as k>
+			<#list recommendMap[k] as t>
+			{"id": ${t.templateId}, "title": "${xss.filter(t.templateName)}"}<#if t_has_next>,</#if>
+			</#list>
+		</#list>
+	];
+	
+	var K = null;
+	var K1 = null;
+	var eModel = "WYSIWYG"; 
+	var eModelPhone = 'WYSIWYG'; 
+	
+	var codeResource=null;
+	var codeModel="UTF8";
+
+	var form_list = new Array(
+	<#if formList?? && formList?size gt 0>
+	<#list formList as f>
+		["${appUrl}/form/submit?id=${f.formId}&r=${xss.filter(f.randCode)}","${xss.filter(f.formName)}"]<#if f_has_next>,</#if>
+	</#list>
+	</#if>
+	);
+</script>
+</head>
+<body class="step">
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix ">
+	<#include "/left.html" />
+	<div id="main"  class="clearfix">
+		<#assign prompt = "current" />
+		<#assign num = "3" />
+		<#if form.emailConfirm == 1>
+			<#assign num = "4" />
+		</#if>
+		<#include "/default/datasource/form.html" />
+		<h1 class="title border_b"></h1>
+		<form id="add" action="" method="post" autocomplete="off">
+			<input type="hidden" name="token" value="${xss.filter(token)}" />
+			<input type="hidden" name="formId" value="${form.formId}" />
+			<input type="hidden" name="templateId" value="" />
+			<input type="hidden" name="next" value="off" />
+			<h3 class='fm_title'>请设计表单信息入库后的成功邮件提示</h3>
+			<table border="0" cellspacing="0" cellpadding="0" class="IE6_table m_t10">
+				<tr class="fixed_tr">
+					<td width="90"  align="right">设计方式：</td>
+					<td width="10" class="red">&nbsp;</td>
+					<td>
+						<div>
+							<div class="f_l">
+								<ul class="btn btn_spe">
+									<li><a href="javascript:openSysForm()" class="btn_icon btn_icon_uset">使用模板</a></li>
+									<li><a href="javascript:open_msg('${ctx}/datasource/form/snatch?t=safety', 0);" class="btn_icon btn_icon_web">抓取网页</a></li>
+									<li><a href="javascript:open_msg('${ctx}/datasource/form/file?t=safety', 0);" class="btn_icon btn_icon_imp">导入文件</a></li>							
+								</ul>
+							</div>
+						</div>
+						<a href="${ctx}/download?t=template.design" class="highlight f_r">下载邮件模板制作标准>></a>
+					</td>
+				</tr>
+				<tr class="fixed_tr">
+					<td width="90" align="right">邮件主题：</td>
+					<td width="10" class="red">*</td>
+					<td>
+						<input type="text" name="promptSubject" value="${xss.filter(form.promptSubject)}" maxlength="100" style="width:308px" />
+						<a id="senderMore" class="swtbtn swtclose" href="javascript:void(0)">高级选项</a>
+					</td>
+				</tr>
+			</table>
+			<table id="advancedOption" border="0" cellspacing="0" cellpadding="0" class="IE6_table" style="">
+				<tr class="fixed_tr">
+					<td  width="90" align="right">变量设置：</td>
+					<td width="10" class="red">&nbsp;</td>
+					<td>
+						<a class="a_select wd150" id="open_paramBox" href="javascript:void(0)">插入变量</a>
+					</td>
+				</tr>
+			</table>
+			<table border="0" cellspacing="0" cellpadding="0" class="IE6_table">
+				<tr>
+					<td width="90" align="right" valign="top"><span style="display:inline-block; padding-top:3px;">模板内容：</span></td>
+					<td width="10" class="red">&nbsp;</td>
+					<td style="border:1px solid #aaa">
+						<div class="ribbon clearfix">
+							<ul class="btn f_r">
+								
+								<li style="margin-top:3px;*margin-top:1px;">
+									<a id="workMode" class="a_select b_select" style="width:72px; line-height:22px;" href="javascript:void(0)">切换模式</a>
+								</li>
+							</ul>
+						</div>
+						<textarea class="textarea spe_area" id="templateContent" name="templateContent" style='width:100%; height:360px; border:none; padding:5px 0;'>${templateContent?default("请输入模板内容")}</textarea>
+						<input type="hidden" name="editor" value="" />
+					</td>
+				</tr>
+			</table>	
+		</form>
+		
+		<div class="step_foot">
+			<div class="next_step clearfix">
+				<div class="f_r">
+					<input type="button" value="预览" class="input_no" onclick="preview()" />
+					<input type="button" value="取消" class="input_no" onclick="openPop(0,0,'#confirmCancle')"  />
+				</div>
+				<div class="center">
+					<input type="button" value="下一步" class="input_yes" id="tempSubmit"/>
+					<span class="widthfix">
+						<span class="load_img">
+							<img src="/static/img/loading2.gif"/>
+						</span>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	<div id="transfer" style="display:none"></div> 
+	<div class="select_div"></div>
+
+	<div class="popBox searchBox" id="templateRemind" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:730px;">
+			<div class="pop_title">模板推荐</div>
+			<div class="pop_content">
+				<form id="recommend" action="${ctx}/datasource/form/recommend" method="post">
+					<input type="hidden" name="token" value="${xss.filter(token)}" />
+					<div class="choose_limiter">
+						<input type="hidden" name="templateId" value="" />
+						<div id="tempWrap" class="temp_item">
+							<ul></ul>
+						</div>
+						<div class="temp_img">
+							<table width="100%" border="0" cellspacing="0" cellpadding="0" style="table-layout: fixed;">
+								<tr>
+									<td width="100%" valign="middle" style="height:498px;">
+										<img alt="模板" src="/static/img/template/nopic.jpg"/>
+									</td>
+								</tr>
+							</table>											
+						</div>		
+					</div>
+					<div class='cmt_wrap'>
+						<input class='input_yes' type="submit" value='确定'/>&nbsp;&nbsp;<input class='input_no' type="button" value='取消' onclick="closeDialog()"/>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<div class="popBox searchBox" id="historyTemplate" style="display:none">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:360px">
+			<div class="pop_title">历史模板</div>
+			<div class="pop_content">
+				<form id="history" action="${ctx}/mailing/template/history" method="post">
+					<input type="hidden" name="token" value="${xss.filter(token)}" />
+					<input type="hidden" name="templateId" value="" />
+					<div class="search_box">
+						<input type="text" class="search_input placehold" placeholder="输入搜索关键字" />
+					</div>
+					<div class="search_result">
+					</div>
+					<div class="cmt_wrap">
+			        	<input class="input_yes" type="submit" value="确定"/>&nbsp;&nbsp;<input class="input_no" type="button" value="取消" onclick="closeDialog();" />
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<div class="popBox searchBox" id="confirmCancle" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:400px">
+			<div class="pop_title">设计表单</div>
+			<div class="pop_content">
+				<div class="al_center">您确定取消当前操作吗？</div>
+				<div class='cmt_wrap'>
+					<input class='input_yes' type="button" value='确定' onclick="location.href='page';" />
+					<input class='input_no' type="button" value='继续操作' onclick="closeDialog();" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="popBox code_tips" id="codeTips" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:250px">
+			<div class="pop_title">模板乱码了?点击<a class="highlight" href="javascript:changeTempCode();">切换编码</a>试试</div>
+		</div>
+	</div>
+	
+	<div class="searchBox" id="slideSearch" style="display:none">
+		<div class="limiter" style="width:390px">
+			<div class="pop_content">
+				<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+				<div class="search_result"></div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="popBox searchBox" id="remindParam" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:400px">
+			<div class="pop_title">设计表单</div>
+			<div class="pop_content">
+				<div class="al_center">
+					
+				</div>
+				<div class='cmt_wrap'>
+					<input class='input_yes' type="button" value='确定' onclick="closeDialog();switchParam()" />
+					<input class='input_no' type="button" value='继续提交' onclick="closeDialog();$('#add').submit()" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="popBox searchBox" id="remindFilter" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:420px">
+			<div class="pop_title">设计模板</div>
+			<div class="pop_content">
+				<div class="al_center">
+					
+				</div>
+				<div class='cmt_wrap'>
+					<input class='input_yes' type="button" value='重新编辑' onclick="closeDialog();$('input[name=next]').val('off')" />
+					<input class='input_no' type="button" value='继续操作' onclick="closeDialog();$('input[name=next]').val('on');$('#add').submit()" />
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

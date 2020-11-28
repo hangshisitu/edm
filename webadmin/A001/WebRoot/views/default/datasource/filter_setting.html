@@ -1,0 +1,264 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$("#prop_list").UIselect({
+		height: 150,
+		width: 260,
+		id_id: "#pnm",
+		ho_fun: "filter_cnd()",
+		arrdata: props
+	});
+	
+	// placeholder
+	$(".placehold").placeholder();
+
+	load_filter("${xss.filter(pnm)}", "${xss.filter(cnd)}", "${xss.filter(val)}");
+	
+	$('#setting').ajaxForm({
+		url: 'setting',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".err").html("");
+		
+			var form = jqForm[0]; 
+
+			if (!form.pnm.value) {
+				$(".err").html("请选择属性");
+				return false; 
+			}
+
+			var cnd = $("input[name=cnd]:checked").val();
+			if (!cnd) {
+				$(".err").html("请选择过滤条件");
+				return false; 
+			}
+			
+			var t = type(form.pnm.value);
+			var arr = cnd.split("_");
+			if (t != arr[0]) {
+				$(".err").html("请选择过滤条件");
+				return false;
+			}
+
+			if (arr[1] == "range") {
+				if (!$("input[name=" + t + "_min]").val() || !$("input[name=" + t + "_max]").val()) {
+					$(".err").html("请输入过滤内容" + $("label[for=" + cnd + "]").text() + "的值");
+					return false; 
+				}
+			} else {
+				if (!$("input[name=" + cnd + "]").val()) {
+					$(".err").html("请输入过滤内容" + $("label[for=" + cnd + "]").text() + "的值");
+					return false; 
+				}
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				var pos = $("#pos").val();
+				$("#key_" + pos).val(data.setting);
+				$("#val_" + pos).val(data.prop);
+				closeDialog();
+			} else {
+				$(".err").html(data.message);		
+			} 
+		}   
+	}); 	
+});
+
+function load_filter(pnm, cnd, val) {
+	filter_cnd();
+	var t = type(pnm);
+	if (cnd != "") {
+		$("#" + t + "_" + cnd).attr("checked", true);
+		if (val != "") {
+			if (cnd == "range") {
+				var range = val.split(",");
+				$("input[name=" + t + "_min]").val(range[0]);
+				$("input[name=" + t + "_max]").val(range[1]);
+			} else {
+				$("input[name=" + t + "_" + cnd + "]").val(val);
+			}
+		}
+	}
+}
+
+// change 类型
+function filter_cnd() {
+	var t = type($("#pnm").val());
+	$(".edit_tab").hide();
+	$("#" + t).show();
+}
+
+function type(prop) {
+	if (prop != "") {
+		for (var i = 0; i < types.length; i++) {
+			if (types[i][0] == prop){
+				return types[i][1];
+			}
+		}
+	}
+	
+	return "S";
+}
+
+</script>
+
+<div class="pop_close">X</div>
+<div class="limiter" style="width:400px">
+	<div class="pop_title">过滤机制设置</div>
+	<div class="pop_content">
+		<form id="setting" action="setting" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" id="pnm" name="pnm" value="${xss.filter(pnm)}" />
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="27%">选择属性</td>
+					<td>
+						<a class="a_select b_select" id="prop_list" style="width:240px">请选择</a>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="height: 10px;">
+						<p style="border-bottom:1px solid #A0A0A0;"></p>
+					</td>
+				</tr>
+			</table>
+			
+			<table id="S" class="edit_tab" width="100%" border="0" cellspacing="0" cellpadding="0" style="display:none;">
+				<tr>
+					<td>过滤条件</td>
+					<td><span class="f666">过滤内容（输入格式为“<span class="green">字符串</span>”）</span></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="S_eq" name="cnd" value="S_eq" />
+						<label for="S_eq">等于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="S_eq" maxlength="60" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="S_start" name="cnd" value="S_start" />
+						<label for="S_start">开头为</label>
+					</td>
+					<td><input type="text" class="input_txt" name="S_start" maxlength="60" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="S_end" name="cnd" value="S_end" />
+						<label for="S_end">结尾为</label>
+					</td>
+					<td><input type="text" class="input_txt" name="S_end" maxlength="60"  /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="S_contains" name="cnd" value="S_contains" />
+						<label for="S_contains">包含关键词</label>
+					</td>
+					<td><input type="text" class="input_txt" name="S_contains" maxlength="60" /></td>
+				</tr>
+			</table>
+			
+			<table id="I" class="edit_tab" width="100%" border="0" cellspacing="0" cellpadding="0" style="display:none">
+				<tr>
+					<td>过滤条件</td>
+					<td><span class="f666">过滤内容（输入格式为“<span class="green">整数</span>”）</span></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="I_eq" name="cnd" value="I_eq" />
+						<label for="I_eq">等于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="I_eq" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="I_gt" name="cnd" value="I_gt" />
+						<label for="I_gt">大于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="I_gt" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="I_lt" name="cnd" value="I_lt" />
+						<label for="I_lt">小于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="I_lt" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="I_range" name="cnd" value="I_range" />
+						<label for="I_range">在此之间</label>
+					</td>
+					<td rowspan="2">
+						<input type="text" class="input_txt placehold" name="I_min" maxlength="20" placeholder="最小值" />
+						<div style="height:10px;">&nbsp;</div>
+						<input type="text" class="input_txt placehold" name="I_max" maxlength="20" placeholder="最大值" />
+					</td>
+				</tr>
+				<tr>
+					<td width="27%"></td>	
+				</tr>
+			</table>
+			
+			<table id="D" class="edit_tab" width="100%" border="0" cellspacing="0" cellpadding="0" style="display:none">
+				<tr>
+					<td>过滤条件</td>
+					<td><span class="f666">过滤内容（输入格式为“<span class="green">yyyy-MM-dd</span>”）</span></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="D_eq" name="cnd" value="D_eq" />
+						<label for="D_eq">等于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="D_eq" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="D_gt" name="cnd" value="D_gt" />
+						<label for="D_gt">大于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="D_gt" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="D_lt" name="cnd" value="D_lt" />
+						<label for="D_lt">小于</label>
+					</td>
+					<td><input type="text" class="input_txt" name="D_lt" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td width="27%">
+						<input type="radio" class="df_input" id="D_range" name="cnd" value="D_range" />
+						<label for="D_range">在此之间</label>
+					</td>
+					<td rowspan="2">
+						<input type="text" class="input_txt placehold" name="D_min" maxlength="20" placeholder="起始日期" />
+						<div style="height:10px;">&nbsp;</div>
+						<input type="text" class="input_txt placehold" name="D_max" maxlength="20" placeholder="结束日期" />
+					</td>
+				</tr>
+				<tr>
+					<td width="27%"></td>	
+				</tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="27%">&nbsp;</td>
+					<td>
+						<span class="err"></span>
+						<ul class="f_ul">
+	                        <li><input class="input_yes" id="smt" type="submit" value="确定" /></li>
+	                        <li><input class="input_no" onclick="closeDialog();" type="button" value="取消" /></li>
+	                    </ul>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</div>

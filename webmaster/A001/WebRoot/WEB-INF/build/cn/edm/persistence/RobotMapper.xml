@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.RobotMapper">
+	
+	<resultMap id="Robot" type="cn.edm.domain.Robot">
+		<result column="corp_id" property="corpId"/>
+		<result column="email" property="email"/>
+	</resultMap>
+	
+	<sql id="base_columns">
+		corp_id,email
+	</sql>
+	
+	<insert id="insertRobot" parameterType="cn.edm.domain.Robot">
+		insert into robot(
+			corp_id,
+			email
+		)values(
+			#{corpId},
+			#{email}
+		)
+	</insert>
+	
+	<insert id="insertBatch" parameterType="java.util.List">
+	  	insert into robot(
+	  		corp_id,
+			email) values
+	  	<foreach collection="list" item="item" index="index"
+	  		separator=",">
+	  		(#{item.corpId},
+			#{item.email})
+	  	</foreach>
+  </insert>
+  
+  <select id="selectRobotList" resultMap="Robot" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM robot
+		WHERE corp_id = #{corpId}
+  </select>
+	
+   <delete id="deleteByCorpId" parameterType="map">
+   		DELETE FROM robot
+   		WHERE 
+   		corp_id = #{corpId}
+   </delete>
+	
+</mapper>
+
+

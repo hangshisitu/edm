@@ -1,0 +1,82 @@
+*{
+	margin:0;
+	padding:0;
+	font-family: "宋体";
+}
+.a4{
+	width:900px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.a4 h1{
+	font-size:18px;
+	line-height:35px;
+	height:35px;
+	font-weight: bold;
+}
+.a4 h2{
+	font-size:14px;
+	line-height:30px;
+	margin-top:20px;
+	font-weight: bold;
+}
+table {
+	line-height: 20px;
+	border: 1px solid #414141;
+}
+table th{
+	padding:4px 5px;
+	font-size:12px;
+	border-left: 1px solid #D9D9D9;
+	text-align:left;
+	color:#000000;
+	font-weight: bold;
+}
+
+table th.th1{
+	border-left:none
+}
+
+
+table td{
+	padding:3px 5px;
+	font-size:12px;
+	border-left: 1px solid #D9D9D9;
+	border-top: 1px solid #D9D9D9;
+}
+table td.td1{
+	border-left:none
+}
+table td span{
+	color:#696969;
+}
+
+.a_link{
+	color:#0f5b8b;
+	font-family: Arial, Helvetica, sans-serif;
+}
+.num{
+	color:#3188a4;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+}
+.num2{
+	color:#bd0000;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+}
+
+#print{
+	text-align:center;
+	margin-top:50px;
+}
+#print a{
+	text-align:center;
+	font-size:14px;
+	background-color: #0080FF;
+	padding:5px 15px;
+	font-family: "微软雅黑";
+	font-weight: normal;
+	text-decoration: none;
+	color:#fff;
+}

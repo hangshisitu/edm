@@ -1,0 +1,14 @@
+
+scanlog_bind_ip = "0.0.0.0"
+
+scanlog_bind_port = "55675"
+
+scan_dir = "/home/iedm/cachedburl/dblog"
+
+log_name = "log/scan"
+
+backup_dir = "backup"
+
+
+
+omit_corp= "175"

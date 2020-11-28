@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="CustomEnterprise">
+
+	<typeAlias alias="customEnterprise" type="cn.edm.model.CustomEnterprise" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="CustomEnterprise.mapper">
+		c.id,
+		c.logoUrl,
+		c.createTime,
+		c.status
+	</sql>
+	
+	<sql id="CustomEnterprise.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="id">
+			 c.id = #id#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			c.status = #status#
+		</isNotNull>
+		
+		<isNotNull prepend="and" property="logoUrl">
+			c.logoUrl = #logoUrl#
+		</isNotNull>
+
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ c.createTime >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+		  	<![CDATA[ c.createTime <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	
+	<select id="CustomEnterprise.query" parameterClass="mb" resultClass="customEnterprise">
+		select
+        <include refid="CustomEnterprise.mapper" />
+		from customenterprise c
+		<dynamic>
+			<include refid="CustomEnterprise.where" />
+			<isEqual property="orderBy" compareValue="createTime">
+				order by u.create_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+</sqlMap>

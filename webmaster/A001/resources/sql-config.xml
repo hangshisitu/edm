@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+	<settings
+		cacheModelsEnabled="false"
+		defaultStatementTimeout="15"
+		lazyLoadingEnabled="true" 
+		maxRequests="512" 
+		maxSessions="128"
+		maxTransactions="32"
+		useStatementNamespaces="false" />
+	
+	<sqlMap resource="cn/edm/model/mapper/Category.xml" />
+	<sqlMap resource="cn/edm/model/mapper/Copy.xml" />
+	<sqlMap resource="cn/edm/model/mapper/Corp.xml" />
+	<sqlMap resource="cn/edm/model/mapper/User.xml" />
+	<sqlMap resource="cn/edm/model/mapper/Prop.xml" />
+	<sqlMap resource="cn/edm/model/mapper/Recipient.xml" />
+	<sqlMap resource="cn/edm/model/mapper/Tag.xml" />
+</sqlMapConfig>

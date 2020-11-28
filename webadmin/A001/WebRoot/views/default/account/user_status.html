@@ -1,0 +1,48 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$('#common').ajaxForm({
+		url: '${m}',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json',
+		success: function(data) {
+			if (data.code == 1) {
+				del_loading();
+				close_msg();
+				error_message(data.message, 0, 0, 1000, "/account/user/page");
+			} else {
+				 $(".msg_ul .err").html(data.message); 
+				 del_loading();
+			}
+		}
+	}); 
+}); 
+</script>
+<form id="common" action="${m}" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="action" value="${action}" />
+	<input type="hidden" name="${name}" value="${value}" />
+	<div class="msg_content">
+		<h1 class="title">${operate}${message}</h1>
+		<ul class="msg_ul">
+			<#if checkedName??>
+			<li>您确定${operate}“<span class="green">${xss.filter(checkedName)}</span>”吗？</li>
+			<#else>
+			<li>您确定${operate}${message}吗？</li>
+			</#if>
+			<li class="err"></li>
+		</ul>
+		<ul class="msg_btn clearfix m_t20">
+			<li>
+				<input type="submit" value="确定" class="input_yes" />
+			</li>
+			<li>
+				<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+			</li>
+		</ul>
+	</div>
+</form>

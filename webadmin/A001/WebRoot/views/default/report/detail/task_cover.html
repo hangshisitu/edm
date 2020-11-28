@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - <#if task.type == 4>API<#else>任务</#if></title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/highcharts/modules/funnel.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.detail.cover.js?${version}"></script>
+<script type="text/javascript">
+	var names = ['发送总数', '成功数', '弹回数', '打开人数', '打开次数', '点击人数', '点击次数', '退订人数', '转发人数', '无效人数'];
+	var datas = [
+   		${domain.sentCount?default(0)},
+   		${domain.reachCount?default(0)},
+   		${domain.softBounceCount?default(0) + domain.hardBounceCount?default(0)},
+   		${domain.readUserCount?default(0)},
+   		${domain.readCount?default(0)},
+   		${domain.clickUserCount?default(0)},
+   		${domain.clickCount?default(0)},
+   		${domain.unsubscribeCount?default(0)},
+   		${domain.forwardCount?default(0)},
+   		${domain.afterNoneCount?default(0)}
+   	];
+
+	var nones = [
+		${domain.beforeNoneCount?default(0)},
+		${domain.afterNoneCount?default(0)}
+	];
+	
+	var a = datas[0] == 0 ? 0 : 100;
+	var b = (datas[0] - nones[0] - nones[1]) == 0 ? 0 : datas[1] * 100 / (datas[0] - nones[0] - nones[1]);
+	var c = datas[1] == 0 ? 0 : datas[3] * 100 / datas[1];
+	var d = datas[3] == 0 ? 0 : datas[5] * 100 / datas[3];
+    	
+   	var percents = [
+   		["发送总数", a.toFixed(2)],
+   		["成功总数", b.toFixed(2)],
+   		["打开人数", c.toFixed(2)],
+   		["点击人数", d.toFixed(2)]
+   	];
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix posfix">
+	  <div class="posfix">
+		<h1 class="title">概览&nbsp;&nbsp;<span>提供任务整体投递数据的概要信息</span></h1>
+		<ul class="tab clearfix">
+			<li class="now"><a href="${ctx}/report/detail/task/cover?taskId=${task.taskId}">概览</a></li>
+			<li><a href="${ctx}/report/detail/task/send?taskId=${task.taskId}">发送</a></li>
+			<li><a href="${ctx}/report/detail/task/open?taskId=${task.taskId}">打开</a></li>
+			<li><a href="${ctx}/report/detail/task/click?taskId=${task.taskId}">点击</a></li>
+			<li><a href="${ctx}/report/detail/task/domain?taskId=${task.taskId}">域名</a></li>
+			<li><a href="${ctx}/report/detail/task/region?taskId=${task.taskId}">地域</a></li>
+			<#if (result.touchCount)?if_exists gt 0>
+				<li><a href="${ctx}/report/detail/task/touch?taskId=${task.taskId}&templateId=${task.templateId}">触发</a></li>
+			</#if>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>任务名称：<span>${xss.filter(task.taskName)}</span></p>
+			</div>
+			<ul class="btn">
+				<li>
+					<a id="cover_list" class="but_select" style="width:40px;" href="javascript:void(0)"></a>
+					<input type="hidden" id="cover" value="column" />
+				</li>
+				<#if _9>
+					<#if view.funcAuth('report/task/page', 6)>
+					<li><a class="btn_icon btn_icon_down" href="javascript:task_exports('${task.taskId}');">导出</a></li>
+					</#if>
+				</#if>
+			</ul>
+		</div>
+		<#include "/default/report/detail/task.html" />
+		<#if result?? && domain.sentCount gt 0>
+		<div class="posfix">
+			<div class="charts">
+				<div id="column" style="width: 770px; height: 240px; margin: 0 auto;"></div>
+				<div id="funnel" style="width: 480px; height: 240px; margin: 0 auto; display: none;"></div>
+			</div>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th>发送总数</th>
+					<th>成功数</th>
+					<th>弹回数</th>
+					<th>打开人数</th>
+					<th>打开次数</th>
+					<th>点击人数</th>
+					<th>点击次数</th>
+					<th>退订人数</th>
+					<th>转发人数</th>
+					<th>无效人数</th>
+					<th>成功率</th>
+					<th>打开率</th>
+					<th>点击率</th>
+				</tr>
+				<tr>
+					<td>${domain.sentCount?default(0)}</td>
+					<td>${domain.reachCount?default(0)}</td>
+					<td>${domain.softBounceCount?default(0) + domain.hardBounceCount?default(0)}</td>
+					<td>${domain.readUserCount?default(0)}</td>
+					<td>${domain.readCount?default(0)}</td>
+					<td>${domain.clickUserCount?default(0)}</td>
+					<td>${domain.clickCount?default(0)}</td>
+					<td>${domain.unsubscribeCount?default(0)}</td>
+					<td>${domain.forwardCount?default(0)}</td>
+					<td>${domain.afterNoneCount?default(0)}</td>
+					<td>${view.result_reach(domain.sentCount?default(0),domain.reachCount?default(0),domain.afterNoneCount?default(0))}&nbsp;%</td>
+					<td>${view.result_read(domain.reachCount?default(0),domain.readUserCount?default(0))}&nbsp;%</td>
+					<td>${view.result_click(domain.readUserCount?default(0),domain.clickUserCount?default(0))}&nbsp;%</td>
+				</tr>
+			</tbody>
+		</table>
+		<#else>
+		<div class="no_data">没有匹配的数据！</div>
+		</#if>
+	  </div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

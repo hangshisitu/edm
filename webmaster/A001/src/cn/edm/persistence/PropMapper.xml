@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.PropMapper">
+	
+	<resultMap id="Prop" type="cn.edm.domain.Prop">
+		<id column="prop_id" property="propId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="user_id" property="userId"/>
+		<result column="prop_name" property="propName"/>
+		<result column="prop_desc" property="propDesc"/>
+		<result column="type" property="type" />
+		<result column="length" property="length" />
+		<result column="required" property="required" />
+		<result column="default_value" property="defaultValue" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+	</resultMap>
+	
+	
+	
+	<insert id="insert" parameterType="cn.edm.domain.Prop">
+		insert into prop (
+			corp_id,
+			user_id,
+			prop_name,
+			prop_desc,
+			type,
+			length,
+			required,
+			default_value,
+			create_time,
+			modify_time
+		) values (
+			#{corpId},
+			#{userId},
+			#{propName},
+			#{propDesc},
+			#{type},
+			#{length},
+			#{required},
+			#{defaultValue},
+			now(),
+			now()
+		)
+		<selectKey resultType="java.lang.Integer" keyProperty="propId">
+			select @@IDENTITY as prop_id
+		</selectKey>
+		
+	</insert>
+	
+	<insert id="insertBatch" parameterType="java.util.List">
+	  	insert into prop(corp_id,
+			user_id,
+			prop_name,
+			prop_desc,
+			type,
+			length,
+			required,
+			default_value,
+			create_time,
+			modify_time) values
+	  	<foreach collection="list" item="item" index="index"
+	  		separator=",">
+	  		(#{item.corpId},
+			#{item.userId},
+			#{item.propName},
+			#{item.propDesc},
+			#{item.type},
+			#{item.length},
+			#{item.required},
+			#{item.defaultValue},
+			now(),
+			now())
+	  	</foreach>
+  </insert>
+  
+  <delete id="delPropByUserId" parameterType="java.lang.String" >
+   		DELETE FROM prop
+   		WHERE 
+   		user_id = #{userId}
+    </delete>
+	
+</mapper>
+
+

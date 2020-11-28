@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Recipient">
+
+	<typeAlias alias="recipient" type="cn.edm.model.Recipient" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Recipient.mapper">
+		r.corp_id corpId,
+		r.db_id dbId
+	</sql>
+	
+	<sql id="Recipient.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			r.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="dbId">
+			r.db_id = #dbId#
+		</isNotNull>
+    </sql>
+	
+	<insert id="Recipient.batchSave" parameterClass="List">
+		insert into recipient (
+			corp_id,
+			db_id
+		) values 
+		<iterate conjunction=",">
+		(
+			#list[].corpId#,
+			#list[].dbId#
+		)
+		</iterate>
+		on duplicate key update
+		db_id = values(db_id)
+	</insert>
+
+	<select id="Recipient.query" parameterClass="mb" resultClass="recipient">
+		select
+			<include refid="Recipient.mapper" />
+		from recipient r
+		<dynamic>
+			<include refid="Recipient.where" />
+			order by r.db_id asc
+		</dynamic>
+	</select>
+
+	<select id="Recipient.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from recipient r
+		<dynamic>
+			<include refid="Recipient.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Recipient.maxDbId" resultClass="Integer">
+		select
+			max(r.db_id)
+		from recipient r limit 1
+	</select>
+</sqlMap>

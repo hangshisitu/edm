@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 审核</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/mailing.audit.js?${version}"></script>
+<script type="text/javascript">
+	var catedata = {
+		"测试": [
+			<#list tagList as t>
+			{id:"${t.tagId}",title:"${xss.filter(t.tagName)}（${t.emailCount}）"}<#if t_has_next>,</#if>
+			</#list>
+		]
+	};
+	
+	var taskData  = {
+		<#if page.result?? && page.result?size gt 0>
+		<#list page.result as t>
+		${t.taskId}: {
+			task: "${view.value(t.taskName, '无')}",
+			campaign: "${view.value(t.campaignName, '无')}",
+		    template: "${view.value(t.templateName, '无')}", 
+		    subject: "${view.task_ad(t.ad)}${t.subject}",
+		    senderEmail: "${view.value(t.senderEmail, '无')}",
+		    senderName: "${view.value(t.senderName, '无')}",
+		    robot: "${view.task_robot(t.robot)}${view.task_rnd(t.rand)}",
+		    replier: "${view.value(t.replier, '无')}",
+		    includes: "${view.value(t.includes, '无')}",
+		    excludes: "${view.value(t.excludes, '无')}",
+		    receiverName: "${view.receiver(t.receiver)}",
+		    unsubscribe: "${view.value(t.unsubscribe, '无')}",
+		    sendCode: "${view.task_send_code(t.sendCode, t.jobTime)}"
+		}<#if t_has_next>,</#if>
+		</#list>
+		</#if>
+	}
+	var corp_list = [
+    	["", "全部"],
+    	["${corp.corpId}", "${corp.company}"]<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+        <#list corpChildren as c>
+    	["${c.corpId}", "${c.company}"]<#if c_has_next>,</#if>
+    	</#list>
+    ];
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>审核&nbsp;&nbsp;<span>对邮件任务进行审核管理</span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<input type="hidden" name="m" value="${m}" />
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>任务名称</li>
+				<li>
+					<input type="text" name="taskName" value="${xss.filter(mb.taskName)}" maxlength="20" />
+				</li>
+				<li>机构</li>
+				<li>
+					<a id="corp_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择机构</a>
+					<input type="hidden" id="corpId" name="corpId" value="${mb.corpId}" />
+				</li>
+				<li>邮件主题</li>
+				<li>
+					<input type="text" name="subject" value="${xss.filter(mb.subject)}" maxlength="20" />
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<#assign waited = "" />
+			<#assign completed = "" />
+			<#assign none = "" />
+			<#if m == "waited">
+				<#assign waited = "now" />
+			<#elseif m == "completed">
+				<#assign completed = "now" />
+			<#elseif m == "none">
+				<#assign none = "now" />
+			</#if>
+			<li class="${waited}"><a href="${ctx}/mailing/audit/page?m=waited">待审核</a></li>
+			<li class="${completed}"><a href="${ctx}/mailing/audit/page?m=completed">已审核</a></li>
+			<li class="${none}"><a href="${ctx}/mailing/audit/page?m=none">不需要审核</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个任务</p>
+			</div>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25">编号</th>
+					<th>任务名称</th>
+					<th>邮件主题</th>
+					<th>投递人数</th>
+					<th width="10%">状态</th>
+					<th>类型</th>
+					<th>触发计划</th>
+					<th>机构</th>
+					<th>创建人</th>
+					<th width="10%">创建时间</th>
+					<th width="10%">更新时间</th>
+					<th width="20%">操作</th>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#assign i = 0 />
+					<#list page.result as t>
+						<#assign i = i + 1 />
+					<tr class="main_tr_${t.taskId}">
+						<td>${i + page.offset}</td>
+						<td><a class="list_select" data-id="${t.taskId}" title="${xss.filter(t.taskName)}" href="javascript:void(0)">${xss.filter(t.taskName)}</a></td>
+						<td title="${xss.filter(t.subject)}">${xss.filter(t.subject)}</td>
+						<td>${t.emailCount}</td>
+						<td>
+							<#if [12, 14]?seq_contains(t.status)>
+								<#if t.suggestion?? && t.suggestion != "">
+									<div class="moreInfo red J_hook_more clearfix">
+									<div class="txt f_l">${view.task_status(t.status)}</div>
+										<span class="arrow f_l">▼</span>
+										<p class="none">${t.suggestion}</p>
+									</div>
+								<#else>
+									<span class="red">${view.task_status(t.status)}</span>
+								</#if>
+							<#else>
+								${view.task_status(t.status)}
+							</#if>
+						</td>
+						<td>
+							<#if t.type == 0>单项任务<#elseif t.type == 2>周期任务<#elseif t.type == 4>API任务</#if>
+						</td>
+						<td><#if t.bindTouchCount gt 0>有<#else>无</#if></td>
+						<td>${t.company}</td>
+						<td>${t.userId}</td>
+						<td><#if t.createTime??>${t.createTime?datetime}</#if></td>
+						<td><#if t.modifyTime??>${t.modifyTime?datetime}</#if></td>
+						<td class="edit">
+							<ul class="f_ul">
+								<#if view.funcAuth('mailing/template/page', 1)>
+									<li><a href="${ctx}/mailing/template/view?action=audit&taskId=${t.taskId}" target="_blank">预览</a></li>
+								</#if>
+								<#if m == "waited">
+								<li><a href="javascript:open_msg('${ctx}/mailing/task/test?action=audit&taskId=${t.taskId}');">测试发送</a></li>
+								<li><a href="javascript:open_msg('passed?taskId=${t.taskId}', 0);">通过</a></li>
+								<li><a href="javascript:open_msg('not_passed?taskId=${t.taskId}', 0);">不通过</a></li>
+								</#if>
+								<#if view.funcAuth('report/task/page', 1)>
+									<#if [27]?seq_contains(t.status) || (t.planId?? && t.type == 2 && t.taskCount gt 0)>
+										<#if t.planId?? && t.type == 2 && t.taskCount gt 0>
+										<li><a href="/report/detail/plan/cover?planId=${t.planId}">报告</a></li>
+										<#else>
+										<li><a href="/report/detail/task/cover?taskId=${t.taskId}">报告</a></li>
+										</#if>
+									</#if>
+								</#if>
+							</ul>
+						</td>
+					</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<#assign now = "" />
+			<#if m == "waited">
+				<#assign now = "待审核" />
+			<#elseif m == "completed">
+				<#assign now = "已审核" />
+			<#elseif m == "none">
+				<#assign now = "不需要审核" />
+			</#if>
+			<div class="no_data">没有匹配的${now}列表！</div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="searchBox" id="slideSearch" style="display:none">
+	<div class="limiter" style="width:390px">
+		<div class="pop_content">
+			<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+			<div class="search_result"></div>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

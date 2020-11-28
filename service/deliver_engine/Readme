@@ -1,0 +1,33 @@
+V2.9.1 新增支持短信通知
+
+    1)新增配置项:
+       设置短信文件存放的目录
+        [application]
+        SmsFilePath = "/home/weide/iedm_version/deliverengine/sms/" 
+   
+    2)基本测试: 上游生成的任务文件中,
+
+        1 带有 $SMS$99 标志的
+        2 是139邮箱的手机号
+        3 投递成功的
+        4 路径配置正确的
+
+    则会把手机号和邮件主题写入指定目录下的文件中。
+    投递一次生成一个文件，文件格式: 手机号|邮件主题, 文件后缀名为.o
+    
+    3) 新增功能研发测试通过
+
+V2.7.2 (HR.V1.0) 2014-12-08
+    1) deliverengine mx 随机寻找
+
+    2) deliverengine 从配置读helo
+    [HELO]
+    helo1="helloo1.com"
+    helo2="helloo2.com"
+    helo3="helloo3.com"
+
+    3) deliverengine 不连助手程序
+    将如下配置设置为空即可
+    [deliverhelper]
+    bind = ""
+    port = ""

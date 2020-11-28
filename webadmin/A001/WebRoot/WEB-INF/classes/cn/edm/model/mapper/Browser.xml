@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Browser">
+
+	<typeAlias alias="browser" type="cn.edm.model.Browser" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Browser.mapperSum">
+		b.browser browser,
+		sum(b.open_count) openCount,
+		sum(b.click_count) clickCount
+	</sql>
+	
+	<sql id="Browser.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+    </sql>
+	
+	<select id="Browser.sum" parameterClass="mb" resultClass="browser">
+		select
+			<include refid="Browser.mapperSum" />
+		from result_by_browser b
+		inner join task t on t.corp_id = b.corp_id and t.task_id = b.task_id 
+		<dynamic>
+			<include refid="Browser.where" />
+			group by b.browser
+			order by b.browser asc
+		</dynamic>
+	</select>
+
+</sqlMap>

@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>邮件退订</title>
+<style type="text/css">
+	* {
+		margin: 0;
+		padding: 0;
+		font-family: "微软雅黑";
+	}
+	#content {
+		width:100%;
+		padding: 30px 0;
+		line-height: 25px;
+		border-top: 2px solid #000;
+		border-bottom: 2px solid #000;
+		font-size: 14px;
+		position:absolute;
+	}
+	#content p {
+		color: #262626;
+		font-size: 14px;
+		padding: 3px 0;
+	}
+	#content div {
+		width: 400px;
+		margin: 0 auto;
+	}
+	#content h1 {
+		font-size: 18px;
+		font-weight: normal;
+	}
+	li {
+		float:right;
+		display:inline;
+		list-style: none;
+		margin-left: 10px;
+	}
+	.input_yes, .input_no {
+		border:none;
+	    cursor: pointer;
+	    display: block;
+	    height: 30px;
+	    line-height: 30px;
+	    text-align: center;
+	    width: 90px;
+	    background-color:#BABABA;
+	}
+	.input_yes {
+	    background-color: #5DA6D7;
+	    color: #FFFFFF;
+	}
+	.input_yes:hover {
+		background-color: #42AFFD;
+		color:#fff;
+	}
+	.input_no:hover {
+		background-color: #cfcfcf;
+		color: #272727;
+	}
+	.clearfix {
+		overflow: hidden;
+		_zoom: 1;
+	}
+	.btn_pad{
+		overflow:hidden;
+		padding:10px 20px 0 0;
+	}
+</style>
+<script type="text/javascript">
+window.onload=function(){
+	var obj=document.getElementById('content');
+	var iClient=document.documentElement.clientHeight || document.body.clientHeight;
+	var oHeight=obj.offsetHeight;
+	var top=(iClient-oHeight)/2;
+	obj.style.top=top+"px";
+}
+</script>
+</head>
+
+<body>
+<div id="content">
+	<div class="clearfix">
+		<h1>邮件退订</h1>
+		<p>退订信息已成功发送，您今后将不会再收到此邮件服务。</p>
+		<ul class="btn_pad">
+			<li><input type="button" value="关闭" class="input_no" onclick="javascript:window.open('about:blank','_self').close()" /></li>	
+		</ul>
+	</div>
+</div>
+</body>
+</html>

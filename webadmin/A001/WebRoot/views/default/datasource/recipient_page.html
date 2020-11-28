@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<#assign pageCnd = "pageNo=" + "&pageSize=" + page.pageSize />
+<#if location?contains("?")>
+	<#assign location = location + "&" + pageCnd />
+<#else>
+	<#assign location = location + "?" + pageCnd />
+</#if>
+			
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 收件人</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.recipient.js?${version}"></script>
+<script type="text/javascript">
+	<#assign min = page.pageNo - 5 />
+	<#if min lt 1>
+		<#assign min = 1 />
+	</#if>
+	<#assign max = page.pageNo + 5 />
+	<#if max gt page.totalPages>
+		<#assign max = page.totalPages />
+	</#if>
+	
+	var _ids = new Array(
+		<#list min..max as i>
+		["${location?replace('pageNo=', 'pageNo=' + i) + '&_id=' + _id[i?string]}", "${i}"]<#if i_has_next>,</#if>
+		</#list>
+	);
+	var tag_list;
+	var props = new Array();
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>收件人&nbsp;&nbsp;<span>对收件人数据进行分组分类管理<#if tag??>（在“<font class="green">${xss.filter(tag.tagName)}</font>”标签下）</#if></span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<input type="hidden" id="m" name="m" value="${m}" />
+			<input type="hidden" id="tagId" name="tagId" value="${mb.tagId}" />
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>邮箱地址</li>
+				<li>
+					<input type="text" name="email" value="${xss.filter(mb.email)}" maxlength="60" />
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<#assign all = "" />
+			<#assign active = "" />
+			<#assign inactive = "" />
+			<#if m == "active">
+				<#assign active = "now" />
+			<#elseif m == "inactive">
+				<#assign inactive = "now" />
+			<#else>
+				<#assign all = "now" />
+			</#if>
+			<li class="${all}"><a href="${ctx}/datasource/recipient/page?m=all&tagId=${mb.tagId}">全部</a></li>
+			<li class="${active}"><a href="${ctx}/datasource/recipient/page?m=active&tagId=${mb.tagId}">活跃</a></li>
+			<li class="${inactive}"><a href="${ctx}/datasource/recipient/page?m=inactive&tagId=${mb.tagId}">不活跃</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个收件人&nbsp;&nbsp;<#if ["active", "inactive"]?seq_contains(m)>对投递的邮件<#if m == "inactive">从未</#if>有过打开、点击行为</#if></p>
+			</div>
+			<ul class="btn">
+				<li>
+					<#if m == "all" && tag.categoryName != "表单收集">
+				   <#if view.funcAuth('datasource/tag/page', 2)>
+					<a class="btn_icon btn_icon_add" href="add?tagId=${mb.tagId}">新建收件人</a>
+				   </#if>
+					<#elseif m == "active">
+				   <#if view.funcAuth('datasource/tag/page', 1)>
+					<a class="btn_icon btn_icon_down" href="${ctx}/datasource/export/recipient?tagId=${mb.tagId}&activeCnd=1&token=${token}">导出收件人</a>
+				   </#if>				   
+					<#elseif m == "inactive">
+				   <#if view.funcAuth('datasource/tag/page', 1)>
+					<a class="btn_icon btn_icon_down" href="${ctx}/datasource/export/recipient?tagId=${mb.tagId}&activeCnd=-1&token=${token}">导出收件人</a>
+				   </#if>
+					</#if>
+				</li>
+				<#if view.funcAuth('datasource/tag/page', 4)>
+				<li>
+					<a class="btn_icon btn_icon_del" href="javascript:del(${mb.tagId});">删除收件人</a>
+				</li>
+				</#if>
+				<li>
+					<#assign referer = "${ctx}/datasource/${action}/page" />
+					<#if action == "form.5">
+						<#assign referer = "${ctx}/datasource/form/5?formId=${formId}" />
+					</#if>
+					<a class="btn_icon btn_icon_imp" href="${referer}">返回</a>
+				</li>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25"><input type="checkbox" id="all_checkbox" /></th>
+					<th>邮箱地址</th>
+					<th>标签</th>
+					<#if m == "active">
+						<th width="12%">活跃时间</th>
+					</#if>
+					<th width="12%">创建时间</th>
+					<th width="12%">更新时间</th>
+					<th width="16%">操作</th>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as r>
+				<tr>
+					<td><input type="checkbox" name="checkedIds" value="${xss.filter(r.email)}" /></td>
+					<td><a href="javascript:void(0)" data-id="${mb.tagId}" class="list_select" title="${xss.filter(r.email)}">${xss.filter(r.email)}</a></td>
+					<td title="${xss.filter(tag.tagName)}">${xss.filter(tag.tagName)}</td>
+					<#if m == "active">
+					<td><#if r.activeTime??>${r.activeTime?datetime}</#if></td>
+					</#if>
+					<td><#if r.createTime??>${r.createTime?datetime}</#if></td>
+					<td><#if r.modifyTime??>${r.modifyTime?datetime}</#if></td>
+					<td class="edit">
+						<ul class="f_ul">
+							<#if currentUser.username == tag.userId>
+						   <#if view.funcAuth('datasource/tag/page', 3)>
+							<li><a href="add?m=${m}&tagId=${mb.tagId}&email=${xss.filter(r.email)}">修改</a></li>
+						   </#if>
+						   <#if view.funcAuth('datasource/tag/page', 4)>
+							<li><a href="javascript:open_msg('del?action=${mb.tagId}&checkedIds=${xss.filter(r.email)}',0);">删除</a></li>
+						   </#if>
+						   <#else>
+						   <font color="#f5f5f5">修改</font>
+						   <font color="#f5f5f5">删除</font>
+						   </#if>
+						</ul>
+					</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data"><#if page.search || m == "active" || m == "inactive" || tag.categoryName == "表单收集">没有匹配的收件人列表！<#else>您还没有收件人
+			  <#if view.funcAuth('datasource/tag/page', 2)>  
+			      ，现在就<a href="add?tagId=${mb.tagId}" class="green">创建</a>一个
+			  </#if>  
+			</#if></div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<ul class="page">
+				<li>每页显示</li>
+				<li><a style="width:23px;" id="page_btm" class="but_select" href="javascript:void(0)">20</a></li>
+				<#if page.pageNo == 1><li>首页</li><#else><li><a href="${location?replace('pageNo=', 'pageNo=1') + '&_id=' + _id['1']}">首页</a></li></#if>
+				<#if page.hasPrePage><li><a href="${location?replace('pageNo=', 'pageNo=' + (page.pageNo?number - 1)) + '&_id=' + _id[(page.pageNo?number - 1)?string]}">上页</a></li><#else><li>上页</li></#if>
+				<#if page.hasNextPage><li><a href="${location?replace('pageNo=', 'pageNo=' + (page.pageNo?number + 1)) + '&_id=' + _id[(page.pageNo?number + 1)?string]}">下页</a></li><#else><li>下页</li></#if>
+				<#if page.totalPages == 0 || page.pageNo == page.totalPages><li>末页</li><#else><li><a href="${location?replace('pageNo=', 'pageNo=' + page.totalPages) + '&_id=' + _id[page.totalPages?string]}">末页</a></li></#if>
+				<li>共${page.totalPages}页</li>
+				<li>转到</li>
+				<li>
+					<a style="width:43px;" id="_ids" class="but_select" href="javascript:void(0)">${page.pageNo}</a>
+					<input type="hidden" id="_id" value="" />
+				</li>
+			</ul>
+			<ul class="btn"></ul>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

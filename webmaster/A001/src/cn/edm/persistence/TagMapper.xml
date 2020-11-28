@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.TagMapper">
+	
+	<resultMap id="Tag" type="cn.edm.domain.Tag">
+		<id column="tag_id" property="tagId"/>
+		<result column="db_id" property="dbId"/>
+		<result column="category_id" property="categoryId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="user_id" property="userId"/>
+		<result column="tag_name" property="tagName" />
+		<result column="tag_desc" property="tagDesc" />
+		<result column="email_count" property="emailCount" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+	</resultMap>
+	
+	
+	
+	<insert id="insertTag" parameterType="cn.edm.domain.Tag">
+		INSERT INTO tag(
+			db_id,
+			category_id,
+			corp_id,
+			user_id,
+			tag_name,
+			tag_desc,
+			email_count,
+			create_time,
+			modify_time
+		)VALUES(
+			#{dbId},
+			#{categoryId},
+			#{corpId},
+			#{userId},
+			#{tagName},
+			#{tagDesc},
+			#{emailCount},
+			now(),
+			now()
+		)
+		<selectKey resultType="java.lang.Integer" keyProperty="cosId">
+			select @@IDENTITY as tag_id
+		</selectKey>
+	</insert>
+	
+	<delete id="delTagByUserId" parameterType="java.lang.String" >
+   		DELETE FROM tag
+   		WHERE 
+   		user_id = #{userId}
+    </delete>
+	
+	
+	
+</mapper>
+
+

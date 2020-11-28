@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Touch">
+
+	<typeAlias alias="touch" type="cn.edm.model.Touch" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Touch.mapper">
+		t.task_id taskId,
+		t.corp_id corpId,
+		t.user_id userId,
+		t.template_id templateId,
+		t.parent_id parentId,
+		t.template_name templateName,
+		t.subject subject,
+		t.sender_name senderName,
+		t.sender_email senderEmail,
+		t.receiver receiver,
+		t.touch_count touchCount,
+		t.create_time createTime
+	</sql>
+	
+	<sql id="Touch.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			t.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="parentId">
+			t.parent_id = #parentId#
+		</isNotNull>
+		<isNotNull prepend="and" property="parentIds">
+			t.parent_id in <iterate property="parentIds" open="(" close=")" conjunction=",">#parentIds[]#</iterate>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Touch.save" parameterClass="touch">
+		insert into touch (
+			task_id,
+			corp_id,
+			user_id,
+			template_id,
+			parent_id,
+			template_name,
+			subject,
+			sender_name,
+			sender_email,
+			receiver,
+			touch_count,
+			create_time
+		) values (
+			#taskId#,
+			#corpId#,
+			#userId#,
+			#templateId#,
+			#parentId#,
+			#templateName#,
+			#subject#,
+			#senderName#,
+			#senderEmail#,
+			#receiver#,
+			#touchCount#,
+			now()
+		)
+		on duplicate key update
+		parent_id = values(parent_id),
+		template_name = values(template_name),
+		subject = values(subject),
+		sender_name = values(sender_name),
+		sender_email = values(sender_email),
+		receiver = values(receiver),
+		touch_count = values(touch_count)
+	</insert>
+
+	<select id="Touch.query" parameterClass="mb" resultClass="touch">
+		select
+			t2.file_path filePath,
+			a.join_phone joinPhone,
+			a.join_sms joinSms,
+			a.phone_path phonePath,
+			a.sms_path smsPath,
+			a.phone_attrs phoneAttrs,
+			<include refid="Touch.mapper" />
+		from touch t
+		left join template t2 on t2.template_id = t.template_id
+		left join template_adapter a on a.template_id = t.template_id
+		<dynamic>
+			<include refid="Touch.where" />
+		</dynamic>
+	</select>
+	<select id="Touch.touchSum" parameterClass="mb" resultClass="Integer">
+		select
+			sum(t.touch_count) touchCount
+		from touch t 
+		inner join result r on t.task_id = r.task_id and t.template_id = r.template_id and t.corp_id = r.corp_id
+		<dynamic>
+			<include refid="Touch.where" />
+			and r.sent_count > 0
+		</dynamic>
+	</select>
+	
+</sqlMap>

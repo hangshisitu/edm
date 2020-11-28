@@ -1,0 +1,109 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$('#add').ajaxForm({
+		url: 'add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(".msg_content",".load_img_open");
+			var form = jqForm[0]; 
+			if (!form.categoryName.value) {
+				$(".msg_ul .err").html("请输入类别名称");
+				form.categoryName.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				if("${category.categoryId}" != "") {
+					$("input[name=checkedIds]").each(function(i) {
+						if($(this).val() == data.categoryId) {
+							$(this).closest('tr').children("td:eq(1)").children("a").html(data.categoryName).attr("title",data.categoryName);
+							$(this).closest('tr').children("td:eq(2)").html(data.categoryDesc).attr("title",data.categoryDesc);
+							$(this).closest('tr').children("td:eq(5)").html(data.modifyTime);
+						}
+					});
+				} else {
+					var text = "";
+					text += "<tr>";
+					text += "<td colspan=\"7\" style=\"padding:0;\">";
+					text += "<div class=\"sort_box\">";
+					text += "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" class=\"sort_table\">";
+					text += "<tr>";
+					text += "<td width=\"25\"><span class=\"tree\"><input type=\"checkbox\" name=\"checkedIds\" value=\"" + data.categoryId + "\" /></span></td>";
+					text += "<td><a href=\"javascript:void(0)\" class=\"J_hook_label\" title='" + data.categoryName + "'>" + data.categoryName + "</a></td>";
+					text += "<td width=\"20%\" title='" + data.categoryDesc + "'>" + data.categoryDesc + "</td>";
+					text += "<td width=\"10%\">" + data.count + "</td>";
+					text += "<td width=\"12%\">" + data.userId + "</td>";
+					text += "<td width=\"12%\">" + data.createTime + "</td>";
+					text += "<td width=\"12%\">" + data.modifyTime + "</td>";
+					text += "<td width=\"16%\" class=\"edit\">";
+					text += "<ul class=\"f_ul\">";
+					text += "<li><a href=\"javascript:open_msg('add?categoryId=" + data.categoryId + "',0);\">修改</a></li>";
+					text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.categoryId + "',0);\">删除</a></li>";
+					text += "</ul>";
+					text += "</td>";
+					text += "</tr>";
+					text += "</table>";
+					text += "</div>";
+					text += "<div class=\"tag_box\">";
+					text += "<p style='text-align:center'>没有匹配的标签列表</p>";
+					text += "</div>";
+					text += "</td>";
+					text += "</tr>";
+					
+					$(".sort_table tr:eq(0)").after(text);
+					if ($(".no_data").size() > 0) {
+						$(".no_data").remove();
+					}
+				}
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);		
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			} 
+		}   
+	}); 
+});
+</script>
+<div class="msg_content clearfix">
+<h1 class="title"><#if category.categoryId??>修改<#else>新建</#if>类别</h1>
+<form id="add" action="add" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="categoryId" value="${category.categoryId}" />
+	<input type="hidden" name="orgCategoryName" value="${xss.filter(category.categoryName)}" />
+	<ul class="msg_ul">
+		<li>类别名称<span class="f666">（必填）</span></li>
+		<li><input type="text" name="categoryName" value="${xss.filter(category.categoryName)}" class="msg_txt" maxlength="20" /></li>
+		<li>类别描述</li>
+		<li>
+			<textarea class="msg_txt desc_area" name="categoryDesc" value="${xss.filter(category.categoryDesc)}">${xss.filter(category.categoryDesc)}</textarea>
+		</li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+	
+	<ul class="f_l">
+		<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+	</ul>
+	
+	<ul class="msg_btn">
+		<li>
+			<input type="submit" value="确定" class="input_yes" />
+		</li>
+		<li>
+			<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+		</li>
+	</ul>
+	</div>
+</form>
+</div>

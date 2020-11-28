@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Campaign">
+
+	<typeAlias alias="campaign" type="cn.edm.model.Campaign" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Campaign.mapper">
+		c.campaign_id campaignId,
+		c.corp_id corpId,
+		c.user_id userId,
+		c.campaign_name campaignName,
+		c.campaign_desc campaignDesc,
+		c.create_time createTime,
+		c.modify_time modifyTime
+	</sql>
+	
+	<sql id="Campaign.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			c.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			c.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			c.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			c.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignName">
+			<isEqual property="nameCnd" compareValue="eq">
+				c.campaign_name = #campaignName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				c.campaign_name like concat('%', #campaignName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ c.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ c.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Campaign.save" parameterClass="campaign">
+		insert into campaign (
+			corp_id,
+			user_id,
+			campaign_name,
+			campaign_desc,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#campaignName#,
+			#campaignDesc#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="campaignId">
+			select @@IDENTITY as campaign_id
+		</selectKey>
+	</insert>
+	
+	<update id="Campaign.update" parameterClass="campaign">
+		update campaign c set
+			c.corp_id = #corpId#,
+			c.campaign_name = #campaignName#,
+			c.campaign_desc = #campaignDesc#,
+			c.modify_time = now()
+		where c.user_id = #userId# and c.campaign_id = #campaignId#
+	</update>
+	
+	<delete id="Campaign.delete" parameterClass="mb">
+		delete from campaign 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="campaignId">
+				campaign_id = #campaignId#
+			</isNotNull>
+			<isNotNull prepend="and" property="campaignIds">
+				campaign_id in <iterate property="campaignIds" open="(" close=")" conjunction=",">#campaignIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+	
+	<select id="Campaign.query" parameterClass="mb" resultClass="campaign">
+		select
+			<isNotNull property="statuses">
+			(
+				select
+					count(t.campaign_id)
+				from task t
+				where t.campaign_id = c.campaign_id
+				and t.task_status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+				and t.type = 0
+			) taskCount,
+			</isNotNull>
+			<include refid="Campaign.mapper" />
+		from campaign c
+		<dynamic>
+			<include refid="Campaign.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by c.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="Campaign.get" parameterClass="mb" resultClass="campaign">
+		select
+			<include refid="Campaign.mapper" />
+		from campaign c
+		<dynamic>
+			<include refid="Campaign.where" />
+		</dynamic>
+	</select>
+
+	<select id="Campaign.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from campaign c
+		<dynamic>
+			<include refid="Campaign.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Campaign.index" parameterClass="mb" resultClass="campaign">
+		select
+			<isNotNull property="statuses">
+			(
+				select
+					count(t.campaign_id)
+				from task t
+				where t.campaign_id = c.campaign_id
+				and t.task_status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+				and t.type in (0, 4)
+			) taskCount,
+			</isNotNull>
+			<include refid="Campaign.mapper" />
+		from campaign c
+		<dynamic>
+			<include refid="Campaign.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by c.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+</sqlMap>

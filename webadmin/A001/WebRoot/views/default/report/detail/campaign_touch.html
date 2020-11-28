@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<#include "/common/meta.html" />
+		<title>${pageTitle} - 活动</title>
+		<#include "/common/css.html" />
+		<#include "/common/js.html" />
+		<script type="text/javascript">
+			$(function() {
+				$(".trig_links ul").each(function(){
+					var $this = $(this);
+					if($this.height() > 27){
+						$this.height('27px');
+						$this.parents('.trig_links').find("span").show();
+					}
+				});
+				
+				$(".trig_links span").toggle(function(){
+					var $this = $(this);
+					$this.parents('.trig_links').find('ul').css({"height":"auto"});
+					$this.html('收起&lt;&lt;');
+				},function(){
+					var $this = $(this);
+					$this.parents('.trig_links').find('ul').animate({"height":"27px"},500);
+					$this.html('展开所有链接&gt;&gt;');
+				});
+			});
+			
+			function touch_exports(campaignId) {
+				if(campaignId == "") {
+					error_message("没有需要导出的触发活动报告", 1);
+					return false;
+				}
+				location.assign("/report/export/campaign/touch?campaignId=" + campaignId);
+			}
+			
+			function recipients_exports(taskId, templateId) {
+				if(taskId == "") {
+					error_message("没有需要导出的解发计划报告", 1);
+					return false;
+				}
+				
+				location.assign("/report/export/touch/recipients?taskId=" + taskId + "&templateId=" + templateId);
+			}
+		</script>
+	</head>
+	
+	<body>
+		<#include "top.html" />
+		<div id="wrapper" class="clearfix">
+			<#include "left.html" />
+			<div id="main" class="clearfix posfix">
+			  <div class="posfix">
+				<h1 class="title">触发&nbsp;&nbsp;<span>提供与任务关联的触发计划的数据报告</span></h1>
+				<ul class="tab clearfix">
+					<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${campaign.campaignId}">概览</a></li>
+					<li><a href="${ctx}/report/detail/campaign/send?campaignId=${campaign.campaignId}">发送</a></li>
+					<li><a href="${ctx}/report/detail/campaign/open?campaignId=${campaign.campaignId}">打开</a></li>
+					<li><a href="${ctx}/report/detail/campaign/click?campaignId=${campaign.campaignId}">点击</a></li>
+					<li><a href="${ctx}/report/detail/campaign/domain?campaignId=${campaign.campaignId}">域名</a></li>
+					<li><a href="${ctx}/report/detail/campaign/region?campaignId=${campaign.campaignId}">地域</a></li>
+					<!-- <li><a href="${ctx}/report/detail/campaign/client?campaignId=${campaign.campaignId}">终端</a></li> -->
+					<li><a href="${ctx}/report/detail/campaign/history?campaignId=${campaign.campaignId}">历史</a></li>
+					<li><a href="${ctx}/report/detail/campaign/compare?campaignId=${campaign.campaignId}">对比</a></li>
+					<#if (campaign.touchCount)?if_exists gt 0>
+						<li class="now"><a href="${ctx}/report/detail/campaign/touch?campaignId=${campaign.campaignId}">触发</a></li>
+					</#if>
+				</ul>
+				<div class="ribbon clearfix">
+					<ul class="btn">
+						<#if _9>
+							<#if view.funcAuth('mailing/campaign/page', 6)>
+							<li><a class="btn_icon btn_icon_down" href="javascript:touch_exports('${campaign.campaignId}');">导出报告</a></li>
+							</#if>
+						</#if>
+					</ul>
+				</div>
+				<#include "/default/report/detail/campaign.html" />
+				<#if domainMap?exists && domainMap?size gt 0>
+					<div class="trig_title">当前活动共 ${recent.taskCount} 个投递任务，${domainList?size?default(0)} 个关联的触发计划：</div>
+					<#list domainMap?keys as key>
+						<div class="trig_links">
+							<#list taskIds?if_exists as taskId>
+								<#assign endStr='_' + taskId />
+								<#if key?contains(endStr)>
+									<#assign endIdx=key?last_index_of(endStr) />
+									<#assign taskName=key?substring(0, endIdx) />
+								</#if>
+							</#list>
+							<p>任务来源： ${taskName}</p>
+						</div>
+						<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+							<tbody>
+								<tr>
+									<th width="100px;">模板名称</th>
+									<th>触发总数</th>
+									<th>成功数</th>
+									<th>打开人数</th>
+									<th>打开次数</th>
+									<th>点击人数</th>
+									<th>点击次数</th>
+									<th>退订人数</th>
+									<th>转发人数</th>
+									<th>触发率</th>
+									<th>成功率</th>
+									<th>打开率</th>
+									<th>点击率</th>
+									<th width="14%">操作</th>
+								</tr>
+								<#list domainMap[key]?if_exists as d>
+									<tr>
+										<td title="${d.templateName}">${d.templateName}</td>
+										<td>${d.touchCount}</td>
+										<td>${d.reachCount}</td>
+										<td>${d.readUserCount}</td>
+										<td>${d.readCount}</td>
+										<td>${d.clickUserCount}</td>
+										<td>${d.clickCount}</td>
+										<td>${d.unsubscribeCount}</td>
+										<td>${d.forwardCount}</td>
+										<td>${view.result_touch(d.touchCount?default(0), d.parentReadUserCount?default(0))}&nbsp;%</td>
+										<td>${view.result_reach(d.sentCount?default(0), d.reachCount?default(0), d.afterNoneCount?default(0))}&nbsp;%</td>
+										<td>${view.result_read(d.reachCount?default(0), d.readUserCount?default(0))}&nbsp;%</td>
+										<td>${view.result_click(d.readUserCount?default(0), d.clickUserCount?default(0))}&nbsp;%</td>
+										<td class="edit">
+											<ul class="f_ul">
+												<#if _8>
+													<#if view.funcAuth('report/touch/page', 1)>
+													<li><a href="${ctx}/report/detail/touch/cover?touchId=${d.touchId}&templateId=${d.templateId}">报告</a></li>
+													</#if>
+												</#if>
+												<#if _9>
+													<#if view.funcAuth('report/touch/page', 6)>
+													<li><a href="javaScript:recipients_exports('${d.touchId}', '${d.templateId}');">导出</a></li>
+													</#if>
+												</#if>
+												<#if view.funcAuth('mailing/template/page', 1)>
+												<li><a href="${ctx}/mailing/template/view?action=touch&touchId=${d.touchId}&templateId=${d.templateId}" target="_blank">预览</a></li>
+												</#if>
+											</ul>
+										</td>
+									</tr>
+								</#list>
+							</tbody>
+						</table>
+					</#list>
+				<#else>
+					<div class="no_data">没有匹配的数据！</div>
+				</#if>
+			  </div>
+			</div>
+		</div>
+		<div class="select_div"></div>
+	</body>
+</html>

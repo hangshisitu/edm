@@ -1,0 +1,127 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$('#senderAdd').ajaxForm({
+		url: '/account/sender/add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(".msg_content",".msg_content .load_img_open");
+			var form = jqForm[0]; 
+			if (!form.senderEmail.value) {
+				$(".msg_ul .err").html("请输入发件人邮箱");
+				form.senderEmail.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			var action = $("input[name=action]").val();
+			if (data.code == 1) {
+				if(action == "sender") {
+					var status = "未验证";
+					if (data.status == 1) {
+						status = "启用";
+					}
+					var required = "设为";
+					if(data.required == 1) {
+						required = "取消";
+					}
+					
+					if ("${sender.senderEmail}" != "") {
+						$("input[name=checkedIds]").each(function(i) {
+							if($(this).val() == data.senderEmail) {
+								$(this).closest('tr').children("td:eq(1)").html(data.senderName).attr("title",data.senderName);
+								$(this).closest('tr').children("td:eq(2)").html(status).attr("title",status);
+								$(this).closest('tr').children("td:eq(3)").html(data.createTime);
+								$(this).closest('tr').children("td:eq(4)").html(data.modifyTime);
+							}
+						});
+					} else {
+						var text = "";
+						text += "<tr>";
+						text += "<td>";
+						text += "<input type=\"hidden\" name=\"checkedIds\" value=\"" + data.senderEmail + "\" />";
+						text += "<a href=\"javascript:open_msg('add?senderId=" + data.senderEmail + "',0);\" title='" + data.senderEmail + "'>" + data.senderEmail + "</a>";
+						text += "</td>";
+						text += "<td>" + data.senderName + "</td>";
+						text += "<td>" + status + "</td>";
+						text += "<td>" + data.userId + "</td>";
+						text += "<td>" + data.createTime + "</td>";
+						text += "<td>" + data.modifyTime + "</td>";
+						text += "<td class=\"edit\">";
+						text += "<ul class=\"f_ul\">";
+						text += "<li><a href=\"javascript:open_msg('add?senderEmail=" + data.senderEmail + "',0);\">修改</a></li>";
+						text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.senderEmail + "',0);\">删除</a></li>";
+
+						if (data.status == 1) {
+							text += "<li><a href=\"javascript:open_msg('required?checkedIds=" + data.senderEmail + "',0);\">" + required + "默认</a></li>";
+						} else {
+							text += "<li><a href=\"javascript:open_msg('validate?checkedIds=" + data.senderEmail + "',0);\">重发验证邮件</a></li>";
+						}
+
+						text += "</ul>";
+						text += "</td>";
+						text += "</tr>";
+						$(".main_table tr:eq(0)").after(text);
+						if ($(".no_data").size() > 0) {
+							$(".no_data").remove();
+						}
+					}
+				} else {
+
+				}
+				
+				//动态加一
+				if(data.sum >= 0){
+					$('.note').find('span').text(data.sum);
+				}
+				
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			} 
+		}
+	}); 
+});
+</script>
+
+<div class="msg_content">
+<h1 class="title"><#if sender.senderEmail??>修改<#else>新建</#if>发件人</h1>
+<form id="senderAdd" action="/account/sender/add" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="action" value="${action}" />
+	<input type="hidden" name="orgSenderEmail" value="${xss.filter(sender.senderEmail)}" />
+	<ul class="msg_ul">
+		<li>发件人邮箱<span class="f666">（必填）</span></li>
+		<li><input type="text" name="senderEmail" value="${xss.filter(sender.senderEmail)}" class="msg_txt" maxlength="64" /></li>
+		<li class="msg_tips m_b10">为保证成功率，请勿选择gmail、qq、163、126、139、sina等邮箱作为发件人。</li>
+		<li>发件人昵称</li>
+		<li><input type="text" name="senderName" value="${xss.filter(sender.senderName)}" class="msg_txt" maxlength="20" /></li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+	
+	<ul class="f_l">
+		<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+	</ul>
+	
+	<ul class="msg_btn">
+		<li>
+			<input type="submit" value="确定" class="input_yes" />
+		</li>
+		<li>
+			<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+		</li>
+	</ul>
+	</div>
+</form>
+</div>

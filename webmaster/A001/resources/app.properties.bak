@@ -1,0 +1,88 @@
+#MySQL configuration
+jdbc.driver=com.mysql.jdbc.Driver
+
+#localhost
+#jdbc.url=jdbc:mysql://localhost:3306/edm?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8
+#jdbc.username=root
+#jdbc.password=lich
+
+#103
+jdbc.url=jdbc\:mysql\://127.0.0.1\:3306/edm?rewriteBatchedStatements\=true&useUnicode\=true&characterEncoding\=utf8
+jdbc.username=root
+jdbc.password=root123
+
+
+#BoneCP configuration
+#bonecp.idleConnectionTestPeriodInMinutes=60
+#bonecp.idleMaxAgeInMinutes=240
+#bonecp.maxConnectionsPerPartition=20
+#bonecp.minConnectionsPerPartition=5
+#bonecp.partitionCount=3
+#bonecp.acquireIncrement=5
+#bonecp.statementsCacheSize=100
+#bonecp.releaseHelperThreads=3
+
+# dbcp settings
+# Lich 于2014－05－19修改连接池为dbcp
+dbcp.initial.size=5
+dbcp.max.active=40
+dbcp.max.idle=10
+dbcp.default.auto.commit=false
+
+#activemq settings
+jms.broker_url=vm://127.0.0.1?broker.persistent=false&broker.useJmx=false&broker.schedulerSupport=false
+
+# smtp setting
+smtp.from=admin@mtarget.cn
+forget=M.target\u5BC6\u7801\u91CD\u7F6E\uFF01
+smtp.catalog.show = true
+
+
+login.password=123456
+
+
+
+# webmaster访问路径
+#app.url=http://edm.cn:8080
+#app.urls=http://edm.cn:8080
+app.url=http://192.168.34.170:8081
+app.urls=http://192.168.34.170:8081
+website.url=http://mtarget.cn
+
+
+# webadmin项目发布路径
+webadmin.path=/home/iedm/webadmin/webapps/ROOT
+
+# webadmin项目访问路径
+webadmin.http=http://192.168.34.170:8080
+
+# delivery
+default.helo=139.com
+default.skip=192.168.34.170
+delivery.engine=http://192.168.34.170:55501
+delivery.logger=http://192.168.34.170:55100
+delivery.sender=http://192.168.34.170:55400
+
+#property url
+property.url=http://192.168.34.170:55900
+#days
+property.days=15
+
+#delivery monitor
+fromDomain.url=http://192.168.34.170:55700/do
+#fromDomain.url=http://localhost:8080/mm/servlet/DeliveryData
+#fromDomain.url=http://localhost:8080/mm/servlet/LogData
+
+# mongodb settings
+mongo.host=192.168.34.170
+mongo.port=27017
+mongo.pool.size=40
+mongo.coll.size=2000
+mongo.recipient.size=10000000
+mongo.tag.size=5000000
+
+# 上传文件根目录路径
+root.path=/home/iedm/webadmin/webapps/ROOT/
+
+# 文件服务器地址
+#file.server=http://192.168.34.170:8888/showpic

@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 资料</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/account.profile.js?${version}"></script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title border_b">资料&nbsp;&nbsp;<span>个人基本资料</span></h1>
+		<form id="add" action="add" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="orgEmail" value="${xss.filter(user.email)}" />
+			<table border="0" cellspacing="0" cellpadding="0" class="IE6_table m_t20">
+				<tr class="fixed_tr">
+					<td width="100" align="right">用户名：</td>
+					<td width="10" class="red"></td>
+					<td><input type="text" class="add_text" value="${xss.filter(user.userId)}" readonly="readonly" /></td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">邮箱地址：</td>
+					<td class="red">*</td>
+					<td><input type="text" class="add_text" name="email" value="${xss.filter(user.email)}" maxlength="64" /></td>
+				</tr>
+				<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_ALL">
+				<#if [1, 2]?seq_contains(currentUser.role.type)>
+				<tr class="fixed_tr">
+					<td align="right">公司名称：</td>
+					<td class="red">*</td>
+					<td><input type="text" class="add_text" name="company" value="${xss.filter(corp.company)}" maxlength="100" /></td>
+				</tr>
+				</#if>
+				</@sec.authorize>
+				<tr class="fixed_tr">
+					<td align="right">联系人姓名：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="trueName" value="${xss.filter(user.trueName)}" maxlength="20" /></td>
+				</tr>
+				<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_ALL">
+				<#if [1, 2]?seq_contains(currentUser.role.type)>
+				<tr class="fixed_tr">
+					<td align="right">联系地址：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="address" value="${xss.filter(corp.address)}" maxlength="100" /></td>
+				</tr>
+				</#if>
+				</@sec.authorize>
+				<tr class="fixed_tr">
+					<td align="right">电话号码：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="phone" value="${xss.filter(user.phone)}" maxlength="20" /></td>
+				</tr>
+				<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_ALL">
+				<#if [1, 2]?seq_contains(currentUser.role.type)>
+				<tr class="fixed_tr">
+					<td align="right">传真：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="fax" value="${xss.filter(corp.fax)}" maxlength="20" /></td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">邮编：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="zip" value="${xss.filter(corp.zip)}" maxlength="6" /></td>
+				</tr>
+				</#if>
+				</@sec.authorize>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table">
+                <tr>
+                    <td align="right" width="110">&nbsp;</td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" id="smt" type="submit" value="保存" /></li>
+                            <li><input class="input_no" onclick="location.assign('add')" type="button" value="取消" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+		</form>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Cos">
+
+	<typeAlias alias="cos" type="cn.edm.model.Cos" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Cos.mapper">
+		c.cos_id cosId,
+		c.cos_name cosName,
+		c.type type,
+		c.user_count userCount,
+		c.day_send daySend,
+		c.week_send weekSend,
+		c.month_send monthSend,
+		c.total_send totalSend,
+		c.start_time startTime,
+		c.end_time endTime,
+		c.is_remind remind,
+		c.create_time createTime,
+		c.status status
+	</sql>
+	
+	<sql id="Cos.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="cosId">
+			c.cos_id = #cosId#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			c.status = #status#
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			c.type = #type#
+		</isNotNull>
+		<isNotNull prepend="and" property="remind">
+			c.is_remind = #remind#
+		</isNotNull>
+    </sql>
+	
+	<insert id="Cos.save" parameterClass="cos">
+		insert into class_of_service (
+			cos_name,
+			type,
+			user_count,
+			day_send,
+			week_send,
+			month_send,
+			total_send,
+			start_time,
+		    end_time,
+		    is_remind,
+		    create_time,
+		    status
+		) values (
+			#cosName#,
+			#type#,
+			#userCount#,
+			#daySend#,
+			#weekSend#,
+			#monthSend#,
+			#totalSend#
+			#startTime#,
+			#endTime#,
+			#remind#,
+			#createTime#,
+			#status#
+		)
+		<selectKey resultClass="Integer" keyProperty="cosId">
+			select @@IDENTITY as cos_id
+		</selectKey>
+	</insert>
+	
+	<update id="Cos.update" parameterClass="cos">
+		update class_of_service c 
+		set
+		    c.status = #status#
+		where 
+		    c.cos_id = #cosId#
+	</update>
+	
+	<select id="Cos.query" parameterClass="mb" resultClass="cos">
+		select
+			<include refid="Cos.mapper" />
+		from class_of_service c
+		<dynamic>
+			<include refid="Cos.where" />
+		</dynamic>
+	</select>
+	
+</sqlMap>

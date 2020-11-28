@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.CustomEnterpriseMapper">
+	
+	<resultMap id="customEnterprise" type="cn.edm.domain.CustomEnterprise">
+		<id column="id" property="id"/>
+		<result column="logoUrl" property="logoUrl"/>
+		<result column="createTime" property="createTime"/>
+		<result column="status" property="status"/>
+	</resultMap>
+	
+	<sql id="base_columns">
+		c.id,c.logoUrl,c.createTime,c.status
+	</sql>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="id != null">
+			AND c.id = #{id}
+		</if>
+		<if test="logoUrl != null">
+			AND c.logoUrl = #{logoUrl}
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(c.createTime, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(c.createTime, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		  
+		<if test="status != null">
+			AND c.status = #{status}
+		</if>  
+	</sql>
+	
+
+	<select id="selectByCustomEnterpriseId" resultMap="customEnterprise" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM customenterprise c
+		WHERE 
+		c.id = #{id}
+	</select>
+	
+	<select id="selectByCustomEnterpriseStatus" resultMap="customEnterprise" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM customenterprise c
+		WHERE 
+		c.status = #{status}
+	</select>
+	
+	
+	
+	<select id="selectCustomEnterprises" resultMap="customEnterprise" parameterType="java.util.Map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM customenterprise c
+		<include refid="where"/>
+		order by c.createTime desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectCustomEnterpriseCount" resultType="java.lang.Long" parameterType="java.util.Map">
+		SELECT
+		COUNT(*)
+		FROM customenterprise c		
+		<include refid="where"/>
+	</select>
+	
+	<!-- 更新状态 -->
+	<update id="updateCustomEnterpriseStatus" parameterType="java.util.Map">
+		UPDATE customenterprise c
+		SET c.status = #{status}
+        where c.id = #{id}
+	</update>		
+	
+	<insert id="insertCustomEnterprise" parameterType="cn.edm.domain.CustomEnterprise" useGeneratedKeys="true" keyProperty="id">
+		insert into customenterprise(
+			status,
+			logoUrl,
+			createTime
+		)values(
+			#{status},
+			#{logoUrl},
+			#{createTime}
+		)
+	</insert>
+	
+	<delete id="deleteCustomEnterpriseById" parameterType="java.util.Map">
+	    DELETE FROM customenterprise
+   		WHERE 
+   		id = #{id}
+	</delete>
+
+</mapper>
+
+

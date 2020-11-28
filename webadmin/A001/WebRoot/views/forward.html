@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>邮件转发</title>
+<style type="text/css">
+	* {
+		margin: 0;
+		padding: 0;
+		font-family: "微软雅黑";
+	}
+	#content {
+		width:100%;
+		padding: 30px 0;
+		line-height: 25px;
+		border-top: 2px solid #000;
+		border-bottom: 2px solid #000;
+		font-size: 14px;
+		position:absolute;
+	}
+	#content p {
+		color: #262626;
+		font-size: 14px;
+		padding: 3px 0;
+	}
+	#content div {
+		width: 400px;
+		margin: 0 auto;
+	}
+	#content h1 {
+		font-size: 18px;
+		font-weight: normal;
+	}
+	textarea {
+		padding: 4px;
+	}
+	li {
+		float:right;
+		display:inline;
+		list-style: none;
+		margin-left: 10px;
+	}
+	.input_yes, .input_no {
+		border:none;
+	    cursor: pointer;
+	    display: block;
+	    height: 30px;
+	    line-height: 30px;
+	    text-align: center;
+	    width: 90px;
+	    background-color:#BABABA;
+	}
+	.input_yes {
+	    background-color: #5DA6D7;
+	    color: #FFFFFF;
+	}
+	.input_yes:hover {
+		background-color: #42AFFD;
+		color:#fff;
+	}
+	.input_no:hover {
+		background-color: #cfcfcf;
+		color: #272727;
+	}
+	.clearfix {
+		overflow: hidden;
+		_zoom: 1;
+	}
+	.btn_pad{
+		overflow:hidden;
+		padding:10px 20px 0 0;
+	}
+	.err {
+		color: #c85305;
+	}
+</style>
+<script type="text/javascript" src="${ctx}/static/js/jquery/jquery-1.7.1.min.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/jquery/jquery.form-min.js?${version}"></script>
+<script type="text/javascript">
+window.onload = function(){
+	var obj = document.getElementById('content');
+	var iClient = document.documentElement.clientHeight || document.body.clientHeight;
+	var oHeight = obj.offsetHeight;
+	var top = (iClient-oHeight)/2;
+	obj.style.top = top + "px";
+}
+
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	$('#forward').ajaxForm({
+		url: '/forward',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".loading").show();
+			var form = jqForm[0];
+			if (!form.EMAIL.value) {
+				$(".err").html("请输入您要转发的好友邮箱地址");
+				form.EMAIL.focus();
+				$(".loading").hide();
+				return false; 
+			}
+			$(".err").html("");
+		},
+		success: function(data) { 
+			if(data.code == 1) {
+				$(".err").html(data.message);
+			} else {
+				$(".err").html(data.message);
+			} 
+			$(".loading").hide();
+		}
+	}); 
+});
+</script>
+
+</head>
+<body>
+<div id="content">
+	<div class="clearfix">
+		<form id="forward" action="${ctx}/forward" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="SID" value="${SID}" />
+			<h1>邮件转发</h1>
+			<p>请输入您要转发的好友邮箱地址，以逗号“,”隔开</p>
+			<p><textarea name="EMAIL" style="width: 374px; resize:none;" rows="4"></textarea></p>
+			<span class="err"></span>
+			<ul class="btn_pad">
+				<li><input type="button" value="关闭" class="input_no" onclick="javascript:window.open('about:blank','_self').close()" /></li>
+				<li><input type="submit" value="确定" class="input_yes" onclick="" /></li>
+				<li class="loading" style="display: none; float:left"><img src="/static/img/loading2.gif"  /></li>
+			</ul>
+		</form>
+	</div>
+</div>
+</body>
+</html>

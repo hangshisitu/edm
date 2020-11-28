@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.DeliveryQuantityMapper">
+	
+	<resultMap id="DeliveryQuantity" type="cn.edm.domain.DeliveryQuantity">
+		<result column="from_domain" property="fromDomain"/>
+		<result column="rcpt_domain" property="rcptDomain"/>
+		<result column="quantity" property="quantity"/>
+		<result column="seconds" property="seconds"/>
+		<result column="status" property="status" />
+		<result column="create_time" property="createTime" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		from_domain,rcpt_domain,quantity,seconds,status,create_time,update_time
+	</sql>
+	
+	
+	<insert id="insertBatch" parameterType="java.util.List">
+	  	insert into delivery_quantity(
+	  		from_domain,
+			rcpt_domain,
+			quantity,
+			seconds,
+			status,
+			create_time,
+			update_time
+			) values
+	  	<foreach collection="list" item="item" index="index"
+	  		separator=",">
+	  		(#{item.fromDomain},
+			#{item.rcptDomain},
+			#{item.quantity},
+			#{item.seconds},
+			#{item.status},
+			#{item.createTime},
+			#{item.updateTime}
+			)
+	  	</foreach>
+  </insert>
+</mapper>
+
+

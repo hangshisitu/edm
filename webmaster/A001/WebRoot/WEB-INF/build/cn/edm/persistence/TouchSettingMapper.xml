@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.TouchSettingMapper">
+	
+	<resultMap id="TouchSetting" type="cn.edm.domain.TouchSetting">
+		<result column="task_id" property="taskId" />
+		<result column="parent_id" property="parentId" />
+		<result column="template_id" property="templateId" />
+		<result column="parent_name" property="parentName" />
+		<result column="template_name" property="templateName" />
+		<result column="touch_urls" property="touchUrls" />
+		<result column="subject" property="subject" />
+		<result column="after_minutes" property="afterMinutes" />
+		<result column="device_type" property="deviceType" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		s.task_id, s.parent_id, s.template_id, s.subject, s.parent_name, s.template_name, s.touch_urls,
+		s.after_minutes, s.device_type
+	</sql>
+	
+	<sql id="where">
+		where 1=1
+		<if test="taskId != null">
+			AND s.task_id = #{taskId}
+		</if>
+		<if test="taskIds != null">
+			AND s.task_id in <foreach collection="taskIds" item="tid" open="(" close=")" separator=",">#{tid}</foreach>
+		</if>
+		<if test="parentId != null">
+			AND s.parent_id = #{parentId}
+		</if>
+		<if test="parentIds != null">
+			AND s.parent_id in <foreach collection="parentIds" item="pid" open="(" close=")" separator=",">#{pid}</foreach>
+		</if>
+		<if test="templateId != null">
+			AND s.template_id = #{templateId}
+		</if>
+		<if test="templateIds != null">
+			AND s.template_id in <foreach collection="templateIds" item="tid" open="(" close=")" separator=",">#{tid}</foreach>
+		</if>
+		<if test="touchUrls != null">
+			AND s.touch_urls = #{touchUrls}
+		</if>
+		<if test="touchParentId != null">
+			AND t.parent_id = #{touchParentId}
+		</if>
+		<if test="touchParentIds != null">
+			AND t.parent_id in <foreach collection="touchParentIds" item="tpids" open="(" close=")" separator=",">#{tpids}</foreach>
+		</if>
+		
+	</sql>
+	
+	<select id="selectSettingList" parameterType="java.util.Map" resultMap="TouchSetting">
+		select
+			t.corp_id corpId,
+			<include refid="base_columns" />
+		FROM touch_setting s
+		INNER JOIN touch t ON t.template_id=s.template_id and s.task_id=t.task_id
+		INNER JOIN result r on t.task_id=r.task_id and t.template_id=r.template_id and t.corp_id=r.corp_id
+		<include refid="where"/>
+		group by t.user_id, s.template_id
+	</select>
+	
+	<select id="selectSetting" parameterType="java.util.Map" resultMap="TouchSetting">
+		SELECT
+			t.user_id userId,
+			<include refid="base_columns" />
+		FROM touch_setting s
+		INNER JOIN touch t ON t.template_id=s.template_id and s.task_id=t.task_id
+		<include refid="where"/>
+	</select>
+	
+</mapper>
+
+

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="User">
+
+	<typeAlias alias="user" type="cn.edm.domain.User" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="User.mapper">
+		u.user_id userId,
+		u.corp_id corpId,
+		u.role_id roleId,
+		u.password password,
+		u.email email,
+		u.true_name trueName,
+		u.phone phone,
+		u.job job,
+		u.rand_code randCode,
+		u.moderate moderate,
+		u.status status,
+		u.create_time createTime,
+		u.expire_time expireTime
+	</sql>
+	
+	<sql id="User.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			u.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			u.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="roles">
+			u.role_id in <iterate property="roles" open="(" close=")" conjunction=",">#roles[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="roleId">
+			u.role_id = #roleId#
+		</isNotNull>
+		<isNotNull prepend="and" property="statuses">
+			u.status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="email">
+			u.email = #email#
+		</isNotNull>
+    </sql>
+	
+	<insert id="User.save" parameterClass="user">
+		insert into user (
+			user_id,
+			corp_id,
+			role_id,
+			password,
+			email,
+			true_name,
+			phone,
+			job,
+			rand_code,
+			moderate,
+			status,
+			create_time,
+			expire_time
+		) values (
+			#userId#,
+			#corpId#,
+			#roleId#,
+			#password#,
+			#email#,
+			#trueName#,
+			#phone#,
+			#job#,
+			#randCode#,
+			#moderate#,
+			#status#,
+			now(),
+			null
+		)
+	</insert>
+	
+	<update id="User.update" parameterClass="user">
+		update user u set
+			u.corp_id = #corpId#,
+			u.role_id = #roleId#,
+			u.password = #password#,
+			u.email = #email#,
+			u.true_name = #trueName#,
+			u.phone = #phone#,
+			u.job = #job#,
+			u.rand_code = #randCode#,
+			u.moderate = #moderate#,
+			u.status = #status#,
+			u.create_time = #createTime#,
+			u.expire_time = #expireTime#
+		where u.user_id = #userId#
+	</update>
+	
+	<select id="User.query" parameterClass="mb" resultClass="user">
+		select
+			c.corp_id corpId,
+			c.company,
+			<include refid="User.mapper" />
+		from user u
+		left join corp c on c.corp_id = u.corp_id
+		<dynamic>
+			<include refid="User.where" />
+			<isEqual property="orderBy" compareValue="createTime">
+				order by u.create_time $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="company">
+				order by c.company $order$
+			</isEqual>
+			<isEqual property="orderBy" compareValue="userId">
+				order by u.user_id $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+	<select id="User.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from user u
+		<dynamic>
+			<include refid="User.where" />
+		</dynamic>
+	</select>
+	
+</sqlMap>

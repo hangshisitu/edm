@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                        http://www.springframework.org/schema/security 
+                        http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	
+	<http pattern="/login" security="none" />
+	<http pattern="/resources/**" security="none" />
+	<http pattern="/m" security="none" />
+	<http pattern="/forget" security="none" />
+	
+
+	<http auto-config="true" use-expressions="true"
+		access-denied-page="/denied">
+		<form-login login-page="/login"
+			always-use-default-target="true" 
+			authentication-success-handler-ref="successHandler" 
+			authentication-failure-handler-ref="failureHandler"/>
+		
+		<intercept-url pattern="/" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/index" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/account/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/task/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/historyReport/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/senderDomain/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/customerReport/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/taskReport/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/history/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/subUser/**" access="hasAnyRole('ROLE_ADM')" />
+		<intercept-url pattern="/password/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/property/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/label/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		<intercept-url pattern="/filter/**" access="hasAnyRole('ROLE_ADM','ROLE_SEE')" />
+		
+		<logout logout-success-url="/login" />
+
+		<!-- error-if-maximum-exceeded 后登陆的账号会挤掉第一次登陆的账号 
+			session-fixation-protection 
+			防止伪造sessionid攻击. 用户登录成功后会销毁用户当前的session.   
+            	创建新的session,并把用户信息复制到新session中. -->
+
+		<session-management invalid-session-url="/login"
+			session-fixation-protection="none">
+			<concurrency-control max-sessions="1"
+				 expired-url="/login?error=4" />
+		</session-management>
+	</http>
+
+
+	<authentication-manager alias="authenticationManager">
+		<authentication-provider user-service-ref="userDetailsService">
+			<password-encoder hash="md5"/>
+		</authentication-provider>
+	</authentication-manager>
+
+	<beans:bean id="userDetailsService" class="cn.edm.security.UserDetailsServiceImpl" />
+
+	<!-- 登录成功业务处理 -->
+	<beans:bean id="successHandler"
+		class="cn.edm.security.LoginAuthenticationSuccessHandler">
+		<beans:property name="url" value="/"></beans:property>  <!-- 可变换登录成功后的路径，验证用户是否拥有该权限 -->
+	</beans:bean>
+	
+	<!-- 登录失败业务处理 -->
+	<beans:bean id="failureHandler" class="cn.edm.security.LoginAuthenticationFailureHandler"/>
+
+</beans:beans>

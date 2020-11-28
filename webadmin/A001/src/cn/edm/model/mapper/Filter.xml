@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Filter">
+
+	<typeAlias alias="filter" type="cn.edm.model.Filter" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Filter.mapper">
+		f.filter_id filterId,
+		f.corp_id corpId,
+		f.user_id userId,
+		f.filter_name filterName,
+		f.filter_desc filterDesc,
+		f.props props,
+		f.create_time createTime,
+		f.modify_time modifyTime
+	</sql>
+	
+	<sql id="Filter.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			f.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			f.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="filterId">
+			f.filter_id = #filterId#
+		</isNotNull>
+		<isNotNull prepend="and" property="filterName">
+			<isEqual property="nameCnd" compareValue="eq">
+				f.filter_name = #filterName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				f.filter_name like concat('%', #filterName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ f.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ f.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Filter.save" parameterClass="filter">
+		insert into filter (
+			corp_id,
+			user_id,
+			filter_name,
+			filter_desc,
+			props,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#filterName#,
+			#filterDesc#,
+			#props#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="filterId">
+			select @@IDENTITY as filter_id
+		</selectKey>
+	</insert>
+	
+	<update id="Filter.update" parameterClass="filter">
+		update filter f set
+			f.corp_id = #corpId#,
+			f.filter_name = #filterName#,
+			f.filter_desc = #filterDesc#,
+			f.props = #props#,
+			f.modify_time = now()
+		where f.user_id = #userId# and f.filter_id = #filterId#
+	</update>
+	
+	<delete id="Filter.delete" parameterClass="mb">
+		delete from filter 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="filterId">
+				filter_id = #filterId#
+			</isNotNull>
+			<isNotNull prepend="and" property="filterIds">
+				filter_id in <iterate property="filterIds" open="(" close=")" conjunction=",">#filterIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Filter.query" parameterClass="mb" resultClass="filter">
+		select
+			<include refid="Filter.mapper" />
+		from filter f
+		<dynamic>
+			<include refid="Filter.where" />
+		</dynamic>
+	</select>
+
+	<select id="Filter.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from filter f
+		<dynamic>
+			<include refid="Filter.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Filter.index" parameterClass="mb" resultClass="filter">
+		select
+			<include refid="Filter.mapper" />
+		from filter f
+		<dynamic>
+			<include refid="Filter.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by f.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+</sqlMap>

@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Task">
+
+	<typeAlias alias="task" type="cn.edm.model.Task" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Task.mapper">
+		t.task_id taskId,
+		t.corp_id corpId,
+		t.bind_corp_id bindCorpId,
+		t.campaign_id campaignId,
+		t.user_id userId,
+		t.template_id templateId,
+		t.task_name taskName,
+		t.subject subject,
+		t.sender_name senderName,
+		t.sender_email senderEmail,
+		t.receiver receiver,
+		t.email_count emailCount,
+		t.audit_path auditPath,
+		t.moderate_path moderatePath,
+		t.suggestion suggestion,
+		t.resource_id resourceId,
+		t.type type,
+		t.job_time jobTime,
+		t.plan_id planId,
+		t.plan_referer planReferer,
+		t.label_status labelStatus,
+		t.task_status status,
+		t.create_time createTime,
+		t.modify_time modifyTime,
+		t.delivery_time deliveryTime
+	</sql>
+	
+	<sql id="Task.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="bindCorpId">
+			t.bind_corp_id = #bindCorpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignCnd">
+			<isEqual property="campaignCnd" compareValue="null">
+				t.campaign_id is null
+			</isEqual>
+			<isEqual property="campaignCnd" compareValue="!null">
+				t.campaign_id is not null
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="planId">
+			t.plan_id = #planId#
+		</isNotNull>
+		<isNotNull prepend="and" property="planReferer">
+			t.plan_referer = #planReferer#
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="userIds">
+			t.user_id in <iterate property="userIds" open="(" close=")" conjunction=",">#userIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="taskIds">
+			t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateIds">
+			t.template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="planIds">
+			t.plan_id in <iterate property="planIds" open="(" close=")" conjunction=",">#planIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="types">
+			t.type in <iterate property="types" open="(" close=")" conjunction=",">#types[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="statuses">
+			t.task_status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="taskName">
+			<isEqual property="nameCnd" compareValue="eq">
+				t.task_name = #taskName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				t.task_name like concat('%', #taskName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="subject">
+			<isEqual property="nameCnd" compareValue="eq">
+				t.subject = #subject#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				t.subject like concat('%', #subject#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="senderEmail">
+			t.sender_email = #senderEmail#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			<isEqual property="statusCnd" compareValue="eq">
+				t.task_status = #status#
+			</isEqual>
+			<isEqual property="statusCnd" compareValue="!eq">
+				t.task_status != #status#
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+		  	<![CDATA[ t.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="auditPath">
+			<isEqual property="auditCnd" compareValue="like">
+				t.audit_path like concat('%', #auditPath#, '%')
+			</isEqual>
+			<isEqual property="auditCnd" compareValue="!like">
+				(t.audit_path not like concat('%', #auditPath#, '%') or t.audit_path is null)
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="moderatePath">
+			<isEqual property="moderateCnd" compareValue="like">
+				t.moderate_path like concat('%', #moderatePath#, '%')
+			</isEqual>
+			<isEqual property="moderateCnd" compareValue="!like">
+				(t.moderate_path not like concat('%', #moderatePath#, '%') or t.moderate_path is null)
+			</isEqual>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Task.save" parameterClass="task">
+		insert into task (
+			corp_id,
+			bind_corp_id,
+			user_id,
+			campaign_id,
+			template_id,
+			task_name,
+			subject,
+			sender_name,
+			sender_email,
+			receiver,
+			email_count,
+			audit_path,
+			moderate_path,
+			suggestion,
+			resource_id,
+			type,
+			job_time,
+			plan_id,
+			plan_referer,
+			label_status,
+			task_status,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#bindCorpId#,
+			#userId#,
+			#campaignId#,
+			#templateId#,
+			#taskName#,
+			#subject#,
+			#senderName#,
+			#senderEmail#,
+			#receiver#,
+			#emailCount#,
+			#auditPath#,
+			#moderatePath#,
+			#suggestion#,
+			#resourceId#,
+			#type#,
+			#jobTime#,
+			#planId#,
+			#planReferer#,
+			#labelStatus#,
+			#status#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="taskId">
+			select @@IDENTITY as task_id
+		</selectKey>
+	</insert>
+	
+	<update id="Task.update" parameterClass="task">
+		update task t set
+			t.corp_id = #corpId#,
+			t.bind_corp_id = #bindCorpId#,
+			t.campaign_id = #campaignId#,
+			t.template_id = #templateId#,
+			t.task_name = #taskName#,
+			t.subject = #subject#,
+			t.sender_name = #senderName#,
+			t.sender_email = #senderEmail#,
+			t.receiver = #receiver#,
+			t.email_count = #emailCount#,
+			t.audit_path = #auditPath#,
+			t.moderate_path = #moderatePath#,
+			t.suggestion = #suggestion#,
+			t.resource_id = #resourceId#,
+			t.type = #type#,
+			t.job_time = #jobTime#,
+			t.plan_id = #planId#,
+			t.plan_referer = #planReferer#,
+			t.label_status = #labelStatus#,
+			t.task_status = #status#,
+			t.modify_time = now(),
+			t.delivery_time = #deliveryTime#
+		where t.user_id = #userId# and t.task_id = #taskId#
+	</update>
+
+	<update id="Task.clearCampaign" parameterClass="mb">
+		update task t set
+			t.campaign_id = null,
+			t.modify_time = now()
+		where t.user_id = #userId# and t.campaign_id = #campaignId#
+	</update>
+	
+	<update id="Task.bindCampaign" parameterClass="mb">
+		update task t set
+			t.campaign_id = #campaignId#,
+			t.modify_time = now()
+		where t.user_id = #userId#
+		and t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+	</update>
+
+	<select id="Task.query" parameterClass="mb" resultClass="task">
+		select
+			<include refid="Task.mapper" />
+		from task t
+		<dynamic>
+			<include refid="Task.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+	<select id="Task.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from task t
+		<dynamic>
+			<include refid="Task.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Task.index" parameterClass="mb" resultClass="task">
+		select
+			c.file_id fileId,
+			c.includes includes,
+			c.excludes excludes,
+			s.campaign campaignName,
+			s.template templateName,
+			s.ad ad,
+			s.unsubscribe unsubscribe,
+			s.send_code sendCode,
+			s.replier replier,
+			s.rand rand,
+			s.robot robot,
+			if (plan_id is null, 0, 
+				(select count(t2.task_id) from task t2 where t2.plan_id = t.plan_id and t2.plan_referer != 'None' and t2.task_status in (27))
+			) taskCount,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			(select count(*) from template_setting s where s.parent_id = t.template_id) bindTouchCount,
+			c2.company company,
+			<include refid="Task.mapper" />
+		from task t
+		left join task_cnd c on c.task_id = t.task_id
+		left join task_setting s on s.task_id = t.task_id
+		inner join corp c2 on c2.corp_id = t.corp_id
+		<dynamic>
+			<include refid="Task.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Task.scan" parameterClass="mb" resultClass="Integer">
+		select
+			task_id taskId
+		from task
+		<dynamic>
+			where (
+				(task_status = 22 <![CDATA[ and job_time <= now() ]]>)
+				or (task_status = 23 and job_time is null)
+				or (task_status = 24 and delivery_time is null)
+			)
+			and (plan_referer != 'None' or plan_referer is null)
+			<isNotNull prepend="and" property="taskId">
+				task_id = #taskId#
+			</isNotNull>
+			<isNotNull prepend="and" property="taskIds">
+				task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</select>
+	
+	<select id="Task.processing" parameterClass="mb" resultClass="Long">
+		select 
+			sum(t.email_count)
+		from task t
+		<dynamic>
+			<include refid="Task.where" />
+		</dynamic>
+	</select>
+
+	<select id="Task.lockTag" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from task t
+		inner join task_cnd c on c.task_id = t.task_id
+		<dynamic>
+			<include refid="Task.where" />
+			<isNotNull prepend="and" property="tagId">
+				(
+				concat(',', c.include_ids, ',') like CONCAT('%,', #tagId#, ',%') 
+				or
+				concat(',', c.exclude_ids, ',') like CONCAT('%,', #tagId#, ',%')
+				)
+			</isNotNull>
+		</dynamic>
+	</select>
+		
+	<select id="Task.lockTemplate" parameterClass="mb" resultClass="Integer">
+		select
+			t.template_id
+		from task t
+		<dynamic>
+			<include refid="Task.where" />
+			group by t.template_id
+		</dynamic>
+	</select>
+	
+	<select id="Task.lockSender" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from task t
+		<dynamic>
+			<include refid="Task.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Task.touchCount" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from 
+			task t
+		INNER JOIN touch th ON th.parent_id = t.task_id
+		<dynamic>
+			<include refid="Task.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Task.touchQuery" parameterClass="mb" resultClass="task">
+		select
+			<include refid="Task.mapper" />
+		from 
+			task t
+		INNER JOIN campaign c on  t.campaign_id = c.campaign_id
+ 		INNER JOIN touch th on t.task_id = th.parent_id
+		<dynamic>
+			<include refid="Task.where" />
+			 group by t.task_id
+		</dynamic>
+	</select>
+	
+	<select id="Task.exclude" parameterClass="mb" resultClass="Integer">
+		select
+			t.task_id taskId
+		from task t
+		<dynamic>
+			where t.task_status in (22, 23, 24)
+			<isNotNull prepend="and" property="taskId">
+				t.task_id = #taskId#
+			</isNotNull>
+			<isNotNull prepend="and" property="taskIds">
+				t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</select>
+	
+</sqlMap>

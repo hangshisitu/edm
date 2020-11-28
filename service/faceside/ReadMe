@@ -1,0 +1,70 @@
+V2.9.1 新增支持短信通知
+
+    1)新增配置项:
+       设置短信文件存放的目录
+        [RICHINF0]
+        sms_path = ./sms/
+   
+    2)基本测试: 上游生成的任务文件中,
+
+        1 带有 $SMS$99 标志的
+        2 是139邮箱的手机号
+        3 投递成功的
+        4 路径配置正确的
+
+    则会把手机号和邮件主题写入指定目录下的文件中。
+    投递一次生成一个文件，文件格式: 手机号|邮件主题, 文件后缀名为.o
+    
+    3) 新增功能研发测试通过
+
+V2.6.0 2014-07-10
+   一 vi etc/demo.conf, 修改如下配置项后保存
+       listen_port = 51001         #监听的端口
+       smtp_address = 127.0.0.1    #投递地址
+       smtp_port = 25678           #投递端口
+
+       #API触发任务文件目录
+       web_path  = /usr/local/webserver/nginx/html/temp/result/
+
+   二 确保 API接口的中转端口指向本程序的listen_port
+      编辑 API接口的文件 inc.php, 修改如下配置项,
+      define('transit_port',51001);
+
+   三 部署好smtpsvr程序
+      使得 smtp_addres/smtp_port 指向smtpsvr有效
+
+V2.7.0 2014-09-11
+   一 增加触发投递统计入库
+      1. etc/demo.conf 配置项
+      report_interval = 300    #  报告文件生成的周期
+      report_path = ./report/  #  报告文件存放目录
+
+      2. 统计入库脚本存放于 etc目录下, 名称为sync.pl
+      脚本配置项:
+        my $period = 600;               #  设定运行周期
+        my $path   = './report';        #  设定报告文件存放目录
+        my $host   = "127.0.0.1:3306";  #  mysql 地址端口
+        my $db     = "edm";             #  mysql 库名
+        my $user   = "web";             #  mysql 用户名
+        my $pwd    = "iedm";            #  mysql 密码
+        my $cache_path = './cache';     #  任务文件缓存目录
+
+      3. 脚本运行方式
+        1) 建立相关目录，然后进入脚本所在的目录
+        2) 执行 nohup perl ./sync.pl &
+
+      4. 为支持日志扫描，配置项log_size将不在生效，每日只生成一个日志文件
+         配置项 log_file 文件名必须设置为 deliver.log
+
+V2.7.2 2014-10-16
+   一 支持多终端适配功能
+   二 支持发送附件，要求附件内容为base64
+   三 新增支持oracle的脚本sync_orcl.pl
+         my $connstr = "dbi:Oracle:192.168.18.156:1512/edm";
+         my $user = "edm";
+         my $pwd  = "edm";
+
+      根据环境配置以上三个变量值,访问数据库
+      需要安装perl插件 DBD:Oracle
+      cpan install DBD::Oracle
+

@@ -1,0 +1,260 @@
+<#assign sec=JspTaglibs["http://www.springframework.org/security/tags"] />
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>过滤管理</title>
+    <#assign version = "1" />
+	<#include "css.html" />
+	<#include "meta.html" />
+	<#include "script.html" />
+	<script type="text/javascript" src="${ctx}/resources/script/common/jquery.form-min.js?${version}"></script>
+	<script type="text/javascript" src="${ctx}/resources/script/filter/recipientPage.js?${version}"></script>
+	<script type="text/javascript">
+<#assign pageCnd = "pageNo=" + "&pageSize=" + page.pageSize />
+<#if location?contains("?")>
+	<#assign location = location + "&" + pageCnd />
+<#else>
+	<#assign location = location + "?" + pageCnd />
+</#if>
+
+	<#assign min = page.pageNo - 5 />
+	<#if min lt 1>
+		<#assign min = 1 />
+	</#if>
+	<#assign max = page.pageNo + 5 />
+	<#if max gt page.totalPages>
+		<#assign max = page.totalPages />
+	</#if>
+	
+	var _ids = new Array(
+		<#list min..max as i>
+		["${location?replace('pageNo=', 'pageNo=' + i) + '&_id=' + _id[i?html]}", "${i}"]<#if i_has_next>,</#if>
+		</#list>
+	);
+</script>
+
+  </head>
+  
+  <body>
+    <div id="main" class="clearfix" style="">
+		<h1 class="title">过滤管理&nbsp;<span></span></h1>
+		
+		<form id="ListForm" action="${ctx}/filter/recipient/page" method="get">
+				<input   type="hidden" name="m" value="${m}">
+				<ul class="search clearfix m_b10">
+				<#if m == "unsubscribe">
+				<li>企业</li>
+				<li>
+					<a id="company_list" class="a_select" style="width:100px"></a>
+					<input id="companyId" type="hidden" name="corpId" value="${mb.corpId}">
+				</li>
+				<li>账号</li>
+				<li>
+					<a id="account_list" class="a_select" style="width:100px"></a>
+					<input id="accountId" type="hidden" name="userId" value="${mb.userId}">
+				</li>
+				<li>退订</li>
+				<li>
+					<a id="unsub_list" class="a_select" style="width:100px"></a>
+					<input id="unsubId" type="hidden" name="tagId" value="${mb.tagId}">
+				</li>
+				</#if>
+				<li>邮箱地址</li>
+				<li>
+					<input maxlength="64" type="text" id="search_userId" name="email" value="${mb.email}">
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input maxlength="10" class="date" id="d4311" id="search_beginTimeStr" name="beginTime" value="${mb.beginTime}" class="Wdate" type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'d4312\')}'})"/>
+				</li>
+				<li>到</li>
+				<li>
+					 <input maxlength="10"  class="date" id="d4312"  id="search_endTimeStr" name="endTime" value="${mb.endTime}" class="Wdate" type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'d4311\')}'})"/>
+				</li>
+				<li>
+					<input type="button" class="groovybutton" value="查 询" title="查询" onclick="search()">
+				</li>
+			</ul>
+		</form>
+		
+		<ul class="tab clearfix">
+			<#assign red = "" />
+			<#assign black = "" />
+			<#assign refuse = "" />
+			<#assign expose = "" />
+			<#assign unsubscribe = "" />
+			<#if m == "red"><#assign red = "now" /></#if>
+			<#if m == "black"><#assign black = "now" /></#if>
+			<#if m == "refuse"><#assign refuse = "now" /></#if>
+			<#if m == "expose"><#assign expose = "now" /></#if>
+			<#if m == "unsubscribe"><#assign unsubscribe = "now" /></#if>
+			
+			<li class="${red}"><a href="page?m=red">红名单</a></li>
+			<li class="${black}"><a href="page?m=black">黑名单</a></li>
+			<li class="${refuse}"><a href="page?m=refuse">拒收</a></li>
+			<li class="${expose}"><a href="page?m=expose">举报</a></li>
+			<li class="${unsubscribe}"><a href="page?m=unsubscribe">退订</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span><font color="blue">${page.totalItems}</font></span>个</p>
+			</div>
+			<#if m != "unsubscribe">
+			<@sec.authorize ifAnyGranted="ROLE_ADM">
+			<ul class="btn">
+				<li>
+					<input type="button" class="groovybutton" value="新建" onclick="open_msg('/filter/recipient/add?type=${m}')">
+				</li>
+				<li>
+					<input type="button" class="groovybutton" value="导入" onclick="open_msg('/filter/selection/import?type=${m}')">
+				</li>
+				<li>
+					<input type="button" class="groovybutton" value="删除" onclick="del()">
+				</li>
+			</ul>
+			</@sec.authorize>
+			</#if>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25">
+						<input id="all_checkbox" type="checkbox">
+					</th>
+					<th>邮箱地址</th>
+					<#if m != "unsubscribe">
+					<th>描述</th>
+					</#if>
+					<th>创建时间</th>
+					<th>更新时间</th>
+					<#if m != "unsubscribe">
+					<@sec.authorize ifAnyGranted="ROLE_ADM">
+					<th>操作</th>
+					</@sec.authorize>
+					</#if>
+				</tr>
+				<#list page.result as e>
+				<tr>
+					<td>
+					<input type="checkbox" value="${e.email}" name="checkedIds">
+					</td>
+					<td title="${e.email}">${e.email}</td>
+					<#if m != "unsubscribe">
+					<td title='${e.desc}'>${e.desc}</td>
+					</#if>
+					<td><#if e.createTime??>${e.createTime?datetime}</#if></td>
+					<td><#if e.modifyTime??>${e.modifyTime?datetime}</#if></td>
+					<#if m != "unsubscribe">
+					<@sec.authorize ifAnyGranted="ROLE_ADM">
+					<td class="edit">
+						<ul class="f_ul">
+							<li><a href="javascript:open_msg('/filter/recipient/add?type=${m}&email=${e.email}');">修改</a></li>
+							<li><a href="javascript:open_msg('del?action=${m}&checkedIds=${xss.filter(e.email)}',0);">删除</a></li>
+						</ul>
+					</td>
+					</@sec.authorize>
+					</#if>
+				</tr>
+				</#list>
+			</tbody>
+		</table>
+		
+		<div class="ribbon clearfix">
+			<ul class="page">
+				<#if page.pageNo == 1><li>首页</li><#else><li><a href="${location?replace('pageNo=', 'pageNo=1') + '&_id=' + _id['1']}">首页</a></li></#if>
+				<#if page.hasPrePage><li><a href="${location?replace('pageNo=', 'pageNo=' + (page.pageNo?number - 1)) + '&_id=' + _id[(page.pageNo?number - 1)?string]}">上页</a></li><#else><li>上页</li></#if>
+				<#if page.hasNextPage><li><a href="${location?replace('pageNo=', 'pageNo=' + (page.pageNo?number + 1)) + '&_id=' + _id[(page.pageNo?number + 1)?string]}">下页</a></li><#else><li>下页</li></#if>
+				<#if page.totalPages == 0 || page.pageNo == page.totalPages><li>末页</li><#else><li><a href="${location?replace('pageNo=', 'pageNo=' + page.totalPages) + '&_id=' + _id[page.totalPages?string]}">末页</a></li></#if>
+				<li>共${page.totalPages}页</li>
+			</ul>
+			<ul class="btn"></ul>
+		</div>
+		
+		<br />
+	<br />
+	<br />
+	</div>
+	
+<div class="select_div"></div>
+<script type="text/javascript">
+	<#if m == "unsubscribe">
+	//企业列表
+	var company_list = new Array(
+		<#list corpMap?keys as k>["${k}", "${corpMap[k]}"]<#if k_has_next>,</#if></#list>
+	);
+	//账户列表，跟上面企业的id对应
+	var account_list = {
+		<#list userMap?keys as k>
+		"${k}": [<#list userMap[k] as e>["${e}", "${e}"]<#if e_has_next>,</#if></#list>]<#if k_has_next>,</#if>
+		</#list>
+	};
+	
+	$(function(){
+		$('#company_list').UIselect({
+			width: 120,
+			id_id: "#companyId",
+			ho_fun: 'swithList()',
+			arrdata: company_list
+		});
+
+		initAccList();
+	});
+	
+	function initAccList(){
+		var id = $('#companyId').val();
+		$('#account_list').UIselect({
+			width: 120,
+			id_id: "#accountId",
+			ho_fun:"createUnsub()",
+			arrdata: account_list[id] || [['','请选择']]
+		});
+		createUnsub();
+	}
+	
+	function swithList(){
+		var id = $('#companyId').val();
+		$('#account_list').data('edit')['arrdata'] = account_list[id] || [['','请选择']];
+		$('#account_list').html('请选择');
+		$('#accountId').val('');
+		createUnsub();
+	}
+	
+	function createUnsub(){
+		var cid = $('#companyId').val();
+		var id = $('#accountId').val();
+		
+		
+		$.post('unsubscribe',{"corpId":cid,'userId':id, "token": "${token}"},function(data){
+			//如果没有初始化
+			if(!$('#unsub_list').data('edit')){
+				$('#unsubId').val($('#unsubId').val() || (data.list[0]?data.list[0][0]:''));
+				$('#unsub_list').UIselect({
+					width: 120,
+					id_id: "#unsubId",
+					arrdata: data.list || [['','请选择']]
+				});
+			}else{
+				$('#unsub_list').data('edit')['arrdata'] = data.list || [['','请选择']];
+				$('#unsub_list').html('请选择');
+				$('#unsubId').val('');
+			}
+		},"json");	
+	}
+	</#if>
+	
+	function search() {
+		if($('#account_list').is(":visible")){
+			if($('#accountId').val() == '' || $('#unsubId').val() == ''){
+				error_message('没有选择账号或退订，可能导致查询不到数据',1);
+				return false;
+			}
+		}
+		$("#ListForm").submit();
+	}
+	
+	function del(){
+		del_tab('请选择删除项', 'del?action=${m}', 0);
+	}
+</script>
+</body>
+</html>

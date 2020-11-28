@@ -1,0 +1,27 @@
+<#assign step = "two" />
+<#assign confirm = false />
+<#assign prompt = false />
+<#if (form.emailConfirm == 1 && form.emailPrompt == 0) || (form.emailConfirm == 0 && form.emailPrompt == 1)>
+	<#if form.emailConfirm == 1>
+		<#assign confirm = true />
+	<#elseif form.emailPrompt == 1>
+		<#assign prompt = true />
+	</#if>
+	<#assign step = "three" />
+<#elseif form.emailConfirm == 1 && form.emailPrompt == 1>
+	<#assign confirm = true />
+	<#assign prompt = true />
+	<#assign step = "four" />
+</#if>
+<div class="form_step ${step}_step">
+	<ul class="progress progress${num}">
+		<li class="${input?default('')}">表单填写界面</li>
+		<li class="${submit?default('')}">表单提交界面</li>
+		<#if confirm>
+		<li class="${confirm?default('')}">邮件验证确认</li>
+		</#if>
+		<#if prompt>
+		<li class="${prompt?default('')}">成功邮件提示</li>
+		</#if>
+	</ul>
+</div>

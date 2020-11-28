@@ -1,0 +1,245 @@
+<#if action == "tag" || action == "task" || action == "selection.import" || action == "form" || action == "recipient">
+<script type="text/javascript">
+var action="${action}";
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$("#category_list").UIselect({
+		height: 150,
+		width: 500,
+		id_id: "#categoryId",
+		arrdata: category_list,
+		edit_top: 0,
+		select_div: '.select_div'
+	});
+	
+	$('#tagAdd').ajaxForm({
+		url: '/datasource/tag/add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(0,".load_img_open");
+			var form = jqForm[0]; 
+			if (!form.categoryId.value) {
+				$(".msg_ul .err").html("请选择标签类别");
+				del_loading(".load_img_open");
+				return false; 
+			}
+			if (!form.tagName.value) {
+				$(".msg_ul .err").html("请输入标签名称");
+				form.tagName.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				if(action == "tag") {
+					if("${tag.tagId}" != "") {
+						$("input[name=checkedIds]").each(function(i) {
+							if($(this).val() == data.tagId) {
+								$(this).closest('tr').children("td:eq(0)").children("a").html(data.tagName).attr("title",data.tagName);
+								$(this).closest('tr').children("td:eq(1)").html(data.tagDesc).attr("title",data.tagDesc);
+								$(this).closest('tr').children("td:eq(2)").html(data.categoryName).attr("title",data.categoryName);
+								$(this).closest('tr').children("td:eq(5)").html(data.modifyTime);
+							}
+						});
+					} else {
+						var text = "";
+						text += "<tr>";
+						text += "<td>";
+						text += "<input type=\"hidden\" name=\"checkedIds\" value=\"" + data.tagId + "\" />";
+						text += "<a href=\"/datasource/recipient/page?tagId=" + data.tagId + "\" title='" + data.tagName + "'>" + data.tagName + "</a>";
+						text += "</td>";
+						text += "<td title='" + data.tagDesc + "'>" + data.tagDesc + "</td>";
+						text += "<td title='" + data.categoryName + "'>" + data.categoryName + "</td>";
+						text += "<td><a href=\"/datasource/recipient/page?tagId=" + data.tagId + "\">" + data.emailCount + "</a></td>";
+						text += "<td title='" + data.userId + "'>" + data.userId + "</td>";
+						text += "<td>" + data.createTime + "</td>";
+						text += "<td>" + data.modifyTime + "</td>";
+						text += "<td class=\"edit\">";
+						text += "<ul class=\"f_ul\">";
+						text += "<li><a href=\"javascript:open_msg('add?tagId=" + data.tagId + "',0);\">修改</a></li>";
+						text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.tagId + "',0);\">删除</a></li>";
+						if (data.categoryName != "表单收集") {
+							text += "<li><a href=\"/datasource/selection/import?tagId=" + data.tagId + "&action=tag\">导入</a></li>";
+						} else {
+							text += "<li><font color=\"#f5f5f5\">导入</font></li>";
+						}
+						text += "</ul>";
+						text += "</td>";
+						text += "</tr>";
+						$(".main_table tr:eq(0)").after(text);
+						if ($(".no_data").size() > 0) {
+							$(".no_data").remove();
+						}
+					}
+				}else if(action == "selection.import"){
+					var keyString=$("#category_list").text();
+					insertJsonItem(catedata,{"id":data.tagId,"title":data.tagName+"（"+data.emailCount+"）","count":0},keyString);
+					$('#category').click();
+				}else if(action == "form"){
+					catedata.unshift({"id":data.tagId,"title":data.tagName+"（"+data.emailCount+"）","count":0});
+					$('#dataStore').click();
+				}else if(action == "recipient"){
+					var keyString=$("#category_list").text();
+					insertJsonItem(catedata,{"id":data.tagId,"title":data.tagName+"（"+data.emailCount+"）","count":0},keyString);
+					$('#category').click();
+				}else {
+					
+					insertJsonItem(catedata,{"id":data.tagId,"title":data.tagName+"（"+data.emailCount+"）","count":0},"退订");
+					$('#unsubscribe').click();
+				}
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);		
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			} 
+		}   
+	}); 
+});
+</script>
+<div class="msg_content clearfix">
+<h1 class="title"><#if tag.tagId??>修改<#else>新建</#if>标签</h1>
+<form id="tagAdd" action="/datasource/tag/add" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="tagId" value="${tag.tagId}" />
+	<input type="hidden" name="orgTagName" value="${xss.filter(tag.tagName)}" />
+	<input type="hidden" name="orgCategoryId" value="${tag.categoryId}" />
+	<input type="hidden" id="categoryId" name="categoryId" value="${tag.categoryId}" />
+	<ul class="msg_ul">
+		<li>标签类别<span class="f666">（必选）</span></li>
+		<li><a id="category_list" class="but_select" style="width:470px;" href="javascript:void(0)">请选择标签类别</a></li>
+		<li>标签名称<span class="f666">（必填）</span></li>
+		<li><input type="text" name="tagName" value="${xss.filter(tag.tagName)}" class="msg_txt" maxlength="20" /></li>
+		<li>标签描述</li>
+		<li>
+			<textarea class="msg_txt desc_area" name="tagDesc" value="${xss.filter(tag.tagDesc)}">${xss.filter(tag.tagDesc)}</textarea>
+		</li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+	
+	<ul class="f_l">
+		<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+	</ul>
+	
+	<ul class="msg_btn">
+		<li>
+			<input type="submit" value="确定" class="input_yes" />
+		</li>
+		<li>
+			<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+		</li>
+	</ul>
+	</div>
+</form>
+</div>
+
+<#else>
+<script type="text/javascript">
+$(document).ready(function(){
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	//placeholder
+	$(".placehold").placeholder();
+	
+	$("#category_list").UIselect({
+		height: 150,
+		width: 260,
+		id_id: "#categoryId",
+		ho_fun: "hideNewCate()",
+		arrdata: category_list,
+		edit_top: 0,
+		select_div: '.select_div',
+		foot_html:"<p class='select_foot'><a class='highlight' href='javascript:void(0)' onclick='showNewCate()'>新建类别</a></p>"
+	}); 
+
+	$('#add').ajaxForm({
+		url: '/datasource/tag/add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".err").html("");
+		
+			var form = jqForm[0]; 
+
+			if (!form.tagName.value) {
+				$(".err").html("请输入标签名称");
+				return false; 
+			}
+
+			var categoryName = $("input[name=categoryName]").val();
+			//对ie9以下修复placeholder不被提交
+			if (!form.categoryId.value && (!categoryName || categoryName=='输入类别名称')) {
+				$(".err").html("请选择标签类别");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				$("#tagId").val(data.tagId);
+				closeDialog();
+				exports('0');
+			} else {
+				$(".err").html(data.message);		
+			} 
+		}   
+	}); 
+});
+</script>
+<div class="pop_close">X</div>
+<div class="limiter" style="width:400px">
+	<div class="pop_title">生成新标签</div>
+	<div class="pop_content">
+		<form id="add" action="/datasource/tag/add" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="action" value="${action}" />
+			<table class="edit_tab" width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="20%" align="right">标签名称</td>
+					<td width="10"></td>
+					<td><input type="text" class="input_txt" name="tagName" value="" maxlength="20" /></td>
+				</tr>
+				<tr>
+					<td align="right">标签类别</td>
+					<td width="10"></td>
+					<td>
+						<a id="category_list" class="a_select b_select" href="javascript:void(0)" style="width:240px;">请选择标签类别</a>
+						<input id="categoryId" type="hidden" name="categoryId" value="" />
+					</td>
+				</tr>
+				<tr class="new_cate_box" style="display:none">
+					<td align="right"></td>
+					<td width="10"></td>
+					<td>
+						<input type="text" class="placehold input_txt" name="categoryName" value="" maxlength="20" placeholder="输入类别名称" />
+					</td>
+				</tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="20%">&nbsp;</td>
+					<td width="10"></td>
+					<td>
+						<span class="err"></span>
+						<ul class="f_ul">
+	                        <li><input class="input_yes" id="smt" type="submit" value="确定" /></li>
+	                        <li><input class="input_no" onclick="closeDialog();" type="button" value="取消" /></li>
+	                    </ul>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</div>
+</#if>

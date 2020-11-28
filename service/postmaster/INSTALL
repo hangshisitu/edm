@@ -1,0 +1,84 @@
+1. 支持平台: Linux x86_64
+
+2. 编译安装
+
+    1) 进入PostMaster/src目录后, 执行make
+      
+       编译成功后会在PostMaster目录下生成可执行文件 postmaster
+
+3. 修改配置
+
+    1) 进入PostMaster/etc目录, 编辑define.conf文件
+
+        根据实际情况和需要，调整如下配置项.
+
+        [define]
+        nprocs      = 0                # 启动处理进程数, 0表示根据CPU核心数决定
+        bind        = 0.0.0.0          # 绑定本地的地址
+        port        = 25               # 监听的端口
+        socktimeout = 60               # 超时时间设置
+        checkperiod = 5                # 检测超时时间间隔
+        log         = ./logs/app.log   # 设置日志输出路径和名称
+
+        [storage]         
+        backup = ./backup              # 设置备份路径
+        filter = ./filter              # 设置要抓取后保存的路径
+
+        # 0 表示不抓取
+        # 1 表示[发件端]等于[配置值]时抓取
+        # 2 表示[收件端]等于[配置值]时抓取
+        # 3 表示[收件端]或者[收件端]等于配置值时抓取
+
+        [filter/mailbox]               # 根据[邮箱]设置抓取条件
+        PostMaster@qq.com = 1
+
+        保存后退出
+
+      2) 创建程序运行所需要的目录
+         
+         如果目录不存在则创建: mkdir backup filter logs
+
+
+4. 增加定时推送数据至友端程序
+
+   1) 修改推送脚本 qqReturn.pl
+      my $path = "./filter";                       # 设置来源目录
+      my $forward = "http://192.168.18.156:80";    # 设置推送目的地地址
+
+   2) 编辑crontab文件
+      crontab -e
+      增加一条记录: 0 1 * * * perl {qqReturn.pl脚本完整路径} >> /dev/null
+      保存后退出
+
+      
+5. 启动主进程
+
+   ./postmaster etc/define.conf
+
+
+6. 正常关闭主进程
+
+   如果没有其他程序和 postmaster 重名, 则可以使用 pkill postmaster 关闭进程，
+
+   否则通过 ps aux|grep postmaster 查找相关进程，并 kill <进程ID> 。
+
+
+7. 切换/备份日志
+
+   操作方法:
+
+      假设logs目录下有如下日志文件:
+      app.log.01  app.log.02  app.log.03  app.log.04  app.log.05  app.log.06  app.log.07  app.log.08
+
+      1) 备份旧日志文件
+
+         tar -zcvf postmaster.out.yyyymmdd.tar.gz app.log.0* --remove-files
+
+      2) 给进程发送信号,重新生成日志文件
+
+         pkill SIGUSR1  postmaster
+
+      3) 以上过程可按天定时操作
+
+   
+8. 蒙噶森情苟喱该，苟噶森情蒙喱渥

@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>忘记密码</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/settings.js?${version}"></script>
+<style type="text/css">
+	.wrapper {
+		position: absolute;
+		top: 50%;
+		margin-top: -200px;
+		border-bottom: 2px solid #000000;
+		border-top: 2px solid #000000;
+		padding: 20px 0;
+		width: 100%;
+	}
+	.wrapper .login_website {
+		margin: 0 auto;
+	}
+	.limiter {
+		padding: 10px;
+		width: 500px;
+		margin: 0 auto;
+		background-color: #fff;
+	}
+</style>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="login_top">
+			<a href="${website}" target="_blank" title="M.target官网" class="login_website"></a>
+		</div>
+		<div class="limiter">
+			<h1 class="title border_b">修改密码&nbsp;&nbsp;<span>请输入您的密码</span></h1>
+			<form id="settings" action="${ctx}/settings" method="post">
+				<input type="hidden" name="token" value="${token}" />
+				<input type="hidden" name="SID" value="${SID}" />
+				<input type="hidden" name="R" value="${R}" />
+				<table border="0" cellspacing="0" cellpadding="0" class="m_t20">
+					<tr class="fixed_tr">
+						<td width="100" align="right">用户名：</td>
+						<td width="10" class="red"></td>
+						<td>${userId}</td>
+					</tr>
+					<tr class="fixed_tr">
+						<td align="right">电子邮件：</td>
+						<td class="red"></td>
+						<td>${email}</td>
+					</tr>
+					<tr class="fixed_tr">
+						<td align="right">密码：</td>
+						<td class="red">*</td>
+						<td><input type="password" class="add_text" name="password" value="" /></td>
+					</tr>
+					<tr class="fixed_tr">
+						<td align="right">重复密码：</td>
+						<td class="red">*</td>
+						<td><input type="password" class="add_text" name="passwordConfirm" value="" /></td>
+					</tr>
+				</table>
+				<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table">
+		            <tr>
+		                <td align="right" width="100">&nbsp;</td>
+		                <td width="10" class="red"></td>
+		                <td>
+		                    <ul class="f_ul">
+		                        <li><input class="input_yes" id="smt" type="submit" value="保存" /></li>
+		                        <li><input class="input_no" type="reset" value="重置" /></li>
+		                    </ul>
+		                </td>
+		            </tr>
+		        </table>
+	        </form>
+		</div>
+	</div>
+</body>
+</html>

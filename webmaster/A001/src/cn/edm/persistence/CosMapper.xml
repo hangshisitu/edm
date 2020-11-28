@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.CosMapper">
+	
+	<resultMap id="Cos" type="cn.edm.domain.Cos">
+		<id column="cos_id" property="cosId"/>
+		<result column="cos_name" property="cosName"/>
+		<result column="type" property="type"/>
+		<result column="user_count" property="userCount"/>
+		<result column="day_send" property="daySend"/>
+		<result column="week_send" property="weekSend" />
+		<result column="month_send" property="monthSend" />
+		<result column="total_send" property="totalSend" />
+		<result column="start_time" property="startTime" />
+		<result column="end_time" property="endTime" />
+		<result column="is_remind" property="remind" />
+		<result column="create_time" property="createTime" />
+		<result column="status" property="status" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		cos_id,cos_name,type,user_count,day_send,week_send,month_send,total_send,start_time,end_time,is_remind,create_time,status
+	</sql>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="cosId != null">
+			AND c.cos_id = #{cosId}
+		</if>
+		<if test="cosName != null">
+			AND c.cos_name like concat('%',#{cosName},'%')
+		</if>
+		<if test="type != null">
+			AND c.type = #{type}
+		</if>
+		<if test="status != null">
+			AND c.status = #{status}
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(c.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(c.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+     </sql>
+	
+	
+	
+	
+	<select id="selectByType" resultMap="Cos" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM class_of_service 
+		WHERE 
+		type = #{type}
+	</select>
+	
+	<select id="selectByTypeAndStatus" resultMap="Cos" parameterType="java.util.Map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM class_of_service  c
+		WHERE
+		c.type = #{type}
+		AND
+		c.status = #{status}
+	</select>
+	
+	<select id="selectAll" resultMap="Cos">
+		SELECT
+		<include refid="base_columns"/>
+		FROM class_of_service c
+	</select>
+	
+	<select id="selectByCosId" resultMap="Cos" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM class_of_service 
+		WHERE cos_id = #{cosId}
+	</select>
+	
+    <select id="selectCoses" resultMap="Cos" parameterType="java.util.Map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM class_of_service c
+		<include refid="where"/>
+		order by c.status desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectCosesCount" resultType="java.lang.Long" parameterType="java.util.Map">
+		SELECT
+		COUNT(*)
+		FROM class_of_service c		
+		<include refid="where"/>
+	</select>
+	
+	<update id="updateCosStatus" parameterType="java.util.Map">
+		UPDATE class_of_service c
+		SET c.status = #{status}
+        where c.cos_id = #{cosId}
+	</update>
+	
+	<delete id="deleteCosById" parameterType="java.util.Map">
+	    DELETE FROM class_of_service c
+   		WHERE 
+   		c.cos_id = #{cosId}
+	</delete>
+	
+	<insert id="insertCos" parameterType="cn.edm.domain.Cos">
+		INSERT INTO class_of_service(
+			cos_name,
+			type,
+			status,
+			user_count,
+			day_send,
+			week_send,
+			month_send,
+			total_send,
+			start_time,
+			end_time,
+			is_remind,
+			create_time
+		)VALUES(
+			#{cosName},
+			#{type},
+			#{status},
+			#{userCount},
+			#{daySend},
+			#{weekSend},
+			#{monthSend},
+			#{totalSend},
+			#{startTime},
+			#{endTime},
+			#{remind},
+			now()
+		)
+		<selectKey resultType="java.lang.Integer" keyProperty="cosId">
+			select @@IDENTITY as cos_id
+		</selectKey>
+		
+	</insert>
+	
+</mapper>
+
+

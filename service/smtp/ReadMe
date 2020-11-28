@@ -1,0 +1,36 @@
+更新日志
+
+V2.7.2 开发
+
+   去除通过脚本获取ip投递限制信息，改为从数据库直接获取
+
+    1. iedm.conf 新增配置 
+    [smtpsvr]
+    # for mysql
+    mysql_host = 127.0.0.1
+    mysql_port = 3306
+    mysql_user = web
+    mysql_passwd = iedm
+    mysql_dbname = edm
+    mysql_charset = gbk
+
+   2.在mysql中执行sql.txt中的语句
+
+   alter table smtp drop index index_ip;
+   alter table smtp engine=innodb;
+   alter table smtp add quarter_count int(11) default 0;
+   alter table smtp add hour_count int(11) default 0;
+   alter table smtp add day_count int(11) default 0;
+
+   3. 使用crontab定时清零smtp表的计数
+
+     1) 配置 update_smtp.pl 中的数据库信息
+        my $connstr = "dbi:mysql:edm:127.0.0.1:3306";
+        my $user = "web";
+        my $pwd  = "iedm";
+
+     2) 增加定时任务，脚本名称使用全路径
+       */15 * * * * update_smtp.pl q
+       0 * * * * update_smtp.pl h
+       0 0 * * * update_smtp.pl d
+     

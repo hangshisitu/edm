@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.RegionMapper">
+	
+	<resultMap id="Region" type="cn.edm.domain.Region">
+		<result column="corp_id" property="corpId"/>
+		<result column="task_id" property="taskId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="read_count" property="readCount"/>
+		<result column="read_user_count" property="readUserCount" />
+		<result column="click_count" property="clickCount" />
+		<result column="click_user_count" property="clickUserCount" />
+		<result column="unsubscribe_count" property="unsubscribeCount" />
+		<result column="forward_count" property="forwardCount" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		corp_id,task_id,template_id,read_count,read_user_count,click_count,click_user_count,unsubscribe_count,forward_count
+	</sql>
+	
+	<sql id="sum">
+		sum(r.read_count) readCount,
+		sum(r.read_user_count) readUserCount,
+		sum(r.click_count) clickCount,
+		sum(r.click_user_count) clickUserCount,
+		sum(r.unsubscribe_count) unsubscribeCount,
+		sum(r.forward_count) forwardCount
+	</sql>
+	
+	<sql id="where">
+		WHERE 1 = 1
+		<if test="taskId != null">
+			AND r.task_id = #{taskId}
+		</if>
+	</sql>
+	
+	<select id="selectByProvince" resultMap="Region" parameterType="map">
+		select
+		rn.province_name provinceName,
+		<include refid="sum" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		<include refid="where" />
+		group by  r.task_id, floor(rn.region_id / 10000)
+		order by rn.region_id asc
+	</select>
+	
+	<select id="selectByCity" resultMap="Region" parameterType="map">
+		select
+			rn.province_name provinceName,
+			rn.city_name cityName,
+			<include refid="base_columns" />
+		from result_by_region r
+		left join region rn on r.region_id = rn.region_id
+			<include refid="where" />
+			order by rn.region_id asc
+	</select>
+	
+	
+	<!-- 活动统计 -->
+	<select id="selectCampaignProvince" parameterType="Integer" resultMap="Region">
+		select
+		rn.province_name provinceName,
+		<include refid="sum" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		INNER JOIN task t ON r.task_id=t.task_id AND r.corp_id=t.corp_id AND t.campaign_id is NOT NULL
+		AND t.campaign_id = #{campaignId}
+		AND t.type in (0,4) 
+		AND t.task_status IN (26,27)
+		group by floor(rn.region_id / 10000)
+		order by rn.region_id asc
+	</select>
+	
+	<select id="selectCampaignCity" parameterType="Integer" resultMap="Region">
+		select
+			rn.province_name provinceName,
+			rn.city_name cityName,
+			<include refid="sum" />
+		from result_by_region r
+		INNER join region rn on r.region_id = rn.region_id
+		INNER JOIN task t ON r.corp_id=t.corp_id AND r.task_id=t.task_id AND t.campaign_id is NOT NULL
+		AND t.campaign_id = #{campaignId}
+		AND t.type in (0,4) 
+		AND t.task_status IN (26,27)
+		GROUP BY rn.province_name,rn.city_name
+		order by rn.region_id asc
+	</select>
+	
+</mapper>
+
+

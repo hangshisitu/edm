@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - API</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/report.js?${version}"></script>
+<script type="text/javascript">
+	triger_list = [
+	    ["", "全部"],
+		<#list trigerList as t>
+		["${xss.filter(t.trigerName)}", "${xss.filter(t.trigerName)}"]<#if t_has_next>,</#if>
+		</#list>
+	];
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>API&nbsp;&nbsp;<span>对API投递的任务进行数据统计</span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<input type="hidden" id="triger" name="trigerName" value="${xss.filter(mb.trigerName)}" />
+			<input type="hidden" id="cycle" name="cycle" value="${xss.filter(mb.cycle)}" />
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>触发时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<a id="cycle_list" class="but_select" style="width:88px;" href="javascript:void(0)">时间选择</a>
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<#if isTriger && isJoin>
+		<ul class="tab clearfix">
+			<li class="now"><a href="${ctx}/report/triger/page">触发任务</a></li>
+			<li><a href="${ctx}/report/task/page?m=join">群发任务</a></li>
+		</ul>
+		</#if>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个任务</p>
+			</div>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th>发送总数</th>
+					<th>成功数</th>
+					<th>弹回数</th>
+					<th>打开人数</th>
+					<th>打开次数</th>
+					<th>点击人数</th>
+					<th>点击次数</th>
+					<th>退订人数</th>
+					<th>无效人数</th>
+					<th width="12%">触发时间</th>
+					<th width="10%">操作</th>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as t>
+				<tr>
+					<td>${t.sentCount?default(0)}</td>
+					<td>${t.reachCount?default(0)}</td>
+					<td>${t.softBounceCount?default(0) + t.hardBounceCount?default(0)}</td>
+					<td>${t.readUserCount?default(0)}</td>
+					<td>${t.readCount?default(0)}</td>
+					<td>${t.clickUserCount?default(0)}</td>
+					<td>${t.clickCount?default(0)}</td>
+					<td>${t.unsubscribeCount?default(0)}</td>
+					<td>${t.afterNoneCount?default(0)}</td>
+					<td><#if t.createTime??>${t.createTime?datetime}</#if></td>
+					<td class="edit">
+						<ul class="f_ul">
+							<#if _9>
+								<#if view.funcAuth('report/task/page?m=join', 6)>
+								<li><a href="${ctx}/report/export/triger?corpId=${t.corpId}&taskId=${t.taskId}">导出</a></li>
+								</#if>
+							</#if>
+						</ul>
+					</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data">没有匹配的任务列表！</div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

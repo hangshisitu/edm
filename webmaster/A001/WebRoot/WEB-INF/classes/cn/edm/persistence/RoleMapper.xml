@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.RoleMapper">
+	
+	<resultMap id="Role" type="cn.edm.domain.Role">
+		<result column="id" property="id"/>
+		<result column="role_name " property="roleName"/>
+		<result column="role_desc" property="roleDesc"/>
+		<result column="type" property="type"/>
+		<result column="role_menu_auth" property="roleMenuAuth"/>
+		<result column="role_func_auth" property="roleFuncAuth"/>
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+		<result column="operator" property="operator" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		r.id id,r.role_name roleName,r.role_desc roleDesc,r.type type,
+		r.create_time createTime,r.modify_time modifyTime,r.operator operator
+	</sql>
+				
+	<sql id="where">
+		where 1=1
+		<if test="types != null">
+			and r.type in <foreach collection="types" item="type" open="(" close=")" separator=",">#{type}</foreach>
+		</if>
+		<if test="roleName != null">
+			and role_name = #{roleName}
+		</if>		
+	</sql>
+	
+	<select id="selectRoleList" resultMap="Role" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM
+		role r
+		<include refid="where"/>
+		order by r.modify_time desc
+		<if test="startIndex != null and pageSize!=null">
+			LIMIT #{startIndex}, #{pageSize}
+		</if>
+	</select>
+		
+	<select id="selectRoleCount" resultType="Long" parameterType="map">
+	    SELECT COUNT(*) FROM role r	
+	    <include refid="where"/>
+	</select>
+	
+	<insert id="insertRole" parameterType="cn.edm.domain.Role" useGeneratedKeys="true" keyProperty="id">
+	    insert into role(
+	       role_name,
+	       role_desc,
+	       type,
+	       create_time,
+	       modify_time,
+	       operator
+	    ) values(
+	       #{roleName},
+	       #{roleDesc},
+	       #{type},
+	       #{createTime},
+	       #{modifyTime},
+	       #{operator}
+	    )
+	</insert>
+	
+	
+	
+	<select id="getRoleById" resultMap="Role" parameterType="java.lang.String">
+	    SELECT 
+		<include refid="base_columns"/>
+		FROM role r
+		where id = #{id}	    
+	</select>
+	
+	<delete id="delRoleById" parameterType="java.lang.String" >
+   		DELETE FROM role
+   		WHERE 
+   		id = #{id}
+    </delete>
+    
+    <update id="editRole" parameterType="cn.edm.domain.Role">
+        update
+          role r
+        set
+          r.role_name = #{roleName},
+          r.role_desc = #{roleDesc},
+          r.type = #{type},
+          r.modify_time = #{modifyTime},
+          r.operator = #{operator}
+        where
+          r.id = #{id}
+    </update>
+    
+	
+</mapper>
+
+

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.SmtpMapper">
+	<resultMap id="Smtp" type="cn.edm.domain.Smtp">
+		<result column="id" property="id"/>
+		<result column="quarter" property="quarter"/>
+		<result column="hour" property="hour"/>
+		<result column="day" property="day"/>
+		<result column="ip" property="ip" />
+		<result column="size" property="size" />
+		<result column="create_time" property="createTime" />
+	</resultMap>
+	<parameterMap type="cn.edm.domain.Smtp" id="Smtp"></parameterMap>
+	
+	<sql id="base_columns">
+		id, quarter, hour, day, ip, size, create_time
+	</sql>
+	
+	<select id="selectSmtpById" resultMap="Smtp" parameterType="java.util.Map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM smtp
+		<include refid="where"/>
+	</select>
+	
+	<select id="selectSmtpsByIp" resultMap="Smtp" parameterType="java.util.Map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM smtp
+		<include refid="where"/>
+	</select>
+	
+	<select id="selectSmtpList" resultMap="Smtp" parameterType="java.util.Map">
+		SELECT
+			<include refid="base_columns"/>
+		FROM smtp
+		<include refid="where"/>
+		ORDER BY create_time DESC
+		LIMIT #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectSmtpCount" resultType="long" parameterType="java.util.Map">
+		SELECT
+		count(*)
+		FROM smtp
+		<include refid="where"/>
+	</select>
+	
+	<insert id="insertSmtp" parameterType="cn.edm.domain.Smtp">
+		INSERT INTO smtp(
+			quarter,
+			hour,
+			day,
+			ip,
+			size,
+			create_time
+		)VALUES(
+			#{quarter},
+			#{hour},
+			#{day},
+			#{ip},
+			#{size},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="updateSmtp" parameterType="cn.edm.domain.Smtp">
+		UPDATE smtp SET
+			quarter = #{quarter},
+			hour = #{hour},
+			day = #{day},
+			ip = #{ip},
+			size = #{size},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="deleteSmtpById" parameterType="java.util.Map">
+		DELETE FROM smtp 
+		<include refid="where"/>
+	</delete>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="id != null">
+			AND id = #{id}
+		</if>
+		<if test="quarter != null">
+			AND quarter = #{quarter}
+		</if>
+		<if test="hour != null">
+			AND hour = #{hour}
+		</if>
+		<if test="day != null">
+			AND day = #{day}
+		</if>
+		<if test="ip != null">
+			AND ip LIKE CONCAT('%', #{ip}, '%')
+		</if>
+	</sql>
+	
+</mapper>
+
+

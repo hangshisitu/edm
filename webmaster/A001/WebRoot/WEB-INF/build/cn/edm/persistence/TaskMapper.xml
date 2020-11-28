@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.TaskMapper">
+	
+	<resultMap id="Task" type="cn.edm.domain.Task">
+		<id column="task_id" property="taskId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="user_id" property="userId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="task_name" property="taskName"/>
+		<result column="subject" property="subject" />
+		<result column="sender_name" property="senderName" />
+		<result column="sender_email" property="senderEmail" />
+		<result column="receiver" property="receiver" />
+		<result column="email_count" property="emailCount" />
+		<result column="audit_path" property="auditPath" />
+		<result column="moderate_path" property="moderatePath" />
+		<result column="suggestion" property="suggestion" />
+		<result column="resource_id" property="resourceId" />
+		<result column="type" property="type" />
+		<result column="job_time" property="jobTime" />
+		<result column="task_status" property="status" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+		<result column="delivery_time" property="deliveryTime" />
+		<result column="label_status" property="labelStatus" />
+		<result column="campaign_id" property="campaignId" />
+		<result column="priority" property="priority" />
+		<result column="plan_id" property="planId" />
+		<result column="plan_referer" property="planReferer" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		t.task_id, t.corp_id, t.user_id, t.template_id, t.task_name, t.subject, t.sender_name,
+		t.sender_email, t.receiver, t.email_count, t.audit_path, t.moderate_path, t.suggestion, t.resource_id, t.type,
+		t.job_time, t.task_status, t.create_time, t.modify_time, t.delivery_time, t.label_status, t.campaign_id, t.priority,
+		t.plan_id, t.plan_referer
+	</sql>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="userId != null">
+			AND t.user_id like concat('%',#{userId},'%')
+		</if>
+		<if test="taskName != null">
+			AND t.task_name like concat('%',#{taskName},'%')
+		</if>
+		<if test="type != null">
+			AND t.type = #{type}
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="status != null">
+			AND t.task_status in <foreach collection="status" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+		</if>
+		
+		<if test="auditFlag!= null">
+			<if test="auditFlag=='audited'">
+				AND t.moderate_path is not null AND t.moderate_path != ''
+			</if>
+			<if test="auditFlag=='needless'">
+				AND (t.audit_path is null or t.audit_path ='') AND (t.moderate_path is null or t.moderate_path ='')
+				AND t.task_status != 0
+			</if>
+		</if>
+		
+		<if test="priority != null">
+			AND t.priority = #{priority}
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="resourceId != null">
+			AND t.resource_id = #{resourceId}
+		</if>
+		<if test="planId != null">
+			AND t.plan_id = #{planId}
+		</if>
+		<if test="planIds != null">
+			AND t.plan_id in <foreach collection="planIds" item="pid" open="(" close=")" separator=",">#{pid}</foreach>
+		</if>
+		<if test="types != null">
+			AND t.type in <foreach collection="types" item="type" open="(" close=")" separator=",">#{type}</foreach>
+		</if>
+		<if test="emailCount == '>0'">
+			AND t.email_count > 0
+		</if>
+		<if test="campaignId != null">
+			AND t.campaign_id = #{campaignId}
+		</if>
+		<if test="corpPath != null">
+			AND c.corp_path like concat('%',#{corpPath},'%')
+		</if>
+	</sql>
+	
+	<select id="selectList" resultMap="Task" parameterType="java.util.Map">
+		SELECT
+		c.corp_path companyName,
+		(SELECT campaign_name FROM campaign cam  WHERE cam.campaign_id = t.campaign_id) campaignName,
+		(select count(*) from template_setting s where s.parent_id = t.template_id) touchCount,
+		<include refid="base_columns"/>
+		FROM task t left join corp c
+		on c.corp_id = t.corp_id 
+		<include refid="where"/>
+		order by t.modify_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectCount" resultType="java.lang.Long" parameterType="java.util.Map">
+		SELECT
+		COUNT(*)
+		FROM task t left join corp c
+		on c.corp_id = t.corp_id
+		<include refid="where"/>
+	</select>
+	
+	
+	<update id="audit" parameterType="cn.edm.domain.Task">
+		UPDATE task 
+		SET 
+		corp_id = #{corpId},
+		user_id = #{userId},
+		template_id = #{templateId},
+		task_name = #{taskName},
+		subject = #{subject},
+		sender_name = #{senderName},
+		sender_email = #{senderEmail},
+		receiver = #{receiver},
+		email_count = #{emailCount},
+		audit_path = #{auditPath},
+		moderate_path = #{moderatePath},
+		suggestion = #{suggestion},
+		resource_id = #{resourceId},
+		type = #{type},
+		job_time = #{jobTime},
+		task_status = #{status},
+		create_time = #{createTime},
+		modify_time = #{modifyTime},
+		delivery_time = #{deliveryTime},
+		label_status = #{labelStatus},
+		campaign_id = #{campaignId}
+		WHERE
+	    task_id = #{taskId}
+	</update>
+	
+	<select id="selectByTaskId" resultMap="Task" parameterType="java.lang.Integer">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM task t
+		WHERE t.task_id = #{taskId}
+	</select>
+	
+	<select id="selectBySenderEmail" resultMap="Task" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM task t
+		WHERE 1=1
+		<if test="senderEmail != null">
+			AND t.sender_email like concat('%',#{senderEmail},'%')
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(t.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		AND t.sender_email is not null 
+		AND t.sender_email != ''
+	</select>
+	
+	
+	<update id="updateLabelStatus" parameterType="map">
+		UPDATE task t
+		SET t.label_status = #{labelStatus}
+		WHERE 
+		corp_id = #{corpId}
+		AND
+		task_id = #{taskId}
+		AND
+		template_id = #{templateId}
+	</update>
+	
+	<select id="selectTasks" resultMap="Task" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM task t
+		WHERE 
+			t.corp_id = #{corpId}
+		AND
+			t.task_id = #{taskId}
+		AND
+			t.template_id = #{templateId}
+	</select>
+	
+	
+	<select id="selectTasksByCampaignId" parameterType="Integer" resultMap="Task">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM task t
+		WHERE 
+		t.type in (0,4)
+		AND t.task_status IN (26,27)
+		AND t.campaign_id = #{campaignId}
+	</select>
+	
+	
+	<select id="selectTaskPeriod" parameterType="Integer" resultType="Integer">
+		SELECT TO_DAYS(MAX(t.delivery_time))-TO_DAYS(MIN(t.delivery_time)) FROM task t
+		WHERE t.campaign_id = #{campaignId} 
+		AND t.type in (0,4)
+		AND t.task_status IN (26,27)
+	</select>
+	
+	<select id="selectMinTime" parameterType="Integer" resultType="Date">
+		SELECT MIN(t.delivery_time) FROM task t 
+		WHERE t.type in (0,4)
+		AND t.task_status IN (26,27)
+		AND t.campaign_id = #{campaignId}
+	</select>
+	
+	<select id="selectTaskPriorityList" resultMap="Task" parameterType="java.util.Map">
+		SELECT
+		c.corp_path corpPath,
+		(SELECT campaign_name FROM campaign cam  WHERE cam.campaign_id = t.campaign_id) campaignName,
+		(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+		<include refid="base_columns"/>
+		FROM task t 
+		left join corp c on t.corp_id = c.corp_id 
+		<include refid="where"/>
+		and t.plan_id is null 
+		and t.plan_referer is null
+		order by t.priority desc, t.modify_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectPriorityListCount" resultType="java.lang.Long" parameterType="java.util.Map">
+		SELECT
+		COUNT(*)
+		FROM task t 
+		left join corp c on t.corp_id = c.corp_id 
+		<include refid="where"/>
+		and t.plan_id is null 
+		and t.plan_referer is null
+	</select>
+	
+	<update id="updateTaskPriority" parameterType="java.util.Map">
+		UPDATE task
+		SET priority = #{priority}, 
+			modify_time = #{modifyTime}
+		WHERE task_id = #{taskId}
+	</update>
+	
+	<select id="selectTaskCount" parameterType="java.util.Map" resultType="Integer">
+		select
+			count(*)
+		from task t
+		<include refid="where" />
+	</select>
+	
+	<select id="selectPlanDeliveryTask" parameterType="java.util.Map" resultMap="Task">
+		select
+			<include refid="base_columns" />
+		from task t
+		<include refid="where" />
+		order by t.modify_time desc
+	</select>
+	
+	<select id="selectPlanTasksByPlanId" parameterType="java.util.Map" resultMap="Task">
+		select
+			<include refid="base_columns" />
+		from task t
+		<include refid="where" />
+		order by t.modify_time desc
+	</select>
+	
+	<select id="selectPlanTaskByPlanId" parameterType="java.util.Map" resultMap="Task">
+		select
+			<include refid="base_columns" />
+		from task t
+		<include refid="where" />
+	</select>
+	
+	<select id="selectTouchCount" parameterType="java.util.Map" resultType="Integer">
+		select
+			count(*)
+		from 
+			task t
+		INNER JOIN touch th ON th.parent_id = t.task_id
+		<include refid="where" />
+	</select>
+	<select id="selectPlanTouchTask" parameterType="java.util.Map" resultMap="Task">
+		select
+			<include refid="base_columns" />
+		from task t
+		<include refid="where" />
+	</select>
+	<select id="selectCampaignTouch" parameterType="java.util.Map" resultMap="Task">
+		select
+			<include refid="base_columns" />
+		from 
+			task t
+		INNER JOIN campaign c on  t.campaign_id = c.campaign_id
+ 		INNER JOIN touch th on t.task_id = th.parent_id
+		<include refid="where" />
+		group by t.task_id
+	</select>
+	
+	<delete id="delTaskByUserId" parameterType="java.lang.String" >
+   		DELETE FROM task
+   		WHERE 
+   		user_id = #{userId}
+    </delete>
+	
+</mapper>
+
+

@@ -1,0 +1,111 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	<#if action == "task" || action == "step">
+	var arr = ["templateId", "taskName", "subject", "bindCorpId", "senderEmail", "senderName", "replier", "receiver", "sms"];
+	for (var i = 0; i < arr.length; i++) {
+		$("input[name=" + arr[i] + "]").val($("input[name=" + arr[i] + "]").val());
+	}
+
+	var ad = "false";
+	if($("input[name=ad]").attr("checked")) {
+		ad = "true";
+	}
+	$("input[name=ad]").val(ad);
+	
+	var rand = "false";
+	if($("input[name=rand]").attr("checked")) {
+		rand = "true";
+	}
+	$("input[name=rand]").val(rand);
+	</#if>
+	
+	$('#test').ajaxForm({
+		url: '/mailing/task/test',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			loading(".msg_content",".load_img_open");
+			var form = jqForm[0];
+			if ((!form.email_list.value) && (!form.testIncludeId.value)) {
+				$(".msg_ul .err").html("请选择测试标签或输入测试邮箱地址");
+				form.email_list.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+			$(".msg_ul .err").html("");
+		},
+		success: function(data) { 
+			if(data.code == 1) {
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);
+			} else {
+				$(".msg_ul .err").html(data.message);
+				del_loading(".load_img_open");
+			} 
+		}
+	}); 
+	
+	$(".placehold").placeholder();
+	
+	//生成搜索
+	$("#test_tag_list").search({
+		valueId:"#testIncludeId",
+		boxId:"#slideSearch",
+		json:catedata['测试'],
+		itemFn:"pickData(this,'#test_tag_list')"
+	});
+
+});
+
+</script>
+
+<div class="msg_content clearfix">
+	<h1 class="title">测试发送</h1>
+	<form id="test" action="/mailing/task/test" method="post">
+		<input type="hidden" name="token" value="${token}" />
+		<input type="hidden" name="action" value="${action}" />
+		<input type="hidden" name="templateId" value="${templateId}" />
+		<input type="hidden" name="taskName" value="${xss.filter(taskName)}" />
+		<input type="hidden" name="subject" value="${xss.filter(subject)}" />
+		<input type="hidden" name="ad" value="${xss.filter(setting.ad)}" />
+		<input type="hidden" name="bindCorpId" value="${bindCorpId}" />
+		<input type="hidden" name="senderEmail" value="${xss.filter(senderEmail)}" />
+		<input type="hidden" name="senderName" value="${xss.filter(senderName)}" />
+		<input type="hidden" name="robot" value="${xss.filter(setting.robot)}" />
+		<input type="hidden" name="rand" value="${xss.filter(setting.rand)}" />
+		<input type="hidden" name="replier" value="${xss.filter(setting.replier)}" />
+		<input type="hidden" name="receiver" value="${xss.filter(receiver)}" />
+		<input type="hidden" name="sms" value="${setting.sms}" />
+		<ul class="msg_ul">
+			<li>测试标签</li>
+			<li>
+				<textarea id="test_tag_list" class="add_area rad_area" name="includes" style="width:370px;"></textarea>
+				<input type="hidden" id="testIncludeId" name="includeIds" value="" />
+			</li>
+			<li>请输入测试邮箱地址（不能多于&nbsp;<span class="green">100</span>&nbsp;个），以逗号“,”隔开</li>
+			<li>
+				<textarea name="email_list" style="width: 488px; height: 240px;"></textarea>
+			</li>
+			<li class="err"></li>
+		</ul>
+		<div class="msg_foot m_t20 clearfix">
+			<ul class="f_l">
+				<li class="load_img_open"><img src="/static/img/loading2.gif"  /></li>
+			</ul>
+			<ul class="msg_btn">
+				<li>
+					<input type="submit" value="发送" class="input_yes" />
+				</li>
+				<li>
+					<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+				</li>
+			</ul>
+		</div>
+	</form>
+</div>

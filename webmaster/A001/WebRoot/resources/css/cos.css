@@ -1,0 +1,52 @@
+.edittable th, .edittable td {
+	word-break: keep-all;/* 不换行 */
+	white-space: nowrap;/* 不换行 */
+}
+.edittable {
+	table-layout: fixed;/* 只有定义了表格的布局算法为fixed，下面tds的定义才能起作用。 */
+	line-height: 30px;
+	font-size: 12px;
+}
+.edittable th, .edittable td {
+	text-align: left;
+	padding: 0 0 0 15px;
+}
+.edittable th {
+	background-color: #efefef;
+	color: #272727;
+	font-weight: normal;
+	border-bottom: 1px solid #d4d4d4;
+}
+.edittable td {
+	color: #666666;
+	border-bottom: 1px solid #d4d4d4;
+}
+.search1 {
+/* 	background-color: #C7E2E0; */
+	padding: 0 15px 5px 0px;   /* 上右下左 */
+}
+.search1 li {
+	float: left;
+	line-height: 30px;
+	margin-right: 10px;
+	margin-top: 15px;
+	font-size:12px;
+}
+.search1 li .date {
+	width: 110px;
+	background-image: url(/resources/script/common/My97DatePicker/skin/datePicker.gif);
+	_background-image: url(/resources/script/common/My97DatePicker/skin/datePicker.gif);
+	background-repeat: no-repeat;
+	background-position: right 5px;
+}
+.date{
+    border: 1px solid #d4d4d4;
+}
+.search1 li .search_but {
+	background-color: #666666;
+	border:none;
+	width: 45px;
+	height: 32px;
+	background-position: 5px -64px;
+	cursor: pointer;
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 表单</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script src="${ctx}/static/js/kindeditor-4.1.10/kindeditor.js?${version}"></script>
+<script src="${ctx}/static/js/kindeditor-4.1.10/lang/zh_CN.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/datasource.form.3.js?${version}"></script>
+<script type="text/javascript">
+	
+	$(document).ready(function(){
+	<#if !templateContent??>
+		K.html($('#foo').html());
+	</#if>	
+	});
+
+
+</script>
+</head>
+<body class="step">
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix">
+	<#include "/left.html" />
+	<div id="main"  class="clearfix">
+		<#assign confirm = "current" />
+		<#assign num = "3" />
+		<#include "/default/datasource/form.html" />
+		<h1 class="title border_b"></h1>
+		<div>
+			<form id="add" action="3" method="post">
+				<input type="hidden" name="token" value="${xss.filter(token)}" />
+				<input type="hidden" name="formId" value="${form.formId}" />
+				<h3 class='fm_title'>验证邮件由系统自动发出，邮件预览效果如下：</h3>
+				<table cellspacing="0" cellpadding="0" border="0" class="IE6_table m_t10"> 
+					<tr></tr></table><ol><li><br /></li></ol><table cellspacing="0" cellpadding="0" border="0" class="IE6_table m_t10"><tr> 
+						<td width="10" class="red">&nbsp;</td> 
+						<td style="border: 1px solid rgb(170, 170, 170);"> 
+							<div style="position: relative; width: 100%;"> 
+							<textarea class="textarea spe_area" id="templateContent" name="templateContent" style="border: medium none ; padding: 5px 0pt; width: 100%; height: 360px;">${templateContent?default("请输入模板内容")}</textarea> 
+							<input type="hidden" name="editor" value="" /> 
+							<input type="hidden" id="tempConfirmSubject"name="confirmSubject" value="${xss.filter(form.confirmSubject?default(form.formDesc))}" /> 
+							<div class="area_cover"></div> 
+							</div> 
+						</td> 
+					</tr> 
+					<tr> 
+						<td width="10" class="red">&nbsp;</td> 
+						<td> 
+							<a href="javascript:void(0);" class="red_trg highlight">更改红色内容&gt;&gt;</a> 
+						</td> 
+					</tr> 
+				</table>	
+			</form>
+		</div>
+		
+		<div class="step_foot">
+			<div class="next_step clearfix">
+				<div class="f_r">
+					<input type="button" value="取消" class="input_no" onclick="openPop(0,0,'#confirmCancle')"  />
+				</div>
+				<div class="center">
+					<input type="button" value="下一步" class="input_yes" id="tempSubmit"/>
+					<span class="widthfix">
+						<span class="load_img">
+							<img src="/static/img/loading2.gif"/>
+						</span>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	<div id="transfer" style="display:none"></div> 
+	<div class="select_div"></div>
+	
+	<div class="popBox searchBox" id="confirmCancle" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:400px">
+			<div class="pop_title">设计表单</div>
+			<div class="pop_content">
+				<div class="al_center">您确定取消当前操作吗？</div>
+				<div class='cmt_wrap'>
+					<input class='input_yes' type="button" value='确定' onclick="location.href='page';" />
+					<input class='input_no' type="button" value='继续操作' onclick="closeDialog();" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="popBox searchBox" id="modEmail" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:400px">
+			<div class="pop_title">设计表单</div>
+			<div class="pop_content">
+				<div class="lft_pad">修改文字：<input class='red' type='text' id='redText' style="width:260px;color:#f25b02;" /></div>
+				<div class='cmt_wrap'>
+					<input class='input_yes' type="button" value='确定' onclick="appendText();closeDialog();" />
+					<input class='input_no' type="button" value='取消' onclick="closeDialog();" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id='foo' style='display:none'>
+		<table width="680" cellspacing="0" cellpadding="0" border="0" align="center" style="padding: 5px 0; border: 1px #e5e5e5 solid;font-family:微软雅黑;color:#666;">
+		<tbody>
+			<tr>
+				<td width="15">&nbsp;</td>
+				<td valign="bottom" align="left" style="font-size: 13px;">
+					<p style='margin-top:30px;color:#0196D9;font-size:16px;'>尊敬的用户：</p>
+					<p style='margin-top:10px'>您申请<span class='special' id="confirmSubject" style="color: #f25b02; font-weight: bold;"><#if form.confirmSubject??>${xss.filter(form.confirmSubject)}<#else>${xss.filter(form.formDesc)}</#if></span>，请点击下面的按钮确认：</p>
+					<p style='margin-top:10px;margin-bottom:20px'><a href="${appUrl}/form/confirm?e=$email$&id=${form.formId}&r=${xss.filter(form.randCode)}" style="font-family:微软雅黑;font-size:16px;color:#fff;text-decoration:none;line-height:30px;padding:0;display:block;width:75px;height:30px;text-align:center;background-color:#EF715D;">验证确认</a></p>
+				</td>
+				<td width="15">&nbsp;</td>
+			</tr>
+			<tr>
+				<td width="15">&nbsp;</td>
+				<td valign="bottom" align="left" style="font-size: 13px; line-height:22px">
+					<p style='margin:0'>如果您无法看到或者无法点击上方的按钮，请点击以下链接验证发件人邮箱：</p>
+					<a href="${appUrl}/form/confirm?e=$email$&id=${form.formId}&r=${xss.filter(form.randCode)}" style="color:#0196D9;">
+					${appUrl}/form/confirm?e=$email$&id=${form.formId}&r=${xss.filter(form.randCode)}
+					</a>
+					<p style='margin-top:0;margin-bottom:50px'>(如果点击链接无反应,请复制链接到浏览器里直接打开；如果您没有申请<span class='special' style="color: #f25b02; font-weight: bold;"><#if form.confirmSubject != null>${xss.filter(form.confirmSubject)}<#else>${xss.filter(form.formDesc)}</#if></span>，请忽略此信息。）</p>
+				</td>
+				<td width="15">&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>
+	</div>
+	
+</body>
+</html>

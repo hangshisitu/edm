@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.detail.client.js?${version}"></script>
+<script type="text/javascript">
+	<#assign browserOpenSum = 0 />
+	<#if browserList?? && browserList?size gt 0>
+	<#list browserList as b>
+		<#assign browserOpenSum = browserOpenSum + b.openCount?default(0) />
+	</#list>
+	</#if>
+	var browser_names = [
+		<#if browserList?? && browserList?size gt 0>
+		<#assign i = 0 />
+		<#list browserList as b>
+			[${i}, "${view.browser(b.browser)}", ${b.openCount?default(0)}, <#if browserOpenSum==0>0<#else>${b.openCount?default(0) * 100 / browserOpenSum}</#if>]<#if b_has_next>,</#if>
+			<#assign i = i + 1 />
+		</#list>
+		</#if>
+	];
+	var browser_datas = [
+		<#if browserList?? && browserList?size gt 0>
+		<#assign i = 0 />
+		<#list browserList as b>
+			[${i}, <#if browserOpenSum==0>0<#else>${b.openCount?default(0) * 100 / browserOpenSum}</#if>]<#if b_has_next>,</#if>
+			<#assign i = i + 1 />
+		</#list>
+		</#if>
+	]; 
+
+	<#assign osOpenSum = 0 />
+	<#if osList?? && osList?size gt 0>
+	<#list osList as o>
+		<#assign osOpenSum = osOpenSum + o.openCount?default(0) />
+	</#list>
+	</#if>
+ 	var system_names = [
+		<#if osList?? && osList?size gt 0>
+		<#assign i = 0 />
+		<#list osList as o>
+			[${i}, "${view.os(o.os)}", ${o.openCount?default(0)}, <#if osOpenSum==0>0<#else>${o.openCount?default(0) * 100 / osOpenSum}</#if>]<#if o_has_next>,</#if>
+			<#assign i = i + 1 />
+		</#list>
+		</#if> 
+	];
+	var system_datas = [
+		<#if osList?? && osList?size gt 0>
+		<#assign i = 0 />
+		<#list osList as o>
+			[${i}, <#if osOpenSum==0>0<#else>${o.openCount?default(0) * 100 / osOpenSum}</#if>]<#if o_has_next>,</#if>
+			<#assign i = i + 1 />
+		</#list>
+		</#if>
+	];
+	
+	<#assign langOpenSum = 0 />
+	<#if langList?? && langList?size gt 0>
+	<#list langList as l>
+		<#assign langOpenSum = langOpenSum + l.openCount?default(0) />
+	</#list>
+	</#if>
+ 	var language_names = [
+		<#if langList?? && langList?size gt 0>
+		<#assign i = 0 />
+		<#list langList as l>
+			[${i}, "${view.lang(l.lang)}", ${l.openCount?default(0)}, <#if langOpenSum==0>0<#else>${l.openCount?default(0) * 100 / langOpenSum}</#if>]<#if l_has_next>,</#if>
+			<#assign i = i + 1 />
+		</#list>
+		</#if> 
+	];
+	var language_datas = [
+		<#if langList?? && langList?size gt 0>
+		<#assign i = 0 />
+		<#list langList as l>
+			[${i}, <#if langOpenSum==0>0<#else>${l.openCount?default(0) * 100 / langOpenSum}</#if>]<#if l_has_next>,</#if>
+			<#assign i = i + 1 />
+		</#list>
+		</#if>
+	]; 
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix posfix" style="">
+		<div class="posfix">
+			<h1 class="title">终端&nbsp;&nbsp;<span>按打开次数统计用户终端环境，数据隔日更新</span></h1>
+			<ul class="tab clearfix">
+				<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${campaign.campaignId}">概览</a></li>
+				<li><a href="${ctx}/report/detail/campaign/send?campaignId=${campaign.campaignId}">发送</a></li>
+				<li><a href="${ctx}/report/detail/campaign/open?campaignId=${campaign.campaignId}">打开</a></li>
+				<li><a href="${ctx}/report/detail/campaign/click?campaignId=${campaign.campaignId}">点击</a></li>
+				<li><a href="${ctx}/report/detail/campaign/domain?campaignId=${campaign.campaignId}">域名</a></li>
+				<li><a href="${ctx}/report/detail/campaign/region?campaignId=${campaign.campaignId}">地域</a></li>
+				<!-- <li class="now"><a href="${ctx}/report/detail/campaign/client?campaignId=${campaign.campaignId}">终端</a></li> -->
+				<li><a href="${ctx}/report/detail/campaign/history?campaignId=${campaign.campaignId}">历史</a></li>
+				<li><a href="${ctx}/report/detail/campaign/compare?campaignId=${campaign.campaignId}">对比</a></li>
+				<#if (campaign.touchCount)?if_exists gt 0>
+					<li><a href="${ctx}/report/detail/campaign/touch?campaignId=${campaign.campaignId}&templateId=110">触发</a></li>
+				</#if>
+			</ul>
+			<div class="ribbon clearfix">
+				<div class="note">
+					<p>活动邮件打开次数<span>${browserOpenSum}</span>个</p>
+				</div>
+				<ul class="btn">
+					<#if view.funcAuth('mailing/campaign/page', 6)>
+					<li><a class="btn_icon btn_icon_down" href="javascript:campaign_exports('${campaign.campaignId}');">导出</a></li>
+					</#if>
+				</ul>
+			</div>
+			<#include "/default/report/detail/campaign.html" />
+			<#assign client = false />
+			<#if recent?? && browserList?? && browserList?size gt 0>
+			<div class='charts_list m_t20'>
+				<div class="task_title">
+					<strong>浏览器</strong>
+				</div>
+				<div class="ct_tank f_l">
+					<table border="0" cellspacing="0" cellpadding="0">
+						<tr>
+							<th>浏览器</th>
+							<th>打开次数</th>
+							<th>占比</th>
+						</tr>
+						<#if browserList?? && browserList?size gt 0>
+						<#list browserList as b>
+						<tr>
+							<td>${view.browser(b.browser)}</td>
+							<td>${b.openCount?default(0)}</td>
+							<td><#if browserOpenSum==0>0<#else>${b.openCount?default(0) * 100 / browserOpenSum}</#if>&nbsp;%</td>
+						</tr>
+						</#list>
+						</#if>
+						<#list noneBrowserMap?keys as k>
+							<tr style="color: #DCDCDC;">
+								<td>${view.browser(k)}</td>
+								<td>0</td>
+								<td>0&nbsp;%</td>
+							</tr>
+						</#list>
+					</table>
+				</div>
+				<div class="charts f_l">
+					<div id="open_pie" style="height: 300px; margin: 0 auto;"></div>
+				</div>
+			</div>
+			<#assign client = true />
+			</#if>
+			<#if recent?? && osList?? && osList?size gt 0>
+			<div class='charts_list'>
+				<div class="task_title">
+					<strong>操作系统</strong>
+				</div>
+				<div class="ct_tank f_l">
+					<table border="0" cellspacing="0" cellpadding="0">
+						<tr>
+							<th>操作系统</th>
+							<th>打开次数</th>
+							<th>占比</th>
+						</tr>
+						<#if osList?? && osList?size gt 0>
+						<#list osList as o>
+						<tr>
+							<td>${view.os(o.os)}</td>
+							<td>${o.openCount?default(0)}</td>
+							<td><#if osOpenSum==0>0<#else>${o.openCount?default(0) * 100 / osOpenSum}</#if>&nbsp;%</td>
+						</tr>
+						</#list>
+						</#if>
+						<#list noneOsMap?keys as k>
+							<tr style="color: #DCDCDC;">
+								<td>${view.os(k)}</td>
+								<td>0</td>
+								<td>0&nbsp;%</td>
+							</tr>
+						</#list>
+					</table>
+				</div>
+				<div class="charts f_l">
+					<div id="system_pie" style="height: 300px; margin: 0 auto;"></div>
+				</div>
+			</div>
+			<#assign client = true />
+			</#if>
+			<#if recent?? && langList?? && langList?size gt 0>
+			<div class='charts_list'>
+				<div class="task_title">
+					<strong>语言环境</strong>
+				</div>
+				<div class="ct_tank f_l">
+					<table border="0" cellspacing="0" cellpadding="0">
+						<tr>
+							<th>语言环境</th>
+							<th>打开次数</th>
+							<th>占比</th>
+						</tr>
+						<#if langList?? && langList?size gt 0>
+						<#list langList as l>
+						<tr>
+							<td>${view.lang(l.lang)}</td>
+							<td>${l.openCount?default(0)}</td>
+							<td><#if langOpenSum==0>0<#else>${l.openCount?default(0) * 100 / langOpenSum}</#if>&nbsp;%</td>
+						</tr>
+						</#list>
+						</#if>
+						<#list noneLangMap?keys as k>
+							<tr style="color: #DCDCDC;">
+								<td>${view.lang(k)}</td>
+								<td>0</td>
+								<td>0&nbsp;%</td>
+							</tr>
+						</#list>
+					</table>
+				</div>
+				<div class="charts f_l">
+					<div id="language_pie" style="height: 300px; margin: 0 auto;"></div>
+				</div>
+			</div>
+			<#assign client = true />
+			</#if>
+			<#if !client>
+			<div class="no_data">没有匹配的数据！</div>
+			</#if>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

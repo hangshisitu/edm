@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 子账号</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/account.user.add.js?${version}"></script>
+<script type="text/javascript" charset="utf-8">
+	var modelList = [
+		<#if roleList?? && roleList?size gt 0>
+			<#list roleList as role>
+				{"id":${role.roleId}, "title":"${xss.filter(role.roleName)}", 
+				"info":[
+				<#if role.menuFuncList?? && role.menuFuncList?size gt 0>
+					<#list role.menuFuncList as menuFunc>
+						"${menuFunc}"<#if menuFunc_has_next>,</#if>
+					</#list>
+				</#if>
+		        ],
+				"level": ${role.type}
+				}<#if role_has_next>,</#if>
+			</#list>
+		</#if>
+	];
+	
+	var corp_list = [
+		{id: ${corp.corpId}, title: "${corp.company}", level: 0}<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+	    <#list corpChildren as c>
+		{id:${c.corpId},title:'${c.company}', level: 1}<#if c_has_next>,</#if>
+		</#list>
+	];
+	
+	var permission_list = [
+		{id:6,title:'指定只读'},
+		{id:4,title:'运营投递'}
+	];
+
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title border_b"><#if user.userId??>修改<#else>新建</#if>子账号&nbsp;&nbsp;<span>子账号基本资料</span></h1>
+		<form id="add" action="add" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="orgUserId" value="${xss.filter(user.userId)}" />
+			<input type="hidden" name="orgEmail" value="${xss.filter(user.email)}" />
+			<table border="0" cellspacing="0" cellpadding="0" class="IE6_table m_t20">
+				<tr class="fixed_tr">
+					<td width="100" align="right" >用户名：</td>
+					<td width="10" class="red">*</td>
+					<td>
+						<#if user.userId??>
+						<input type="text" class="add_text" value="${xss.filter(user.userId)}" readonly="readonly" />
+						<input type="hidden" name="userId" value="${xss.filter(user.userId)}" />
+						<#else>
+						<input type="text" class="add_text" name="userId" value="${xss.filter(user.userId)}" size="60" />
+						</#if>
+					</td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">密码：</td>
+					<td class="red"><#if !user.userId??>*</#if></td>
+					<td>
+						<input type="password" class="add_text" name="password" value="" maxlength="18" />
+					</td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">邮箱地址：</td>
+					<td class="red">*</td>
+					<td><input type="text" class="add_text" name="email" value="${xss.filter(user.email)}" maxlength="64" /></td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">机构：</td>
+					<td class="red">*</td>
+					<td>
+						<div class="f_l">
+							<textarea id="corp_list" class="add_area rad_area" style="width:340px;" >请选择</textarea>
+							<input id="corpId" type="hidden" value="${user.corpId}" name="corpId" autocomplete="off"/>
+						</div>
+					</td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">角色：</td>
+					<td class="red">*</td>
+					<td>
+						<div class="f_l">
+							<textarea id="role" class="add_area rad_area" style="width:340px;" >请选择</textarea>
+							<input id="roleId" type="hidden" value="" name="roleId" autocomplete="off"/>
+							<script>
+								$(function() {
+									<#if user.userId?? && role??>
+										$("#role").html("${role.roleName}");
+										$("#roleId").val("${role.roleId}");
+									</#if>
+								});
+							</script>
+						</div>
+						&nbsp;<a class="highlight" href="javascript:triggerHelp();" style="">查询角色功能权限</a>
+					</td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">联系人姓名：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="trueName" value="${xss.filter(user.trueName)}" maxlength="20" /></td>
+				</tr>
+				<tr class="fixed_tr">
+					<td align="right">电话号码：</td>
+					<td class="red"></td>
+					<td><input type="text" class="add_text" name="phone" value="${xss.filter(user.phone)}" maxlength="20" /></td>
+				</tr>
+				<#assign jhook_css = "" />
+				<#if role?? && role.type == 1>
+					<#assign jhook_css = "style='display: none;'" />
+				</#if>
+				<tr class="fixed_tr Jhook" ${jhook_css}>
+					<td align="right">附加权限：</td>
+					<!-- <td class="red">*</td> -->
+					<td></td>
+					<td>
+						<div class="f_l">
+							<textarea id="permission_list" class="add_area rad_area" style="width:340px;" >请选择</textarea>
+							<input id="permissionId" type="hidden" value="" name="permissionId" autocomplete="off"/>
+						</div>
+						&nbsp;
+						<span class="tips_trg">
+                   			<span class="question"><a class="highlight" href="#">帮助</a></span>
+	                   		<span class="global_tips">
+							  指定只读和运营投递是相关联的2个角色附加权限。给某个角色设置为“指定只读”后，则该账号可查看的数据报告由“运营投递”角色账号进行指派。此功能用于给固定的账号小范围的开放报告，以保障数据隐私。							
+							</span>
+                   		</span>
+					</td>
+				</tr>
+				<tr class="fixed_tr Jhook" ${jhook_css}>
+					<td align="right">任务审核：</td>
+					<td class="red">*</td>
+					<td>
+						<#assign moderate_on = "" />
+						<#assign moderate_off = "checked='checked'" />
+						<#if moderate?? && moderate>
+							<#assign moderate_on = "checked='checked'" />
+							<#assign moderate_off = "" />
+						</#if>
+						<input name="moderate" type="radio" id="on" value="on" ${moderate_on} class="checkbox f_l" />
+						<label for="on" class="m_r15">需要</label>
+						<input name="moderate" type="radio" id="off" value="off" ${moderate_off} class="checkbox f_l" />
+						<label for="off">不需要</label>
+					</td>
+				</tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t10">
+                <tr>
+                    <td align="right" width="110">&nbsp;</td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" id="smt" type="submit" value="保存" /></li>
+                            <li><input class="input_no" onclick="location.assign('page')" type="button" value="返回" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+		</form>
+	</div>
+</div>
+<div class="searchBox" id="slideSearch5" style="display:none">
+	<div class="limiter" style="width:290px">
+		<div class="pop_content">
+			<div class="search_result"></div>
+		</div>
+	</div>
+</div>
+
+<div style="display:none;" id="remindRole" class="searchBox popBox">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="">
+		<div class="pop_title">查询角色</div>
+		<div class="pop_content">
+			<div style="padding:10px 5px">	
+				<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table">
+	                <tr>
+	                    <td width="80" align="right">查询角色：</td>
+	                    <td width="300">
+	                    	<textarea id="role2" class="add_area rad_area" style="width:270px;height:26px">请选择</textarea>
+							<input id="roleId2" type="hidden" value="" name="roleId2" autocomplete="off"/>
+	                    </td>
+	                   	<td></td>
+	                </tr>
+	                <tr valign="top">
+	                    <td align="right">功能权限：</td>
+	                    <td>
+	                    	<div id="funcDesc"></div>
+	                    </td>
+	                    <td></td>
+	                </tr>
+	                <tr>
+	                    <td colspan="3" align="center">
+	                    	 <input type="button" value="关闭" onclick="closeDialog();" class="input_no" style="height:30px;margin-top:8px">
+	                    </td> 
+	                </tr>
+               </table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="select_div"></div>
+</body>
+</html>

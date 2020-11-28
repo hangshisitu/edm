@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.UrlMapper">
+	
+	<resultMap id="Url" type="cn.edm.domain.Url">
+		<result column="corp_id" property="corpId"/>
+		<result column="task_id" property="taskId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="url" property="url"/>
+		<result column="click_count" property="clickCount" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		u.corp_id,u.task_id,u.template_id,u.url,u.click_count
+	</sql>
+	
+	<select id="selectByTaskId" resultMap="Url" parameterType="map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM result_by_url u
+		inner join task t on t.corp_id = u.corp_id and t.task_id = u.task_id
+		WHERE 
+		u.task_id = #{taskId}
+		AND u.corp_id = #{corpId}
+	</select>
+	
+	<select id="selectClickCountByTaskId" resultMap="Url" parameterType="map">
+		SELECT
+		u.task_id taskId,
+		SUM(u.click_count) sumClickCount
+		FROM result_by_url u
+		inner join task t on t.corp_id = u.corp_id and t.task_id = u.task_id
+		WHERE 
+		u.task_id = #{taskId}
+		AND u.corp_id = #{corpId}
+		GROUP BY u.corp_id, u.task_id
+	</select>
+	
+	
+	
+	
+	
+	
+	<!-- 活动统计 -->
+	
+	
+	<sql id="base_columns_campaign">
+		u.url,SUM(u.click_count) click_count
+	</sql>
+	
+	
+	<select id="selectCampaignClick" parameterType="Integer" resultMap="Url">
+		
+		SELECT  
+		<include refid="base_columns_campaign"/>
+		FROM result_by_url u,task t
+		WHERE u.corp_id=t.corp_id
+		AND u.task_id = t.task_id
+		AND t.campaign_id = #{campaignId}
+		AND t.task_status IN (26,27)
+		AND t.type in (0,4) 
+		GROUP BY u.url
+		
+	</select>
+	
+	
+	<select id="selectCampaignSum" resultType="Integer" parameterType="Integer">
+		SELECT
+		SUM(u.click_count) sumClickCount
+		FROM result_by_url u
+		inner join task t on t.corp_id = u.corp_id and t.task_id = u.task_id
+		WHERE 
+		t.campaign_id = #{campaignId}
+		AND t.task_status IN (26,27)
+		AND t.type in (0,4) 
+	</select>
+	
+</mapper>
+
+

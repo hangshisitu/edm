@@ -1,0 +1,43 @@
+@charset "utf-8";
+div.sdmenu {
+	width: 140px; font-size:14px; font-weight:bold; color:#ad8634;
+}
+div.sdmenu div {
+	background: url(menu_bg_hover.gif) repeat-x;overflow: hidden;
+}
+* html div.sdmenu div{
+    float:left
+}
+div.sdmenu div.collapsed {
+	height: 32px;
+}
+div.sdmenu div span {
+	display: block;line-height:32px;width:140px;font-weight: bold;color: white;cursor: pointer; margin-left:10px;_margin-left:0px;
+}
+div.sdmenu div span a{
+    padding:0; background:none; border:0; font-size:14px;line-height:32px;display:block
+}
+div.sdmenu div.collapsed {
+	background: url(menu_bg.gif) repeat-x; width:140px; color:#ad8634
+}
+div.sdmenu div.collapsed span{
+    color:#ad8634; line-height:32px
+}
+div.sdmenu div.collapsed span a.current{
+    color:#ad8634;
+}
+div.sdmenu div a {
+	padding-left:47px;display: block;border-bottom: 1px solid #fff;color: #ad8634;font-size:13px; background:url(menu_sub_icon.gif) no-repeat 27px 7px #f7f2d4; line-height:28px
+}
+div.sdmenu div a.current {
+	background : url(linkarrow.gif) no-repeat  27px 7px #f8ec94;  color:#ad8634
+}
+div.sdmenu div span a.current {
+	background :none; color:#fff
+}
+div.sdmenu div a:hover {
+	background : url(menu_sub_icon.gif) no-repeat  27px 7px #f8ec94;text-decoration: none;
+}
+div.sdmenu div span a:hover {
+	background:none;
+}

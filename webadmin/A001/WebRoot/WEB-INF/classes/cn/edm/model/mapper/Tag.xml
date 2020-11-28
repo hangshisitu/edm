@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Tag">
+
+	<typeAlias alias="tag" type="cn.edm.model.Tag" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Tag.mapper">
+		t.tag_id tagId,
+		t.db_id dbId,
+		t.category_id categoryId,
+		t.corp_id corpId,
+		t.user_id userId,
+		t.tag_name tagName,
+		t.tag_desc tagDesc,
+		t.email_count emailCount,
+		t.create_time createTime,
+		t.modify_time modifyTime
+	</sql>
+	
+	<sql id="Tag.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="tagId">
+			t.tag_id = #tagId#
+		</isNotNull>
+		<isNotNull prepend="and" property="tagIds">
+			t.tag_id in <iterate property="tagIds" open="(" close=")" conjunction=",">#tagIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryId">
+			t.category_id = #categoryId#
+		</isNotNull>
+		<isNotNull prepend="and" property="tagName">
+			<isEqual property="nameCnd" compareValue="eq">
+				t.tag_name = #tagName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				t.tag_name like concat('%', #tagName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryName">
+			<isEqual property="categoryCnd" compareValue="eq">
+				c.category_name = #categoryName#
+			</isEqual>
+			<isEqual property="categoryCnd" compareValue="!eq">
+				c.category_name != #categoryName#
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ t.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="day">
+			<![CDATA[ 
+				date_format(t.create_time, '%y-%m-%d') < date_format(date_sub(now(), interval #day# day) , '%y-%m-%d') 
+			]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Tag.save" parameterClass="tag">
+		insert into tag (
+			db_id,
+			category_id,
+			corp_id,
+			user_id,
+			tag_name,
+			tag_desc,
+			email_count,
+			create_time,
+			modify_time
+		) values (
+			#dbId#,
+			#categoryId#,
+			#corpId#,
+			#userId#,
+			#tagName#,
+			#tagDesc#,
+			#emailCount#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="tagId">
+			select @@IDENTITY as tag_id
+		</selectKey>
+	</insert>
+	
+	<insert id="Tag.batchSave" parameterClass="List">
+		insert ignore into tag (
+			db_id,
+			category_id,
+			corp_id,
+			user_id,
+			tag_name,
+			tag_desc,
+			email_count,
+			create_time,
+			modify_time
+		)
+		values 
+		<iterate conjunction=",">
+		(
+			#tags[].dbId#,
+			#tags[].categoryId#,
+			#tags[].corpId#,
+			#tags[].userId#,
+			#tags[].tagName#,
+			#tags[].tagDesc#,
+			#tags[].emailCount#,
+			now(),
+			now()
+		)
+		</iterate>
+	</insert>
+	
+	<update id="Tag.update" parameterClass="tag">
+		update tag t set
+			t.db_id = #dbId#,
+			t.category_id = #categoryId#,
+			t.corp_id = #corpId#,
+			t.tag_name = #tagName#,
+			t.tag_desc = #tagDesc#,
+			t.email_count = #emailCount#,
+			t.modify_time = now()
+		where t.user_id = #userId# and t.tag_id = #tagId#
+	</update>
+	
+	<delete id="Tag.delete" parameterClass="mb">
+		delete from tag 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="tagId">
+				tag_id = #tagId#
+			</isNotNull>
+			<isNotNull prepend="and" property="tagIds">
+				tag_id in <iterate property="tagIds" open="(" close=")" conjunction=",">#tagIds[]#</iterate>
+			</isNotNull>
+			<isNotNull prepend="and" property="categoryId">
+				category_id = #categoryId#
+			</isNotNull>
+			<isNotNull prepend="and" property="day">
+				<![CDATA[ 
+					date_format(create_time, '%y-%m-%d') < date_format(date_sub(now(), interval #day# day) , '%y-%m-%d') 
+				]]>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Tag.query" parameterClass="mb" resultClass="tag">
+		select
+			c.category_name categoryName,
+			<include refid="Tag.mapper" />
+		from tag t
+		left join category c on c.category_id = t.category_id
+		<dynamic>
+			<include refid="Tag.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="Tag.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from tag t
+		left join category c on c.category_id = t.category_id
+		<dynamic>
+			<include refid="Tag.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Tag.index" parameterClass="mb" resultClass="tag">
+		select
+			c.category_name categoryName,
+			<include refid="Tag.mapper" />
+		from tag t
+		left join category c on c.category_id = t.category_id
+		<dynamic>
+			<include refid="Tag.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Tag.maxDbId" resultClass="Integer">
+		select
+			max(t.db_id)
+		from tag t limit 1
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.detail.click.js?${version}"></script>
+<script type="text/javascript">
+	var datas = [
+	    <#list hourMap?keys as k>
+	    ${hourMap[k]}<#if k_has_next>,</#if>
+	    </#list>
+	];
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix posfix" style="">
+		<div class="posfix">
+			<h1 class="title">点击&nbsp;&nbsp;<span>针对邮件点击的时段和链接提供图表分析</span></h1>
+			<ul class="tab clearfix">
+				<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${campaign.campaignId}">概览</a></li>
+				<li><a href="${ctx}/report/detail/campaign/send?campaignId=${campaign.campaignId}">发送</a></li>
+				<li><a href="${ctx}/report/detail/campaign/open?campaignId=${campaign.campaignId}">打开</a></li>
+				<li class="now"><a href="${ctx}/report/detail/campaign/click?campaignId=${campaign.campaignId}">点击</a></li>
+				<li><a href="${ctx}/report/detail/campaign/domain?campaignId=${campaign.campaignId}">域名</a></li>
+				<li><a href="${ctx}/report/detail/campaign/region?campaignId=${campaign.campaignId}">地域</a></li>
+				<!-- <li><a href="${ctx}/report/detail/campaign/client?campaignId=${campaign.campaignId}">终端</a></li> -->
+				<li><a href="${ctx}/report/detail/campaign/history?campaignId=${campaign.campaignId}">历史</a></li>
+				<li><a href="${ctx}/report/detail/campaign/compare?campaignId=${campaign.campaignId}">对比</a></li>
+				<#if (campaign.touchCount)?if_exists gt 0>
+					<li><a href="${ctx}/report/detail/campaign/touch?campaignId=${campaign.campaignId}&templateId=110">触发</a></li>
+				</#if>
+			</ul>
+			<div class="ribbon clearfix">
+				<ul class="btn">
+					<#if _9>
+						<#if view.funcAuth('mailing/campaign/page', 6)>
+						<li><a class="btn_icon btn_icon_down" href="javascript:campaign_exports('${campaign.campaignId}');">导出</a></li>
+						</#if>
+					</#if>
+				</ul>
+			</div>
+			<#include "/default/report/detail/campaign.html" />
+			<#if recent?? && hourList?? && hourList?size gt 0>
+			<div class="charts">
+				<div id="line" style="width: 840px; height: 240px; margin: 0 auto;"></div>
+			</div>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+				<tbody>
+					<tr>
+						<th>链接地址</th>
+						<th>点击次数</th>
+						<th>占比</th>
+					</tr>
+					<#if urlList?? && urlList?size gt 0>
+					<#if sumUrl??>
+						<#assign sumClickCount = sumUrl.sumClickCount?default(0) />
+					</#if>
+					<#list urlList as u>
+					<tr>
+						<td>${u.url}</td>
+						<td>${u.clickCount}</td>
+						<td><#if sumClickCount gt 0>${u.clickCount * 100 / sumClickCount}<#else>0</#if>&nbsp;%</td>
+					</tr>
+					</#list>
+					</#if>
+				</tbody>
+			</table>
+			<#else>
+			<div class="no_data">没有匹配的数据！</div>
+			</#if>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

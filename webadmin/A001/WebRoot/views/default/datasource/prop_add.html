@@ -1,0 +1,166 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$("#type_list").UIselect({
+		width: 500,
+		id_id: "#type",
+		arrdata: type_list
+	});
+	
+	$("#relation_list").UIselect({
+		width: 500,
+		id_id: "#relation",
+		arrdata: [['0','单数据'],['1','多数据']]
+	});
+	
+	$('#add').ajaxForm({
+		url: '/datasource/prop/add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(".msg_content",".msg_content .load_img_open");
+			var form = jqForm[0]; 
+			if (!form.propName.value) {
+				$(".msg_ul .err").html("请输入属性名称");
+				form.propName.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+			if (!form.type.value) {
+				$(".msg_ul .err").html("请选择数据类型");
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			var action = $("input[name=action]").val();
+			if (data.code == 1) {
+				if (action == "prop") {
+					if ("${prop.propId}" != "") {
+						$("input[name=checkedIds]").each(function(i) {
+							if($(this).val() == data.propId) {
+								$(this).closest('tr').children("td:eq(1)").children("a").html(data.propName).attr("title",data.propName);
+								$(this).closest('tr').children("td:eq(2)").html(data.propDesc).attr("title",data.propDesc);
+								$(this).closest('tr').children("td:eq(5)").html(data.modifyTime);
+							}
+						});
+					} else {
+						var type;
+						for(var i = 0; i < type_list.length; i++) {
+							if(type_list[i][0] == data.type) {
+								type = type_list[i][1];
+								break;
+							}
+						}
+						var relation = "单数据";
+						if (data.relation == 1) {
+							relation = "多数据";
+						}
+						
+						var text = "";
+						text += "<tr>";
+						text += "<td><input type=\"checkbox\" name=\"checkedIds\" value=\"" + data.propId + "\" /></td>";
+						text += "<td><a href=\"javascript:open_msg('add?propId=" + data.propId + "',0);\" title='" + data.propName + "'>" + data.propName + "</a></td>";
+						text += "<td title='" + data.propDesc + "'>" + data.propDesc + "</td>";
+						text += "<td>" + type + "</td>";
+						text += "<td>" + relation + "</td>";
+						text += "<td>" + data.userId + "</td>";
+						text += "<td>" + data.createTime + "</td>";
+						text += "<td>" + data.modifyTime + "</td>";
+						text += "<td class=\"edit\">";
+						text += "<ul class=\"f_ul\">";
+						text += "<li><a href=\"javascript:open_msg('add?propId=" + data.propId + "',0);\">修改</a></li>";
+						text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.propId + "',0);\">删除</a></li>";
+						text += "</ul>";
+						text += "</td>";
+						text += "</tr>";
+						$(".main_table tr:eq(0)").after(text);
+						if ($(".no_data").size() > 0) {
+							$(".no_data").remove();
+						}
+					}
+				} else {
+					append(data.propId, data.propName);
+				}
+				
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);		
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			} 
+			
+		}
+	}); 
+});
+
+function append(id, name){
+	var arr = Array(id,name);
+	orig_props.push(arr);
+	props.push(arr);
+	//生成各个属性下拉html
+	for (var i = 0; i < len; i++) {
+		prop_text = "<ul>";
+		for (var j = 0; j < props.length; j++) {
+			prop_text += "<li><a hidefocus=\"true\" onclick=\"im_repeat(\'#prop_" + i + "\',\'" + props[j][0] + "\','#prop_list_" + i + "',\'" + props[j][1] + "\')\" href=\"javascript:void(0)\">" + props[j][1] + "</a></li>";
+		}
+		prop_text += "</ul>";
+		$("#prop_list_" + i).data('edit').html = prop_text;
+	}
+}
+</script>
+
+<div class="msg_content">
+<h1 class="title"><#if prop.propId??>修改<#else>新建</#if>属性</h1>
+<form id="add" action="/datasource/prop/add" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="action" value="${action}" />
+	<input type="hidden" name="propId" value="${prop.propId}" />
+	<input type="hidden" name="orgPropName" value="${xss.filter(prop.propName)}" />
+	<input type="hidden" id="type" name="type" value="${prop.type}" />
+	<input type="hidden" id="relation" name="relation" value="${prop.relation}" />
+	<ul class="msg_ul">
+		<li>属性名称<span class="f666">（必填）</span></li>
+		<li><input type="text" name="propName" value="${xss.filter(prop.propName)}" class="msg_txt" maxlength="20" /></li>
+		<li>数据类型<#if !prop.propId??><span class="f666">（新建后不能修改）</span></#if></li>
+		<li>
+			<#if prop.propId>
+			<input type="text" value="${prop.type}" readonly="readonly" class="msg_txt" maxlength="60" />
+			<#else>
+			<a id="type_list" class="but_select" style="width:470px;" href="javascript:void(0)">请选择数据类型</a>
+			</#if>
+		</li>
+		<!-- <li>属性类型（新建后不能修改）</li> -->
+		<li>属性类型<#if !prop.propId??><span class="f666">（新建后不能修改）</span></#if></li>
+	    <li>		    
+			<a id="relation_list" class="but_select" style="width:470px;" href="javascript:void(0)" >请选择属性类型</a>
+	    </li>
+		<li>属性描述</li>
+		<li>
+			<textarea class="msg_txt desc_area" name="propDesc" value="${xss.filter(prop.propDesc)}">${xss.filter(prop.propDesc)}</textarea>
+		</li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+	
+	<ul class="f_l">
+		<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+	</ul>
+	
+	<ul class="msg_btn">
+		<li>
+			<input type="submit" value="确定" class="input_yes" />
+		</li>
+		<li>
+			<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+		</li>
+	</ul>
+	</div>
+</form>
+</div>

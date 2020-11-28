@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Domain">
+
+	<typeAlias alias="domain" type="cn.edm.model.Domain" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Domain.mapper">
+		d.corp_id corpId,
+		d.task_id taskId,
+		d.template_id templateId,
+		d.email_domain emailDomain,
+		d.sent_count sentCount,
+		d.reach_count reachCount,
+		d.read_count readCount,
+		d.read_user_count readUserCount,
+		d.click_count clickCount,
+		d.click_user_count clickUserCount,
+		d.unsubscribe_count unsubscribeCount,
+		d.forward_count forwardCount,
+		d.soft_bounce_count softBounceCount,
+		d.hard_bounce_count hardBounceCount,
+		0 beforeNoneCount,
+		d.none_exist_count1 afterNoneCount,
+		d.dns_fail_count dnsFailCount,
+		d.spam_garbage_count spamGarbageCount
+	</sql>
+	
+	<sql id="Domain.mapperSum">
+		sum(d.sent_count) sentCount,
+		sum(d.reach_count) reachCount,
+		sum(d.read_count) readCount,
+		sum(d.read_user_count) readUserCount,
+		sum(d.click_count) clickCount,
+		sum(d.click_user_count) clickUserCount,
+		sum(d.unsubscribe_count) unsubscribeCount,
+		sum(d.forward_count) forwardCount,
+		sum(soft_bounce_count) softBounceCount,
+		sum(hard_bounce_count) hardBounceCount,
+		sum(0) beforeNoneCount,
+		sum(d.none_exist_count1) afterNoneCount,
+		sum(d.dns_fail_count) dnsFailCount,
+		sum(d.spam_garbage_count) spamGarbageCount
+	</sql>
+	
+	<sql id="Domain.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="domains">
+			<isEqual property="domainCnd" compareValue="in">
+				d.email_domain in <iterate property="domains" open="(" close=")" conjunction=",">#domains[]#</iterate>
+			</isEqual>
+			<isEqual property="domainCnd" compareValue="!in">
+				d.email_domain not in <iterate property="domains" open="(" close=")" conjunction=",">#domains[]#</iterate>
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="bindCorpId">
+			t.bind_corp_id = #bindCorpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignIds">
+			t.campaign_id in <iterate property="campaignIds" open="(" close=")" conjunction=",">#campaignIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="planId">
+			t.plan_id = #planId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskIds">
+			t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="planIds">
+			t.plan_id in <iterate property="planIds" open="(" close=")" conjunction=",">#planIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="types">
+			t.type in <iterate property="types" open="(" close=")" conjunction=",">#types[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="statuses">
+			t.task_status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.delivery_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+		  	<![CDATA[ t.delivery_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+		
+		<isNotNull prepend="and" property="parentId">
+			t.parent_id = #parentId#
+		</isNotNull>
+		<isNotNull prepend="and" property="parentIds">
+			t.parent_id in <iterate property="parentIds" open="(" close=")" conjunction=",">#parentIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			t.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateIds">
+			t.template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+		</isNotNull>
+    </sql>
+    
+    <sql id="Domain.trigerWhere">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			a.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="trigerName">
+			a.triger_name = #trigerName#
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.create_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+		  	<![CDATA[ t.create_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<select id="Domain.sum" parameterClass="mb" resultClass="domain">
+		select
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+		</dynamic>
+	</select>
+	
+	<select id="Domain.campaignSum" parameterClass="mb" resultClass="domain">
+		select
+			t.campaign_id campaignId,
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			group by t.campaign_id
+		</dynamic>
+	</select>
+	
+	<select id="Domain.trigerSum" parameterClass="mb" resultClass="domain">
+		select
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join triger t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Domain.trigerWhere" />
+			and d.sent_count > 0
+		</dynamic>
+	</select>
+	
+	<select id="Domain.query" parameterClass="mb" resultClass="domain">
+		select
+			<include refid="Domain.mapper" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			order by d.sent_count desc
+		</dynamic>
+	</select>
+	
+	<select id="Domain.querySum" parameterClass="mb" resultClass="domain">
+		select
+			d.email_domain emailDomain,
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			group by d.email_domain
+			order by d.sent_count desc
+		</dynamic>
+	</select>
+	
+	<select id="Domain.trigerQuery" parameterClass="mb" resultClass="domain">
+		select
+			<include refid="Domain.mapper" />
+		from result_by_domain d
+		inner join triger t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Domain.trigerWhere" />
+			and d.sent_count > 0
+			order by d.sent_count desc
+		</dynamic>
+	</select>
+	
+	<select id="Domain.group" parameterClass="mb" resultClass="domain">
+		select
+			t.user_id userId,
+			d.task_id taskId,
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			group by t.user_id, t.task_id
+		</dynamic>
+	</select>
+
+	<select id="Domain.planGroup" parameterClass="mb" resultClass="domain">
+		select
+			t.user_id userId,
+			t.plan_id planId,
+			(select count(*) from touch t2 where t2.parent_id = t.task_id) touchCount,
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			and t.plan_id is not null
+			group by t.user_id, t.plan_id
+		</dynamic>
+	</select>
+
+	<select id="Domain.trigerGroup" parameterClass="mb" resultClass="domain">
+		select
+			a.triger_corp_id corpId,
+			a.user_id userId,
+			d.task_id taskId,
+			<include refid="Domain.mapperSum" />
+		from result_by_domain d
+		inner join triger t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Domain.trigerWhere" />
+			and d.sent_count > 0
+			group by a.user_id, t.task_id
+		</dynamic>
+	</select>
+	
+	<select id="Domain.top5" parameterClass="mb" resultClass="String">
+		select
+			email_domain emailDomain
+		from result_by_domain d
+		inner join task t on t.corp_id = d.corp_id and t.task_id = d.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.email_domain not in ('other')
+			and d.sent_count > 0
+			group by d.email_domain
+			order by sum(d.sent_count) desc
+			limit 5
+		</dynamic>
+	</select>
+	
+	<sql id="Domain.mapperTouchSum">
+		rd.task_id task_id, rd.corp_id corp_id, rd.template_id template_id,
+		sum(rd.sent_count) sent_count, sum(rd.reach_count) reach_count, sum(rd.read_count) read_count,
+		sum(rd.read_user_count) read_user_count, sum(rd.click_count) click_count,
+		sum(rd.click_user_count) click_user_count, sum(rd.unsubscribe_count) unsubscribe_count, 
+		sum(rd.forward_count) forward_count, sum(soft_bounce_count) soft_bounce_count, 
+		sum(hard_bounce_count) hard_bounce_count, sum(0) beforeNoneCount,
+		sum(rd.none_exist_count1) none_exist_count1, sum(rd.dns_fail_count) dns_fail_count, 
+		sum(rd.spam_garbage_count) spam_garbage_count
+	</sql>
+	
+	<select id="Domain.touchGroup" parameterClass="mb" resultClass="domain">
+		SELECT 
+			MAX(t.task_id) touchId,
+			t.corp_id corpId,
+			t.user_id userId,
+			t.template_id templateId,
+			t.template_name templateName,
+			t.parent_id taskId,
+			sum(t.touch_count) touchCount,
+			<include refid="Domain.mapperSum" />
+		FROM
+			touch t
+		INNER JOIN (
+			select
+				<include refid="Domain.mapperTouchSum" />
+			from result_by_domain rd group by rd.task_id,rd.corp_id,rd.template_id) d on d.task_id = t.task_id AND d.template_id = t.template_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			group by t.user_id, t.template_id
+		</dynamic>
+	</select>
+	<select id="Domain.touchCampaignGroup" parameterClass="mb" resultClass="domain">
+		SELECT 
+			MAX(t.task_id) touchId,
+			t.corp_id corpId,
+			t.user_id userId,
+			t.template_id templateId,
+			t.template_name templateName,
+			t.parent_id taskId,
+			tk.task_name taskName,
+			sum(t.touch_count) touchCount,
+			<include refid="Domain.mapperSum" />
+		FROM
+			touch t
+		INNER JOIN (
+			select
+				<include refid="Domain.mapperTouchSum" />
+			from result_by_domain rd group by rd.task_id,rd.corp_id,rd.template_id) d on d.task_id = t.task_id AND d.template_id = t.template_id
+		INNER JOIN task tk on t.parent_id=tk.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			group by t.user_id, t.template_id, t.parent_id
+		</dynamic>
+	</select>
+	<select id="Domain.touchQuery" parameterClass="mb" resultClass="domain">
+		SELECT 
+			(select ta.task_name from task ta where ta.task_id=t.parent_id) parentTaskName,
+			t.task_id touchId,
+			t.corp_id corpId,
+			t.template_id templateId,
+			t.subject subject,
+			t.parent_id taskId,
+			t.template_name templateName,
+			t.touch_count touchCount,
+			t2.task_name taskName,
+			<include refid="Domain.mapper" />
+		FROM
+			touch t
+		INNER JOIN result_by_domain d ON t.task_id = d.task_id AND t.template_id = d.template_id and t.corp_id = d.corp_id
+		INNER JOIN task t2 ON t.parent_id = t2.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+		</dynamic>
+	</select>
+	<select id="Domain.touchSum" parameterClass="mb" resultClass="domain">
+		SELECT 
+			t.task_id touchId,
+			t.corp_id corpId,
+			t.template_id templateId,
+			t.subject subject,
+			t.parent_id taskId,
+			t.template_name templateName,
+			t.touch_count touchCount,
+			t2.task_name taskName,
+			<include refid="Domain.mapperSum" />
+		FROM
+			result_by_domain d
+		INNER JOIN touch t ON t.task_id = d.task_id AND t.template_id = d.template_id and t.corp_id = d.corp_id
+		INNER JOIN task t2 ON t.parent_id = t2.task_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+			group by t.parent_id
+		</dynamic>
+	</select>
+	<select id="Domain.touchTotal" parameterClass="mb" resultClass="domain">
+		SELECT 
+			<include refid="Domain.mapperSum" />
+		FROM
+			result_by_domain d
+		INNER JOIN touch t ON t.task_id = d.task_id AND t.template_id = d.template_id and t.corp_id = d.corp_id
+		<dynamic>
+			<include refid="Domain.where" />
+			and d.sent_count > 0
+		</dynamic>
+	</select>
+	
+</sqlMap>

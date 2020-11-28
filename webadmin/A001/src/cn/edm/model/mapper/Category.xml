@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Category">
+
+	<typeAlias alias="category" type="cn.edm.model.Category" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Category.mapper">
+		c.category_id categoryId,
+		c.corp_id corpId,
+		c.user_id userId,
+		c.category_name categoryName,
+		c.category_desc categoryDesc,
+		c.type type,
+		c.create_time createTime,
+		c.modify_time modifyTime
+	</sql>
+	
+	<sql id="Category.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			c.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			c.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			c.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryId">
+			c.category_id = #categoryId#
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryIds">
+			c.category_id in <iterate property="categoryIds" open="(" close=")" conjunction=",">#categoryIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryName">
+			<isEqual property="nameCnd" compareValue="eq">
+				c.category_name = #categoryName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="!eq">
+				c.category_name != #categoryName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				c.category_name like concat('%', #categoryName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			c.type = #type#
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ c.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ c.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Category.save" parameterClass="category">
+		insert into category (
+			corp_id,
+			user_id,
+			category_name,
+			category_desc,
+			type,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#categoryName#,
+			#categoryDesc#,
+			#type#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="categoryId">
+			select @@IDENTITY as category_id
+		</selectKey>
+	</insert>
+	
+	<insert id="Category.batchSave" parameterClass="List">
+		insert ignore into category (
+			corp_id,
+			user_id,
+			category_name,
+			category_desc,
+			type,
+			create_time,
+			modify_time
+		)
+		values 
+		<iterate conjunction=",">
+		(
+			#categories[].corpId#,
+			#categories[].userId#,
+			#categories[].categoryName#,
+			#categories[].categoryDesc#,
+			#categories[].type#,
+			now(),
+			now()
+		)
+		</iterate>
+	</insert>
+	
+	<update id="Category.update" parameterClass="category">
+		update category c set
+			c.corp_id = #corpId#,
+			c.category_name = #categoryName#,
+			c.category_desc = #categoryDesc#,
+			c.type = #type#,
+			c.modify_time = now()
+		where c.user_id = #userId# and c.category_id = #categoryId#
+	</update>
+	
+	<delete id="Category.delete" parameterClass="mb">
+		delete from category 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="categoryId">
+				category_id = #categoryId#
+			</isNotNull>
+			<isNotNull prepend="and" property="categoryIds">
+				category_id in <iterate property="categoryIds" open="(" close=")" conjunction=",">#categoryIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Category.query" parameterClass="mb" resultClass="category">
+		select
+			<include refid="Category.mapper" />
+		from category c
+		<dynamic>
+			<include refid="Category.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by c.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+	<select id="Category.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from category c
+		<dynamic>
+			<include refid="Category.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Category.index" parameterClass="mb" resultClass="category">
+		select
+			<include refid="Category.mapper" />
+		from category c
+		<dynamic>
+			<include refid="Category.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by c.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Category.tagCount" parameterClass="mb" resultClass="category">
+		select
+			c.category_id categoryId,
+			count(*) count
+		from category c
+		inner join tag t on t.category_id = c.category_id
+		<dynamic>
+			<include refid="Category.where" />
+			group by c.category_id
+		</dynamic>
+	</select>
+	
+	<select id="Category.templateCount" parameterClass="mb" resultClass="category">
+		select
+			c.category_id categoryId,
+			c.category_name categoryName,
+			count(*) count
+		from category c
+		inner join template t on t.category_id = c.category_id
+		<dynamic>
+			<include refid="Category.where" />
+			group by c.category_id
+		</dynamic>
+	</select>
+
+	<select id="Category.labelQuery" parameterClass="mb" resultClass="category">
+		select
+			c.category_id categoryId,
+			c.category_name categoryName			
+		from label_category c
+		<dynamic>
+			<isEqual property="orderBy" compareValue="categoryId">
+				order by c.category_id $order$
+			</isEqual>
+		</dynamic>
+	</select>
+		
+</sqlMap>

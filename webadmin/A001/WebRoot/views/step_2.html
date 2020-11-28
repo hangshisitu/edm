@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 选择收件人</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/step.2.import.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/step.2.export.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/step.2.js?${version}"></script>
+<script type="text/javascript">
+	var catedata = {
+		<#list groupMap?keys as k>
+		"${xss.filter(k)}": [
+			<#list groupMap[k] as t>
+			{"id": ${t.tagId}, "title": "${xss.filter(t.tagName)}（${t.emailCount}）","count": ${t.emailCount}}<#if t_has_next>,</#if>
+			</#list>
+		]<#if k_has_next>,</#if>
+		</#list>
+	};
+
+	var orig_props = new Array(["", "请选择"]<#list propList as p>,["${p.propId}", "${xss.filter(p.propName)}"]</#list>);
+	props=orig_props.slice(0);
+	var category_list = new Array(<#list categoryList as c>[${c.categoryId}, "${xss.filter(c.categoryName)}"]<#if c_has_next>,</#if></#list>);
+	var type_list = new Array(<#list types as t>["${t.type}", "${t.desc}"]<#if t_has_next>,</#if></#list>);
+	var prop_text = ""; // 属性下拉HTML
+	var len = 0; // 属性的个数
+	var fileData=null; //获取处理文件json
+	var parameters = "${parameters}";
+</script>
+</head>
+
+<body class="step">
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<div class="step_head">
+			<ul class="progress progress2">
+				<li>设计模板</li>
+				<li class="current">选择收件人</li>
+				<li>投递设置</li>
+			</ul>
+		</div>
+		<h1 class="title border_b"></h1>
+		<table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t10">
+			<tr>
+	            <td width="75" align="right">选择方式：</td>
+	            <td width="10" class="red"></td>
+	           	<td width="370">
+		           	<#assign IO = "IN" />
+	           		<#assign file_checked = "checked='checked'" />
+                   	<#assign tag_checked = "" />
+                   	<#assign file_css = "" />
+                   	<#assign tag_css = "display:none;" />
+                   	<#if step._2 == "tag">
+                   		<#assign IO = "OUT" />
+                   		<#assign file_checked = "" />
+                   		<#assign tag_checked = "checked='checked'" />
+                   		<#assign file_css = "display:none;" />
+                   		<#assign tag_css = "" />
+                   	</#if>
+	           		<label>
+						<input type="radio" name="action" class="df_input" value="file" autocomplete="off" ${file_checked} />&nbsp;文件导入&nbsp;&nbsp;
+					</label>
+		            <label>
+		            	<input type="radio" name="action" class="df_input" value="tag" autocomplete="off" ${tag_checked} />&nbsp;标签筛选&nbsp;&nbsp;
+		            </label>				
+	           	</td>
+	           	<td>&nbsp;</td>
+	        </tr>
+	    </table>          
+		<div class="tab_content tab_content1" style="${file_css}">
+			<form id="import" action="2?action=file" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="token" value="${token}" />
+				<input type="hidden" name="id" value="${step.id}" />
+	            <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t20">
+	        		<tr>
+	                    <td width="75" align="right">选择文件：</td>
+	                    <td width="10" class="red">*</td>
+	                   	<td width="370">
+	                   		<div class="file_tank import_file_tank">
+								<input type="file" maxlength="60" size="1" name="file" onchange="importUpload(this)" class="file" />
+								<div class="fake_file">
+									<input type="text" readonly="readonly" id="file_txt" class="file_txt" value="${step.fileName}" /><span class="select_file">浏览...</span>
+								</div>
+							</div>					
+	                   	</td>
+	                   	<td>
+	                   		 <ul class="f_ul">
+	                            <li class="upload_box">
+	                            	<span class="load_img_open" style="display:none;"><img src="${ctx}/static/img/loading2.gif" style="padding-top:5px;"/></span>
+	                            </li>
+	                        </ul>
+	                        <div class="f_r" id="downloadTemp"><a class="d_arrow highlight" href="javascript:void(0)">文件格式不清楚？下载文件模板看看</a></div>
+						</td>
+	           		</tr>
+	           		<tr>
+	           			<td width="75" align="right"></td>
+	                    <td width="10" class="red"></td>
+	                   	<td width="370" valign="top">
+	                   		<span class="f666">
+	                   			格式：txt、csv、xls或xlsx；大小：不能大于60 Mb
+							</span>
+	                   	</td>
+	                   	<td>&nbsp;</td>
+	           		</tr>
+	           		<tr id="isExclude" style="display:none">
+	           			<td width="75" align="right">排除退订：</td>
+	                    <td width="10" class="red">&nbsp;</td>
+	                   	<td width="370">
+	                   		<textarea class="add_area rad_area" id="exclude" style="width:340px;"></textarea>
+                   			<input type="hidden" id="excludeId" name="excludeIds" value="" />
+	                   	</td>
+	                   	<td>&nbsp;</td>
+	           		</tr>
+	           		<#assign emailCount1 = step.emailCount?default(0) />
+	           		<#assign message1 = "未过滤去重" />
+	           		<#if IO == "IN" && emailCount1 gt 0>
+	           			<#assign upload_css = "" />
+	           			<#assign message1 = "已去重" />
+	           		</#if>
+	           		<tr id="isUpload" style="${upload_css?default('display:none')}">
+	           			<td width="75" align="right"></td>
+	                    <td width="10" class="red"></td>
+	                   	<td width="370">
+	                   		<strong>当前收件人总数：<span id="emailCount1" class="red">${emailCount1}</span>人</strong><span id="importTips" class="f666">（${message1}）</span>
+	                   	</td>
+	                   	<td>&nbsp;</td>
+	           		</tr>
+	            </table>
+	            
+	            <div class="preview_box" style="display:none;">
+	            	<div class="im_prop">
+	            		属　　性：<span class="red" style="display:inline-block; width:10px; text-align: left">*</span>
+	            	</div>
+	            	<div class="import_tip">
+		           		<span class="f666" style="float:left">请选择与文件数据标题对应的属性。没有对应的属性？<a class="highlight" href="javascript:open_msg('${ctx}/datasource/prop/add?action=recipient',0)">新建属性</a></span>
+		           		<div class="f_r">
+		           			<span class="f666">乱码了？<a class="highlight" href="javascript:changeCode()">切换</a>编码试试</span>
+		           			<input type="hidden" name="charset" value="GB2312"/>
+		           		</div>
+	           		</div>
+	           		<div class="import_box">
+		            	<div id="data_wrap" style="overflow-x:scroll;">
+		            		<ul style="">
+		            			<li style="width:100px;">
+		            				<div class="data_prop">属　　性</div>
+		            				<div class="data_title">数据标题</div>
+		            				<div class="data_preview">数据预览</div>     				
+	            				</li>
+		            		</ul>
+		            		<div style="clear:both"></div>
+		            	</div>
+		            </div>
+				 </div>
+				 
+				 <table id="isImportTag" width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t10" style="display:none">
+				 	<tr>
+	           			<td width="75" align="right"></td>
+	                    <td width="10" class="red"></td>
+	                   	<td width="370" valign="top">
+	                   		<label>
+								<input type="checkbox" id="isImport" class="df_input" autocomplete="off" />
+								 投递的同时导入到标签
+							</label>
+							<input type="hidden" name="opt" value="export" />
+	                   	</td>
+	                   	<td>&nbsp;</td>
+	           		</tr>
+	        		<tr style="display:none">
+	                    <td width="75" align="right">选择标签：</td>
+	                    <td width="10" class="red">*</td>
+	                   	<td width="370">
+	                   		<textarea class="add_area rad_area" id="tag" style="width:340px;"></textarea>
+	                   		<input type="hidden" id="tagId" name="tagId" value="${tagId}" />
+	                   	</td>
+	                   	<td>&nbsp;</td>
+	           		</tr>
+	           </table>
+	        </form>
+		</div>
+		<div class="tab_content tab_content2" style="${tag_css}">
+			<form id="export" action="2?action=tag" method="post" autocomplete="OFF">
+				<input type="hidden" name="token" value="${token}" />
+				<input type="hidden" name="id" value="${step.id}" />
+	            <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+	                <tr class="mul_cate">
+	                    <td width="75" align="right">包含标签：</td>
+	                    <td width="10" class="red">*</td>
+	                    <td width="370">
+	                    	<textarea id="en_cate" name="includes" class="add_area" style="height:28px"></textarea>
+	                    	<input type="hidden" id="en_cateId" name="includeTagIds" value="${step.includeIds}" />
+	                    </td>
+	                   	<td>
+	                   		<span class="input_set" id="enSet">设置</span>
+	                   	</td>
+	                </tr>
+	                <tr class="sperow">
+	                	<td colspan="2"></td>
+	                    <td colspan="2" valign="top">
+						<p class="clearfix">选择标签下的收件人：</p>
+							<#assign all_checked = "checked='checked'" />
+	                    	<#assign inactive_checked = "" />
+	                    	<#assign active_checked = "" />
+	                    	<#assign active_css = "display: none;" />
+	                    	<#if ["1week","1month","2month","3month"]?seq_contains(step.activeCnd)>
+		                    	<#assign all_checked = "" />
+		                    	<#assign inactive_checked = "" />
+		                    	<#assign active_checked = "checked='checked'" />
+		                    	<#assign active_css = "" />
+	                    	<#elseif step.activeCnd == "-1">
+		                    	<#assign all_checked = "" />
+		                    	<#assign inactive_checked = "checked='checked'" />
+		                    	<#assign active_checked = "" />
+	                    	</#if>
+	                    	<#assign activeCnd = step.activeCnd />
+	                    	<#if !["1week","1month","2month","3month"]?seq_contains(activeCnd)>
+	                    		<#assign activeCnd = "1week" />
+	                    	</#if>
+	                    	<label for="all"><input type="radio" class="df_input" id="all" name="activeCnd" value="0" data-info="0" ${all_checked} />&nbsp;全部&nbsp;&nbsp;</label>
+	                   		<label for="inactive"><input type="radio" class="df_input" id="inactive" name="activeCnd" value="-1" data-info="-1" ${inactive_checked} />&nbsp;不活跃&nbsp;&nbsp;</label>
+	                   		<label for="active"><input type="radio" class="df_input" id="active" name="activeCnd" value="1week" data-info="1" ${active_checked} />&nbsp;活跃&nbsp;&nbsp;</label>
+	                   		<a class="a_select f_l" id="period_list" style="width:108px; ${active_css}"></a>
+	                   		<input type="hidden" id="activePeriod" value="${activeCnd}" />
+	                    </td>
+	                </tr>
+	                <tr class="sperow">
+	                	<td colspan="2"></td>
+	                    <td colspan="2" valign="top">
+	                    	<#assign or_checked = "checked='checked'" />
+	                    	<#assign and_checked = "" />
+	                    	<#if step.inCnd == "and">
+	                    		<#assign or_checked = "" />
+	                    		<#assign and_checked = "checked='checked'" />
+	                    	</#if>
+	                    	<p class="clearfix">取标签之间的：</p>
+	                    	<label for="or"><input type="radio" class="df_input" id="or" name="inCnd" value="or" ${or_checked} />&nbsp;并集&nbsp;&nbsp;</label>
+	                   		<label for="and"><input type="radio" class="df_input" id="and" name="inCnd" value="and" ${and_checked} />&nbsp;交集&nbsp;&nbsp;</label>
+	                    	<span class="tips_trg">
+	                   			<span class="question"><a href="#" class="highlight">帮助</a></span>
+		                   		<span class="global_tips">
+									并集：收件人具备其中一个标签条件即可；<br/>
+									交集：收件人须同时属于选中的各个标签。<br/>
+									并集为全部数据的总和，数量会较大，交集只取共有的部分，数据会较小。							
+								</span>
+	                   		</span>
+	                    </td>
+	                </tr>
+	                <tr class="mul_cate">
+	                    <td align="right">排除标签：</td>
+	                    <td></td>
+	                    <td>
+	                    	<textarea id="out_cate" name="excludes" class="add_area" style="height:28px"></textarea>
+	                    	<input type="hidden" id="out_cateId" name="excludeTagIds" value="${step.excludeIds}" />
+	                    </td>
+	                   	<td>
+	                   		<span class="input_set" id="outSet">设置</span>
+	                   	</td>
+	                </tr>
+	                <tr>
+	                	<td colspan="2"></td>
+	                	<#assign emailCount2 = 0 />
+	                	<#assign message2 = "未过滤去重" />
+		           		<#if IO == "OUT">
+		           			<#assign emailCount2 = step.emailCount?default(0) />
+		           			<#assign message2 = "已去重" />
+		           		</#if>
+	            		<td colspan="2" class="head_td">
+	            			<strong>当前收件人总数：<span id="emailCount2" class="red">${emailCount2}</span>人</strong><span id="exportTips" class="f666">（${message2}）</span>
+	            		</td>
+	            	</tr>
+				</table>
+	        </form>
+		</div>
+		<div class="step_foot">
+			<div class="next_step clearfix">
+				<div class="f_r">	
+					<input type="button" value="上一步" class="input_no" onclick="location.assign('/step/1?id=${step.id}')"/>
+					<input type="button" value="取消" class="input_no" onclick="openPop(0,0,'#confirmCancle')"/>
+				</div>
+				<div class="center">
+					<input type="button" value="下一步" class="input_yes" id="recipientSubmit"/>
+					<span class="widthfix">
+						<span class="load_img">
+							<img src="/static/img/loading2.gif"/>
+						</span>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="searchBox" id="slideSearch" style="display:none">
+	<div class="limiter" style="width:360px">
+		<div class="pop_content">
+			<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+			<div class="search_result"></div>
+			<div class="oprate_pad">
+				<p class="select_foot">
+					<a class="highlight f_l" href="javascript:open_msg('${ctx}/datasource/tag/add?action=selection.import',0);">新建标签</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="popBox searchBox" id="confirmCancle" style="display:none;">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="width:400px">
+		<div class="pop_title">选择收件人</div>
+		<div class="pop_content">
+			<div class="al_center">您确定取消当前操作吗？</div>
+			<div class='cmt_wrap'>
+				<input class='input_yes' type="button" value='确定' onclick="location.href='/';" />
+				<input class='input_no' type="button" value='继续操作' onclick="closeDialog();" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="popBox searchBox" id="confirmProps" style="display:none;">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="width:400px">
+		<div class="pop_title">选择收件人</div>
+		<div class="pop_content">
+			<div class="al_center">	
+			</div>
+			<div class='cmt_wrap'>
+				<input class='input_yes' type="button" value='修改设置' id="modType" />
+				<input class='input_no' type="button" flag="stop" value="继续操作" id="igType" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="popBox searchBox" id="remindCustom2" style="display:none;">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="width:400px">
+		<div class="pop_title">选择收件人</div>
+		<div class="pop_content">
+			<div class="al_center">	
+			</div>
+			<div class='cmt_wrap'>
+				<input class='input_yes' type="button" value='确定' onclick="assignStep3()" />
+				<input class='input_no' type="button" value="重新处理" onclick="closeDialog()"/>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="select_div"></div>
+</body>
+</html>

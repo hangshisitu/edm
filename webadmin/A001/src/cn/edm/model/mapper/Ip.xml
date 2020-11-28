@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Ip">
+
+	<typeAlias alias="ip" type="cn.edm.model.Ip" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Ip.mapper">
+		i.nip1 nip1,
+		i.nip2 nip2,
+		i.sip1 sip1,
+		i.sip2 sip2,
+		i.region region,
+		i.isp isp
+	</sql>
+	
+	<sql id="Ip.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="ip">
+			<![CDATA[ nip1 <= inet_aton(#ip#) and nip2 >= inet_aton(#ip#) ]]>
+		</isNotNull>
+    </sql>
+
+	<select id="Ip.query" parameterClass="mb" resultClass="ip">
+		select
+			<include refid="Ip.mapper" />
+		from ip_region i
+		<dynamic>
+			<include refid="Ip.where" />
+		</dynamic>
+	</select>
+</sqlMap>

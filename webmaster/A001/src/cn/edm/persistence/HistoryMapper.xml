@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.HistoryMapper">
+	
+	<resultMap id="History" type="cn.edm.domain.History">
+		<id column="history_id" property="historyId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="user_id" property="userId"/>
+		<result column="login_time" property="loginTime"/>
+		<result column="login_ip" property="loginIp"/>
+		<result column="region" property="region" />
+		<result column="client" property="client" />
+		<result column="result" property="result" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		history_id,corp_id,user_id,login_time,login_ip,region,client,result
+	</sql>
+	
+	
+	<select id="selectAll" resultMap="History">
+		SELECT
+		<include refid="base_columns"/>
+		FROM login_history h
+	</select>
+	
+	<select id="selectHistoryList" resultMap="History" parameterType="map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM login_history h
+		<include refid="where"/>
+		order by login_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectHistoryCount" resultType="long" parameterType="map">
+		SELECT
+		count(*)
+		FROM login_history 
+		<include refid="where"/>
+	</select>
+	
+	<insert id="insertHistory" parameterType="cn.edm.domain.History">
+		INSERT INTO login_history(
+			corp_id,
+			user_id,
+			login_time,
+			login_ip,
+			region,
+			client,
+			result
+		)VALUES(
+			#{corpId},
+			#{userId},
+			#{loginTime},
+			#{loginIp},
+			#{region},
+			#{client},
+			#{result}
+		)
+	</insert>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="roleId != null">
+			AND user_id IN (SELECT u.user_id FROM user u WHERE u.role_id = #{roleId})
+		</if>
+		<if test="userId != null">
+			AND user_id like concat('%',#{userId},'%')
+		</if>
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(login_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(login_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+</mapper>
+
+

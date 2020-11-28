@@ -1,0 +1,220 @@
+<script type="text/javascript">
+var GB2312 = null;
+var UTF8 = null;
+var charset = "GB2312";
+
+var headers = {};
+headers['token'] = "${token}";
+
+function showChar(charset) {
+	$(".data_box ul").html("");
+	var len = GB2312[0].split(",").length;
+	if (charset == "GB2312") {
+		var text = "";
+		for(var i = 0; i < len; i++) {
+			text += "<li><div class='data_title'>" + GB2312[0].split(",")[i] + "</div>";
+			text += "<div class='data_preview'>" + GB2312[1].split(",")[i] + "</div></li>";
+			if(i == 3) {
+				break;
+			}
+		}
+		$(".data_box ul").append(text);
+	}
+	if (charset == "UTF-8") {
+		var text = "";
+		for (var i = 0; i < len; i++) {
+			text += "<li><div class='data_title'>" + UTF8[0].split(",")[i] + "</div>";
+			text += "<div class='data_preview'>" + UTF8[1].split(",")[i] + "</div></li>";
+			if (i == 3) {
+				break;
+			}
+		}
+		$(".data_box ul").append(text);
+	}
+
+	$("input[name=charset]").val(charset);
+}
+
+function changeCode(){
+	charset = (charset == "GB2312" ? "UTF-8" : "GB2312");
+	showChar(charset);
+}
+
+function previewCode(){
+	$('#upload').ajaxForm({
+		url: 'preview',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(".msg_content",".upload_box .load_img_open");
+			var form = jqForm[0]; 
+			if (!form.file.value) {
+				$(".upload_box .msg_ul .err").html("请选择需要上传的文件");
+				form.file.focus();
+				del_loading(".upload_box .load_img_open");
+				return false; 
+			}
+			if (!suff(form.file.value, ",txt,csv,xls,xlsx,")) {
+				$(".upload_box .msg_ul .err").html("您选择的文件格式不正确");
+				form.file.focus();
+				del_loading(".upload_box .load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			UTF8 = data.UTF8;
+			GB2312 = data.GB2312;
+			if (data.code == 1) {
+				showChar("GB2312");
+				$(".preview_box").show();
+				reset_msg();
+			} else {
+				$(".upload_box .msg_ul .err").html(data.message); 
+			}
+			del_loading(".upload_box .load_img_open");
+		},
+		error: function(){
+			$(".upload_box .msg_ul .err").html("预览失败"); 
+			del_loading(".upload_box .load_img_open");
+		}
+	});
+}
+
+function add(){
+	$('#upload').ajaxForm({
+		url: 'add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".preview_box .msg_ul .err").html("");
+			loading(".msg_content",".preview_box .load_img_open");
+			var form = jqForm[0]; 
+			if (!form.file.value) {
+				$(".preview_box .msg_ul .err").html("请选择需要上传的文件");
+				form.file.focus();
+				del_loading(".preview_box .load_img_open");
+				return false; 
+			}
+			if (!suff(form.file.value, ",txt,csv,xls,xlsx,")) {
+				$(".preview_box .msg_ul .err").html("您选择的文件格式不正确");
+				form.file.focus();
+				del_loading(".preview_box .load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				var status = "未导入";
+				if(data.status == 1) {
+					status = "已导入";
+				}
+
+				var text = "";
+				text += "<tr>";
+				text += "<td><input type=\"checkbox\" name=\"checkedIds\" value=\"" + data.fileId + "\" /></td>";
+				text += "<td><a href=\"javascript:open_msg('add?fileId=" + data.fileId + "',0);\" title='" + data.fileName + "'>" + data.fileName + "</a></td>";
+				text += "<td title='" + data.fileDesc + "'>" + data.fileDesc + "</td>";
+				text += "<td>" + data.size + "</td>";
+				text += "<td>" + data.suff + "</td>";
+				text += "<td>" + status + "</td>";
+				text += "<td>" + data.createTime + "</td>";
+				text += "<td>" + data.modifyTime + "</td>";
+				text += "<td class=\"edit\">";
+				text += "<ul class=\"f_ul\">";
+				text += "<li><a href=\"/datasource/recipient/import?fileId=" + data.fileId + "\">导入</a></li>";
+				text += "<li><a href=\"download?checkedIds=" + data.fileId + "\">下载</a></li>";
+				text += "<li><a href=\"javascript:open_msg('add?fileId=" + data.fileId + "',0);\">修改</a></li>";
+				text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.fileId + "',0);\">删除</a></li>";
+				text += "</ul>";
+				text += "</tr>";
+
+				$(".main_table tr:eq(0)").after(text);
+				if ($(".no_data").size() > 0) {
+					$(".no_data").remove();
+				}
+				
+				del_loading(".preview_box .load_img_open");
+				close_msg();
+				error_message(data.message);		
+			} else {
+				$(".preview_box .msg_ul .err").html(data.message); 
+				del_loading(".preview_box .load_img_open");
+			} 
+		},
+		error: function(){
+			$(".preview_box .msg_ul .err").html("上传文件超时"); 
+			del_loading(".preview_box .load_img_open");
+		}
+	}); 
+}
+
+</script>
+
+<div class="msg_content clearfix">
+	<h1 class="title">上传文件</h1>
+	<form id="upload" action="" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="token" value="${token}" />
+		<input type="hidden" name="charset" value="" />
+		<div class="upload_box">
+			<ul class="msg_ul">
+				<li>请选择需要上传的文件<span class="f666">（文件格式：txt、csv、xls或xlsx；文件大小：不能大于60 Mb）</span></li>
+				<li>
+					<div class="file_tank">
+						<input type="file" class="file"  onchange="document.getElementById('file_txt').value=this.value.replace(/.*\\/i,'');" name="file" size="1" maxlength="60" />
+						<div class="fake_file">
+							<input type="text" class="file_txt" id="file_txt" readonly="true"/>
+							<img height="28" src="${ctx}/static/img/28_black.jpg" />
+						</div>
+					</div>
+				</li>
+				<li>文件描述</li>
+				<li>
+					<textarea class="msg_txt desc_area" name="fileDesc" value=""></textarea>
+				</li>
+				<li class="err"></li>
+			</ul>
+			<div class="msg_foot m_t10 clearfix">
+			<ul class="f_l">
+				<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+			<ul class="msg_btn">
+				<li>
+					<input type="submit" value="数据预览" class="input_yes" onclick="previewCode()"/>
+				</li>
+				<li>
+					<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+				</li>
+			</ul>
+			</div>
+		</div>
+		<div class="preview_box" style="display: none;">
+			<p>请确认数据没乱码后再上传，以保证数据能正常使用：</p>
+			<div class="data_box">
+				<ul></ul>
+				<div style="clear:both"></div>
+			</div>
+			<p>乱码了？<a href="javascript:changeCode()" class="highlight">切换</a>编码试试</p>		
+			<ul class="msg_ul">		
+				<li class="err"></li>
+			</ul>
+			<div class="msg_foot m_t10 clearfix">
+			<ul class="f_l">
+				<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+			<ul class="msg_btn">
+				<li>
+					<input type="submit" value="上传" class="input_yes" onclick="add()"/>
+				</li>
+				<li>
+					<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+				</li>
+			</ul>
+			</div>	
+		</div>
+	</form>
+</div>

@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" ?>
+<project name="webmaster" default="makewar" basedir=".">
+	
+	<property environment="env"></property>
+	<property name="build" location="${basedir}/build"></property>
+	<property name="webmaster.src.dir" location="${basedir}/src/cn/edm"/>
+	<property name="webmaster.web.dir" location="${basedir}/WebRoot/WEB-INF"/>
+	<property name="webmaster.file.dir" location="${build}/webmaster"></property>
+	<property name="webmaster.build.dir" location="${webmaster.file.dir}/WEB-INF/classes"></property>
+	<!--<property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter" />-->
+	
+    <path id="webmaster.classpath">
+         <fileset dir="${webmaster.web.dir}/lib">
+		<include name="*.jar" />
+	 </fileset>
+    </path>    
+	
+    <target name="copy">
+        <delete dir="${build}" quiet="true" />
+		<mkdir dir="${build}/webmaster"/>
+		<mkdir dir="${build}/temp"/>
+		
+		<copy todir="${build}/webmaster">     
+        	<fileset dir="${basedir}/WebRoot"> 
+           	</fileset>	
+    	</copy> 
+		
+		<copy todir="${build}/temp">     
+        	<fileset dir="WebRoot/WEB-INF/build">			
+				<exclude name="cn/**"/>
+				<exclude name="app.properties"/>
+				<!--<exclude name="test/**"/>-->
+				<!--<exclude name="logback.xml"/>-->
+			</fileset>
+		</copy>
+		
+		<!--<copy todir="${edm.build.dir}">     
+        	<fileset dir="${basedir}/resources">  
+			<exclude name="app.properties"/>
+			<exclude name="logback.xml"/>
+			</fileset>	
+    	</copy>-->
+		
+		<mkdir dir="${basedir}/src/test"/>
+		<copy todir="${basedir}/src/test">     
+        	<fileset dir="${basedir}/test"/>     
+    	</copy> 
+		
+		<!--<mkdir dir="${edm.src.dir}/modules"/>
+		<copy todir="${edm.src.dir}/modules">     
+        	<fileset dir="${basedir}/core/cn/edm/modules"/>     
+    	</copy>--> 
+		
+    </target>
+
+    <target name="compile" depends="copy">
+        <mkdir dir="${webmaster.file.dir}/WEB-INF/classes"/>
+        <javac includeAntRuntime="false" encoding="utf-8" debug="true" srcdir="${webmaster.src.dir}" destdir="${webmaster.build.dir}" >
+        <classpath refid="webmaster.classpath" />
+        </javac> 
+		
+		<copy todir="${webmaster.build.dir}">     
+        	<fileset dir="${build}/temp">			
+			</fileset>
+		</copy>		
+		
+		<mkdir dir="${webmaster.build.dir}/cn/edm/model/mapper"/>
+		<copy todir="${webmaster.build.dir}/cn/edm/model/mapper">     
+        	<fileset dir="${webmaster.src.dir}/model/mapper">			
+			</fileset>
+		</copy>
+		
+		<copy todir="${webmaster.build.dir}/cn/edm/persistence">     
+        	<fileset dir="${webmaster.src.dir}/persistence">	
+            <exclude name="*.java" />			
+			</fileset>
+		</copy>
+		
+	   <delete dir="${webmaster.file.dir}/WEB-INF/build" quiet="true" />
+	   
+    </target>
+  	
+    <target name="makewar" depends="compile">  
+        <war warfile="${build}/webmaster.war" basedir="${webmaster.file.dir}" webxml="${webmaster.web.dir}/web.xml" > 
+        <lib dir="${webmaster.web.dir}/lib">  
+        </lib>  
+        </war> 
+   </target>
+	
+</project>
+   
+    
+    

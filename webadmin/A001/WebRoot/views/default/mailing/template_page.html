@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 模板</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/mailing.template.js?${version}"></script>
+<script type="text/javascript">
+	var category_list = new Array(<#list categoryList as c>[${c.categoryId}, "${xss.filter(c.categoryName)}"]<#if c_has_next>,</#if></#list>);
+	var corp_list = [
+	             	["", "全部"],
+	             	["${corp.corpId}", "${corp.company}"]<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+	                 <#list corpChildren as c>
+	             	["${c.corpId}", "${c.company}"]<#if c_has_next>,</#if>
+	             	</#list>
+	             ];
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>模板&nbsp;&nbsp;<span>对邮件模板进行设计和管理</span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<input type="hidden" id="corpId" name="corpId" value="${mb.corpId}" />
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>模板</li>
+				<li>
+					<input type="text" name="templateName" value="${xss.filter(mb.templateName)}" maxlength="20" />
+				</li>
+				<li>机构</li>
+				<li>
+					<a id="corp_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择机构</a>
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<li class="now"><a href="${ctx}/mailing/template/page">模板</a></li>
+			<li><a href="${ctx}/mailing/category/page">类别</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个模板</p>
+			</div>
+			<ul class="btn">
+				<#if view.funcAuth('mailing/template/page', 2)>
+					<li><a class="btn_icon btn_icon_add" href="/mailing/template/add">新建模板</a></li>
+				</#if>
+				<#if view.funcAuth('mailing/template/page', 4)>
+					<li><a class="btn_icon btn_icon_del" href="javascript:del();">删除模板</a></li>
+				</#if>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25"><input type="checkbox" id="all_checkbox" /></th>
+					<th>模板名称</th>
+					<th>模板类别</th>
+					<th>触发计划</th>
+					<th width="240">模板ID</th>
+					<th>机构</th>
+					<th>创建人</th>
+					<th width="12%">创建时间</th>
+					<th width="12%">更新时间</th>
+					<th width="20%">操作</th>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as t>
+				<tr>
+					<td><input type="checkbox" name="checkedIds" value="${t.templateId}" /></td>
+					<td>
+					<#if currentUser.username == t.userId>
+					<a href="add?templateId=${t.templateId}" title="${xss.filter(t.templateName)}">${xss.filter(t.templateName)}</a>
+					<#else>
+					${xss.filter(t.templateName)}
+					</#if>
+					</td>
+					<td title="${xss.filter(t.categoryName)}">${xss.filter(t.categoryName)}</td>
+					<td>
+						<#if t.categoryName == "触发计划">-
+						<#else>
+							<#if t.bindTouchCount gt 0>有<#else>无</#if>
+						</#if>
+					</td>
+					<td>${view.templateId(t.userId, t.templateId)}</td>
+					<td>${t.company}</td>
+					<td>${t.userId}</td>
+					<td><#if t.createTime??>${t.createTime?datetime}</#if></td>
+					<td><#if t.modifyTime??>${t.modifyTime?datetime}</#if></td>
+					<td class="edit">
+						<ul class="f_ul">
+							<#if t.categoryName == "触发计划">
+							<li><font color="#f5f5f5">新建任务</font></li>
+							<#else>
+								<#if view.funcAuth('mailing/task/page', 2)>
+								<li>
+								<#if currentUser.username == t.userId>
+								<a href="${ctx}/mailing/task/add?templateId=${t.templateId}">新建任务</a>
+								<#else>
+								<font color="#f5f5f5">新建任务</font>
+								</#if>
+								</li>							
+								</#if>
+							</#if>
+							<#if view.funcAuth('mailing/template/page', 3)>
+								<li><a href="add?t=copy&templateId=${t.templateId}">复制</a></li>
+							</#if>
+							<#if view.funcAuth('mailing/template/page', 1)>
+								<li><a href="view?templateId=${t.templateId}" target="_blank">预览</a></li>
+							</#if>
+							<#if view.funcAuth('mailing/template/page', 3)>
+								<li>
+								<#if currentUser.username == t.userId>
+								<a href="add?templateId=${t.templateId}">修改</a>
+								<#else>
+								<font color="#f5f5f5">修改</font>
+								</#if>
+								</li>
+							</#if>
+							<#if view.funcAuth('mailing/template/page', 4)>
+								<li>
+								<#if currentUser.username == t.userId>
+								<a href="javascript:open_msg('del?checkedIds=${t.templateId}',0);">删除</a>
+								<#else>
+								<font color="#f5f5f5">删除</font>
+								</#if>
+								</li>
+							</#if>
+						</ul>
+					</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data">
+				<#if page.search>
+					没有匹配的模板列表！
+				<#else>
+					<#if view.funcAuth('mailing/template/page', 2)>
+						您还没有模板，现在就<a href="add" class="green">创建</a>一个
+					</#if>
+				</#if>
+			</div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>单一按钮显示/隐藏</title>
+</head>
+<style> 
+body,div,ul,li,h2{margin:0;padding:0;}
+body{font:12px/1.5 Tahoma;}
+ul{list-style-type:none;}
+#outer{width:200px;border:1px solid #aaa;margin:10px auto;}
+#outer h2{cursor:pointer;color:#57646E;font-size:14px;font-weight:400;border:1px solid;height:30px;line-height:30px;padding-left:10px;background:#ced3d7 url() 180px 15px no-repeat;border-color:#fff #e9edf2;}
+#outer h2.open{background-position:180px -12px;}
+#outer ul{border-top:1px solid #DEE3E6;background:#fff}
+#outer li{height:30px;line-height:30px;vertical-align:top;padding-left:20px;padding-top:5px;padding-bottom:5px;padding-right:20px;} 
+#outer a{display:block;color:#6b7980;background:#dcdcdc;text-decoration:none;padding:0 10px;}
+#outer a:hover{background:#32a095;text-decoration:underline;}
+</style>
+<script> 
+
+
+function trigger(obj,ulId,imgId) {
+	var ul = document.getElementById(ulId);
+	var style = ul.style;
+	style.display = style.display == "none" ? "block" : "none";
+	if(style.display == "none") {
+		obj.className = "open";
+		document.getElementById(imgId).src = "st_folder.gif";
+
+		
+	}else {
+
+		obj.className = "";
+				document.getElementById(imgId).src = "st_folder_open.gif"
+	}
+	
+}
+</script>
+<body>
+<div id="outer">
+    <h2 id="title1" onclick="trigger(this,'ul1','img_title1')"><img id="img_title1" src="st_folder_open.gif">账号管理</h2>
+    <ul id="ul1">
+        <li><a href="javascript:;"><img src="st_node.gif">待激活账号</a></li>
+        <li><a href="javascript:;"><img src="st_node.gif">已激活账号</a></li>
+    </ul>
+	<h2 id="title2" onclick="trigger(this,'ul2','img_title2')"><img id="img_title2" src="st_folder_open.gif">任务管理</h2>
+    <ul id="ul2">
+        <li><a href="javascript:;"><img src="st_node.gif">待审核任务</a></li>
+        <li><a href="javascript:;"><img src="st_node.gif">已审核任务</a></li>
+        <li><a href="javascript:;"><img src="st_node.gif">不需要审核任务</a></li>
+    </ul>
+	<h2 id="title3" onclick="trigger(this,'ul3','img_title3')"><img id="img_title3" src="st_folder_open.gif">通道管理</h2>
+    <ul id="ul3">
+        <li><a href="javascript:;"><img src="st_node.gif">更改通道</a></li>
+    </ul>
+	<h2 id="title4" onclick="trigger(this,'ul4','img_title4')"><img id="img_title4" src="st_folder_open.gif">数据报告</h2>
+    <ul id="ul4">
+        <li><a href="javascript:;"><img src="st_node.gif">历史发送总览</a></li>
+        <li><a href="javascript:;"><img src="st_node.gif">域名发送报告</a></li>
+    </ul>
+	<h2 id="title5" onclick="trigger(this,'ul5','img_title5')"><img id="img_title5" src="st_folder_open.gif">系统管理</h2>
+    <ul id="ul5">
+        <li><a href="javascript:;"><img src="st_node.gif">子账号管理</a></li>
+		 <li><a href="javascript:;"><img src="st_node.gif">子账号日志</a></li>
+		  <li><a href="javascript:;"><img src="st_node.gif">登录信息</a></li>
+		   <li><a href="javascript:;"><img src="st_node.gif">修改密码</a></li>
+    </ul>
+</div>
+</body>
+</html>

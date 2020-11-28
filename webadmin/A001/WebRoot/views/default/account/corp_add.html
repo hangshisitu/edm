@@ -1,0 +1,98 @@
+<script type="text/javascript">
+$(document).ready(function(){
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	//placeholder
+	$(".placehold").placeholder();
+
+	$('#add').ajaxForm({
+		url: '/account/corp/add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".err").html("");
+		
+			var form = jqForm[0]; 
+
+			if (!form.company.value || form.company.value=='15个字以内') {
+				$(".err").html("请输入机构名称");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				//判断是修改还是新建
+				var isAdd = true;
+				$("input[name=checkedIds]").each(function(){
+					if(this.value == data.corpId){
+						$(this).next('a').html(data.company).attr('title',data.company);
+						isAdd = false;
+					}
+				});
+				
+				if(isAdd){
+					var text = "";
+					text += "<tr>";
+					text += "<td>";
+					text += "<input type=\"hidden\" name=\"checkedIds\" value=\"" + data.corpId + "\" />";
+					text += "<a href=\"/account/corp/page?corpId=" + data.corpId + "\" title='" + data.company + "'>" + data.company + "</a>";
+					text += "</td>";
+					text += "<td title='" + data.managerId + "'>" + data.managerId + "</td>";
+					text += "<td>" + data.createTime + "</td>";
+					text += "<td>" + data.modifyTime + "</td>";
+					text += "<td class=\"edit\">";
+					text += "<ul class=\"f_ul\">";
+					text += "<li><a href=\"javascript:openPop('add?corpId=" + data.corpId + "',0);\">修改</a></li>";
+					text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.corpId + "',0);\">删除</a></li>";
+					text += "</ul>";
+					text += "</td>";
+					text += "</tr>";
+					$(".main_table tr:eq(0)").after(text);
+					if ($(".no_data").size() > 0) {
+						$(".no_data").remove();
+					}
+				}
+				
+				closeDialog();
+				error_message('操作成功',0);
+			} else {
+				$(".err").html(data.message);		
+			} 
+		}   
+	}); 
+});
+</script>
+<div class="pop_close">X</div>
+<div class="limiter" style="width:400px">
+	<div class="pop_title">创建子机构</div>
+	<div class="pop_content">
+		<form id="add" action="/account/corp/add" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="corpId" value="${corp.corpId}" />
+			<input type="hidden" name="orgCompany" value="${corp.company}" />
+			<table class="edit_tab" width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="20%" align="right">机构名称</td>
+					<td width="10"></td>
+					<td><input type="text" class="input_txt placehold" name="company" value="${corp.company}" maxlength="15" placeholder="15个字以内"/></td>
+				</tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="20%">&nbsp;</td>
+					<td width="10"></td>
+					<td>
+						<span class="err"></span>
+						<ul class="f_ul">
+	                        <li><input class="input_yes" id="smt" type="submit" value="确定" /></li>
+	                        <li><input class="input_no" onclick="closeDialog();" type="button" value="取消" /></li>
+	                    </ul>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+</div>

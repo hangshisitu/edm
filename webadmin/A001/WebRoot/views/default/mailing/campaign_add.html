@@ -1,0 +1,103 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$('#campaignAdd').ajaxForm({
+		url: '/mailing/campaign/add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(0,".load_img_open");
+			var form = jqForm[0]; 
+			if (!form.campaignName.value) {
+				$(".msg_ul .err").html("请输入活动名称");
+				form.campaignName.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				if("${campaign.campaignId}" != "") {
+					$("input[name=checkedIds]").each(function(i) {
+						if($(this).val() == data.campaignId) {
+							$(this).closest('tr').children("td:eq(0)").children("a").html(data.campaignName).attr("title",data.campaignName);
+							$(this).closest('tr').children("td:eq(1)").html(data.campaignId).attr("title",data.campaignId);
+							$(this).closest('tr').children("td:eq(2)").html(data.campaignDesc).attr("title",data.campaignDesc);
+							$(this).closest('tr').children("td:eq(3)").html(data.taskCount).attr("title",data.taskCount);
+							$(this).closest('tr').children("td:eq(5)").html(data.modifyTime);
+						}
+					});
+				} else {
+					var text = "";
+					text += "<tr>";
+					text += "<td>";
+					text += "<input type=\"hidden\" name=\"checkedIds\" value=\"" + data.campaignId + "\" />";
+					text += "<a href=\"/mailing/task/page?action=campaign&campaignId=" + data.campaignId + "\" title='" + data.campaignName + "'>" + data.campaignName + "</a>";
+					text += "</td>";
+					text += "<td title='" + data.campaignId + "'>" + data.campaignId + "</td>";
+					text += "<td title='" + data.campaignDesc + "'>" + data.campaignDesc + "</td>";
+					text += "<td><a href=\"/mailing/task/page?action=campaign&campaignId=" + data.campaignId + "\">" + data.taskCount + "</a></td>";
+					text += "<td>" + data.userId + "</td>";
+					text += "<td>" + data.createTime + "</td>";
+					text += "<td>" + data.modifyTime + "</td>";
+					text += "<td class=\"edit\">";
+					text += "<ul class=\"f_ul\">";
+					text += "<li><a href=\"/report/detail/campaign/cover?campaignId=" + data.campaignId + "\">报告</a></li>";
+					text += "<li><a href=\"javascript:open_msg('add?campaignId=" + data.campaignId + "',0);\">修改</a></li>";
+					text += "<li><a href=\"javascript:open_msg('del?checkedIds=" + data.campaignId + "',0);\">删除</a></li>";
+					text += "</ul>";
+					text += "</td>";
+					text += "</tr>";
+					$(".main_table tr:eq(0)").after(text);
+					if ($(".no_data").size() > 0) {
+						$(".no_data").remove();
+					}
+				}
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);		
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			} 
+		}   
+	}); 
+});
+</script>
+<div class="msg_content clearfix">
+<h1 class="title"><#if campaign.campaignId??>修改<#else>新建</#if>活动</h1>
+<form id="campaignAdd" action="/mailing/campaign/add" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="campaignId" value="${campaign.campaignId}" />
+	<input type="hidden" name="orgCampaignName" value="${xss.filter(campaign.campaignName)}" />
+	<ul class="msg_ul">
+		<li>活动名称<span class="f666">（必填）</span></li>
+		<li><input type="text" name="campaignName" value="${xss.filter(campaign.campaignName)}" class="msg_txt" maxlength="20" /></li>
+		<li>活动描述</li>
+		<li>
+			<textarea class="msg_txt desc_area" name="campaignDesc" value="${xss.filter(campaign.campaignDesc)}">${xss.filter(campaign.campaignDesc)}</textarea>
+		</li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+	
+	<ul class="f_l">
+		<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+	</ul>
+	
+	<ul class="msg_btn">
+		<li>
+			<input type="submit" value="确定" class="input_yes" />
+		</li>
+		<li>
+			<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+		</li>
+	</ul>
+	</div>
+</form>
+</div>

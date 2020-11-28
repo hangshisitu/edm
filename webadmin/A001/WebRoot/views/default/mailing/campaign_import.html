@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/mailing.campaign.import.js?${version}"></script>
+<script type="text/javascript">
+	var campaign_list = [
+		<#if campaignList?? && campaignList?size gt 0>
+			<#list campaignList as c>
+			{"id":"${c.campaignId}", "title":"${xss.filter(c.campaignName)}"}<#if c_has_next>,</#if>
+			</#list>
+		</#if>
+	];
+	var taskData = [
+		<#if taskList?? && taskList?size gt 0>
+			<#list taskList as t>
+			{"title": "${xss.filter(t.taskName)}", "id": "${t.taskId}", "date": "${t.modifyTime?datetime}"}<#if t_has_next>,</#if>
+			</#list>
+		</#if>
+	];
+	
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title border_b">导入&nbsp;&nbsp;<span>将已有的任务导入到活动下</span></h1>
+		<form id="import" method="post" action="import" autocomplete="off">
+			<input type="hidden" name="token" value="${token}" />
+            <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t20">
+        		<tr>
+                    <td width="75" align="right">选择活动：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="400">
+                   		<textarea class="add_area rad_area" id="camp" style="width:370px;"></textarea>
+						<input id="campId" type="hidden" name="campaignId" value="" />
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+           		<tr>
+           			<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                   	<td valign="top">
+                   		<span class="f666">&nbsp;</span>
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+        		<tr class="mul_cate">
+                    <td width="75" align="right">选择任务：</td>
+                    <td width="10" class="red">*</td>
+                   	<td>
+                   		<div class='task_list' id='taskList'>	
+                   		</div>	
+                   		<input id="taskId" type="hidden" name="checkedIds" value="" />			
+                   	</td>
+                   	<td><span class="input_set" id="trgTask">选择</span></td>
+           		</tr>
+           		<tr>
+           			<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                   	<td valign="top">
+                   		<span class="f666">每次可最多选择10个任务导入</span>
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+            </table>
+      
+        	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+                <tr>
+                	<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" type="submit" value="导入" onclick=""/></li>
+                            <li><input class="input_no" onclick="location.assign('page');" type="button" value="取消" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </form>
+	</div>
+</div>
+
+<div class="searchBox" id="slideSearch" style="display:none">
+	<div class="limiter" style="width:390px">
+		<div class="pop_content">
+			<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+			<div class="oprate_pad">
+				<p class="select_head">
+					<span class="f_l f666">任务名称</span>
+					<span class="f_r f666 m_r30">更新时间</span>
+				</p>
+			</div>
+			<div class="search_result"></div>
+		</div>
+	</div>
+</div>
+
+<div class="searchBox" id="slideSearch5" style="display:none">
+	<div class="limiter" style="width:390px">
+		<div class="pop_content">
+			<div class="search_result"></div>
+		</div>
+	</div>
+</div>
+
+<div class="select_div"></div>
+</body>
+</html>

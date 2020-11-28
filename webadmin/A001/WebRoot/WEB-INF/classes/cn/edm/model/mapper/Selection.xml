@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Selection">
+
+	<typeAlias alias="selection" type="cn.edm.model.Selection" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Selection.mapper">
+		s.selection_id selectionId,
+		s.corp_id corpId,
+		s.user_id userId,
+		s.include_ids includeIds,
+		s.active_cnd activeCnd,
+		s.in_cnd inCnd,
+		s.includes includes,
+		s.exclude_ids excludeIds,
+		s.excludes excludes,
+		s.filter_id filterId,
+		s.filter filter,
+		s.email_count emailCount,
+		s.type type,
+		s.file_id fileId,
+		s.tag_id tagId,
+		s.status status,
+		s.create_time createTime,
+		s.modify_time modifyTime
+	</sql>
+	
+	<sql id="Selection.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			s.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			s.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="selectionId">
+			s.selection_id = #selectionId#
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			s.type = #type#
+		</isNotNull>
+		<isNotNull prepend="and" property="fileIds">
+			s.file_id in <iterate property="fileIds" open="(" close=")" conjunction=",">#fileIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			s.status = #status#
+		</isNotNull>
+    </sql>
+	
+	<insert id="Selection.save" parameterClass="selection">
+		insert into selection (
+			corp_id,
+			user_id,
+			include_ids,
+			active_cnd,
+			in_cnd,
+			includes,
+			exclude_ids,
+			excludes,
+			filter_id,
+			filter,
+			email_count,
+			type,
+			file_id,
+			tag_id,
+			status,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#includeIds#,
+			#activeCnd#,
+			#inCnd#,
+			#includes#,
+			#excludeIds#,
+			#excludes#,
+			#filterId#,
+			#filter#,
+			#emailCount#,
+			#type#,
+			#fileId#,
+			#tagId#,
+			#status#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="selectionId">
+			select @@IDENTITY as selection_id
+		</selectKey>
+	</insert>
+	
+	<update id="Selection.update" parameterClass="selection">
+		update selection s set
+			s.email_count = #emailCount#,
+			s.file_id = #fileId#,
+			s.status = #status#,
+			s.modify_time = now()
+		where s.user_id = #userId# and s.selection_id = #selectionId#
+	</update>
+	
+	<delete id="Selection.delete" parameterClass="mb">
+		delete from selection 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="day">
+				<![CDATA[ 
+					date_format(create_time, '%y-%m-%d') < date_format(date_sub(now(), interval #day# day) , '%y-%m-%d') 
+				]]>
+			</isNotNull>
+		</dynamic>
+	</delete>
+	
+	<select id="Selection.query" parameterClass="mb" resultClass="selection">
+		select
+			<include refid="Selection.mapper" />
+		from selection s
+		<dynamic>
+			<include refid="Selection.where" />
+			<isEqual property="history" compareValue="7ady">
+			<![CDATA[ 
+				date_format(create_time, '%y-%m-%d') < date_format(date_sub(now(), interval 7 day) , '%y-%m-%d') 
+			]]>
+			</isEqual>
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by s.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+	<select id="Selection.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from selection s
+		<dynamic>
+			<include refid="Selection.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Selection.index" parameterClass="mb" resultClass="selection">
+		select
+			<include refid="Selection.mapper" />
+		from selection s
+		<dynamic>
+			<include refid="Selection.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by s.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+	<select id="Selection.scan" parameterClass="mb" resultClass="Integer">
+		select
+			s.selection_id selectionId
+		from selection s
+		<dynamic>
+			where s.status = 0
+			<isNotNull prepend="and" property="selectionIds">
+				s.selection_id in <iterate property="selectionIds" open="(" close=")" conjunction=",">#selectionIds[]#</iterate>
+			</isNotNull>
+			order by s.create_time ASC
+		</dynamic>
+	</select>
+</sqlMap>

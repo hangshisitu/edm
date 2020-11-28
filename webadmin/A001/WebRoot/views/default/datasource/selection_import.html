@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 收件人</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.selection.import.js?${version}"></script>
+
+<script type="text/javascript">
+	var catedata = {
+		<#list groupMap?keys as k>
+		"${xss.filter(k)}": [
+			<#list groupMap[k] as t>
+			{"id": ${t.tagId}, "title": "${xss.filter(t.tagName)}（${t.emailCount}）","count": ${t.emailCount}}<#if t_has_next>,</#if>
+			</#list>
+		]<#if k_has_next>,</#if>
+		</#list>
+	};
+
+	var orig_props = new Array(["", "请选择"]<#list propList as p>,["${p.propId}", "${xss.filter(p.propName)}"]</#list>);
+	props = orig_props.slice(0);
+	var category_list = new Array(<#list categoryList as c>[${c.categoryId}, "${xss.filter(c.categoryName)}"]<#if c_has_next>,</#if></#list>);
+	var type_list = new Array(<#list types as t>["${t.type}", "${t.desc}"]<#if t_has_next>,</#if></#list>);
+	var time_id = null;
+	var $input = null; // 跟踪输入框
+	var prop_text = ""; // 属性下拉HTML
+	var len = 0; // 属性的个数
+	var fileData = null; //获取处理文件json
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title border_b">导入&nbsp;&nbsp;<span>将文件中的收件人数据导入到标签或者生成文件</span></h1>
+		<form id="import" method="post" action="import" enctype="multipart/form-data">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" value="GB2312" name="charset"/>
+			<input type="hidden" id="action" name="action" value="${action}"/>
+			 <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t20">
+            	<tr>
+		            <td width="75" align="right">选择方式：</td>
+		            <td width="10" class="red"></td>
+		           	<td width="370">
+   				        <#if action=="file">
+			           		<label>
+								<input type="radio" name="action" checked="checked" class="df_input" value="file" autocomplete="off" checked />&nbsp;生成文件&nbsp;&nbsp;
+							</label>
+		           		<#elseif action=="tag">
+				            <label>
+				            	<input type="radio" name="action" checked="checked" class="df_input" value="tag" autocomplete="off"/>&nbsp;生成标签&nbsp;&nbsp;
+				            </label>
+				        <#else>
+				        	<label>
+								<input type="radio" name="action" class="df_input" value="file" autocomplete="off" checked />&nbsp;生成文件&nbsp;&nbsp;
+							</label>
+							<label>
+				            	<input type="radio" name="action" class="df_input" value="tag" autocomplete="off"/>&nbsp;生成标签&nbsp;&nbsp;
+				            </label>
+		           		</#if>			
+		           	</td>
+		           	<td><div class="f_r" id="downloadTemp"><a class="d_arrow highlight" href="javascript:void(0)">文件格式不清楚？下载文件模板看看</a></div></td>
+	        	</tr>
+	        </table>
+            <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t20 Jtag" style="display: none">
+        		<tr>
+                    <td width="75" align="right">所属标签：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="370">
+                   		<textarea class="add_area rad_area" id="tag" style="width:340px;"></textarea>
+                   		<input type="hidden" id="tagId" name="tagId" value="${tagId}" />
+                   	</td>
+                   	<td></td>
+           		</tr>
+           		<tr>
+           			<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                   	<td width="370" valign="top">
+                   		<span class="f666">收件人所属的标签</span>
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+           	 <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table Jfile">
+        		<tr class="Jfile">
+           			<td width="75" align="right">标签类别：</td>
+                    <td width="10" class="red">&nbsp;</td>
+                   	<td width="370">
+                   		<span class="f666">临时文件</span>
+                   		<input type="hidden" id="categoryIdHid" name="categoryId" value="${category.categoryId}" />
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+        		<tr>
+           			<td width="75" align="right">标签名称：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="370" valign="top">
+                   		<input id="fileTag" class="task_text" type="text" autocomplete="on" maxlength="60" value="${(tag.tagName)?if_exists}" name="tagName" style="width:350px">
+                   		<input type="hidden" id="fileTagId" name="tagId" value="${tagId}" />
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+           	</table>
+           	<table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table">
+        		<tr>
+                    <td width="75" align="right">选择文件：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="370">
+                   		<div class="file_tank import_file_tank">
+							<input type="file" maxlength="60" size="1" name="file" onchange="importUpload(this)" class="file" />
+							<div class="fake_file">
+								<input type="text" readonly="readonly" id="file_txt" class="file_txt" /><span class="select_file">浏览...</span>
+							</div>
+						</div>					
+                   	</td>
+                   	<td>
+                   		 <ul class="f_ul">
+                            <li class="upload_box">
+                            	<span class="load_img_open" style="display: none;"><img src="${ctx}/static/img/loading2.gif" /></span>
+                            </li>
+                        </ul>
+					</td>
+           		</tr>
+           		<tr>
+           			<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                   	<td width="370" valign="top">
+                   		<span class="f666">
+                   			格式：txt、csv、xls或xlsx；大小：不能大于60 Mb
+						</span>
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+            </table>
+            
+            <div class="preview_box" style="display:none;">
+            	<div class="im_prop">
+            		属　　性：<span class="red" style="display:inline-block; width:10px; text-align: left">*</span>
+            	</div>
+            	<div class="import_tip">
+	           		<span class="f666" style="float:left">请选择与文件数据标题对应的属性。没有对应的属性？<a class="highlight" href="javascript:open_msg('${ctx}/datasource/prop/add?action=recipient',0)">新建属性</a></span>
+	           		<div class="f_r">
+	           			<span class="f666">乱码了？<a class="highlight" href="javascript:changeCode()">切换</a>编码试试</span>
+	           		</div>
+           		</div>
+           		<div class="import_box">
+	            	<div id="data_wrap" style="overflow-x:scroll;">
+	            		<ul style="">
+	            		</ul>
+	            		<div style="clear:both"></div>
+	            	</div>
+	            </div>
+			 </div>
+        	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t20 Jtag" style="display: none">
+                <tr>
+                	<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" type="submit" value="保存" onclick="importFile()"/></li>
+                            <li><input class="input_no" onclick="location.assign('/datasource/tag/page')" type="button" value="返回" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t20 Jfile">
+                <tr>
+                	<td width="75" align="right"></td>
+                    <td width="10" class="red"></td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" type="submit" value="生成文件" onclick="importFile()"/></li>
+                            <li><input class="input_no" onclick="location.assign('/datasource/tag/page')" type="button" value="返回" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </form>
+	</div>
+</div>
+<div class="searchBox" id="slideSearch" style="display:none">
+	<div class="limiter" style="width:360px">
+		<div class="pop_content">
+			<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+			<div class="search_result"></div>
+			<div class="oprate_pad">
+				<p class="select_foot">
+					<a class="highlight f_l" href="javascript:open_msg('${ctx}/datasource/tag/add?action=selection.import',0);">新建标签</a>
+					<a class="highlight f_r" href="javascript:reloadSearch('#tag');">刷新</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="popBox searchBox" id="remindCustom" style="display:none;">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="width:400px">
+		<div class="pop_title">导入收件人</div>
+		<div class="pop_content">
+			<div class="al_center">	
+			</div>
+			<div class='cmt_wrap'><input class='input_yes' type="button" value='确定' onclick="closeDialog();importRefresh();" /></div>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

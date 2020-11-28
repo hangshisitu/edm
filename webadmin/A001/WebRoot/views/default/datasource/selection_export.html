@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 筛选</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.selection.export.js?${version}"></script>
+<script type="text/javascript">
+	var catedata = {
+		<#list groupMap?keys as k>
+		"${xss.filter(k)}": [
+			<#list groupMap[k] as t>
+			{"id": ${t.tagId}, "title": "${xss.filter(t.tagName)}（${t.emailCount}）", "count": ${t.emailCount}}<#if t_has_next>,</#if>
+			</#list>
+		]<#if k_has_next>,</#if>
+		</#list>
+	};
+
+	var filterdata = [
+		<#list filterList as f>
+		{"id": ${f.filterId}, "title": "${xss.filter(f.props)}"}<#if f_has_next>,</#if>
+	    </#list>
+	];
+	
+	var category_list = new Array(<#list categoryList as c>[${c.categoryId}, "${xss.filter(c.categoryName)}"]<#if c_has_next>,</#if></#list>);
+
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+
+	<div id="main" class="clearfix" style="">
+		<h1 class="title border_b">筛选&nbsp;&nbsp;<span>对收件人数据按标签和过滤器进行筛选或导出处理</span></h1>
+		<form id="export" autocomplete="OFF" action="export" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" id="type" name="type" value="" />
+			<input type="hidden" id="tagId" name="tagId" value="" />
+			<input type="hidden" id="emailCount" name="emailCount" value="" />
+            <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+                <tr class="mul_cate">
+                    <td width="102" align="right">包含标签：</td>
+                    <td width="10" class="red">*</td>
+                    <td width="370">
+                    	<textarea id="en_cate" name="includes" class="add_area" value="" style="height:28px"></textarea>
+                    	<input type="hidden" id="en_cate_val" name="includeTagIds" value="" />
+                    </td>
+                   	<td>
+                   		<span class="input_set" id="enSet">设置</span>
+                   	</td>
+                </tr>
+                <tr class="sperow">
+                	<td colspan="2"></td>
+                    <td colspan="2" valign="top">
+						<p class="clearfix">选择标签下的收件人：</p>
+                    	<label for="all"><input type="radio" class="df_input" id="all" name="activeCnd" value="0" checked="checked" data-info="0"/>&nbsp;全部&nbsp;&nbsp;</label>
+                   		<label for="inactive"><input type="radio" class="df_input" id="inactive" name="activeCnd" value="-1" data-info="-1"/>&nbsp;不活跃&nbsp;&nbsp;</label>
+                   		<label for="active"><input type="radio" class="df_input" id="active" name="activeCnd" value="1week" data-info="1"/>&nbsp;活跃&nbsp;&nbsp;</label>
+                   		<a class="a_select f_l" id="period_list" style="width:108px; display: none;"></a>
+                   		<input type="hidden" id="activePeriod" value="1week" />
+                    </td>
+                </tr>
+                <tr class="sperow">
+                	<td colspan="2"></td>
+                    <td colspan="2" valign="top">
+						<p class="clearfix">取标签之间的收件人：</p>
+                    	<label for="or"><input type="radio" class="df_input" id="or" name="inCnd" value="or" checked="checked" />&nbsp;并集&nbsp;&nbsp;</label>
+                   		<label for="and"><input type="radio" class="df_input" id="and" name="inCnd" value="and" />&nbsp;交集&nbsp;&nbsp;</label>
+                    	<span class="tips_trg">
+                   			<span class="question"><a href="#" class="highlight">帮助</a></span>
+	                   		<span class="global_tips">
+								并集：收件人具备其中一个标签条件即可；<br/>
+								交集：收件人须同时属于选中的各个标签。<br/>
+								并集为全部数据的总和，数量会较大，交集只取共有的部分，数据会较小。							
+							</span>
+                   		</span>
+                    </td>
+                </tr>
+                <tr class="mul_cate">
+                    <td align="right">排除标签：</td>
+                    <td></td>
+                    <td>
+                    	<textarea id="out_cate" name="excludes" class="add_area" value="" style="height:28px"></textarea>
+                    	<input type="hidden" id="out_cate_val" name="excludeTagIds" value="" />
+                    </td>
+                   	<td>
+                   		<span class="input_set" id="outSet">设置</span>
+                   	</td>
+                </tr>
+                <tr>
+                	<td colspan="2"></td>
+                    <td colspan="2" valign="top">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">过滤器：</td>
+                    <td></td>
+                    <td>
+                    	<textarea id="filter" name="filter" class="add_area" value="" style="height:28px;"></textarea>
+                   		<input type="hidden" id="filter_val" name="filterId" value="" />
+                    </td>
+                   	<td>
+                   		<span class="input_set" id="filterSet">设置</span>
+                   	</td>
+                </tr>
+                <tr>
+                	<td colspan="2"></td>
+            		<td colspan="2" class="head_td"><strong>当前收件人总数：<span id="personSum" class="red">0</span>人</strong><span class="f666">（未过滤去重）</span></td>
+            	</tr>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+                <tr>
+                	<td width="102" align="right"></td>
+                    <td width="10" class="red"></td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" id="create_btn" type="button" value="生成新标签" /></li>
+                            <li><input class="input_yes" id="import_btn" type="button" value="导入到标签" /></li>
+                            <li><input class="input_yes" id="export_btn" type="button" value="生成文件" onclick="exports('2');" /></li>
+                        </ul>
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+        </form>
+	</div>
+</div>
+
+<div class="popBox" id="newTag" style="display:none;"></div>
+
+<div class="popBox searchBox" id="popSearch" style="display:none">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="width:360px">
+		<div class="pop_title">导入到标签</div>
+		<div class="pop_content">
+			<div class="search_box">
+				<input type="text" class="search_input placehold" placeholder="输入搜索关键字" />
+			</div>
+			<div class="search_result">
+			</div>
+			<div class="cmt_wrap">
+	        	<input class="input_yes" type="button" value="确定" onclick="exports('1');" />&nbsp;&nbsp;<input class="input_no" type="button" value="取消" onclick="closeDialog();" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="searchBox" id="slideSearch" style="display:none">
+	<div class="limiter" style="width:360px">
+		<div class="pop_content">
+			<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+			<div class="search_result"></div>
+		</div>
+	</div>
+</div>
+
+<div class="popBox searchBox" id="remindCustom" style="display:none;">
+	<div class="pop_close">X</div>
+	<div class="limiter" style="width:400px">
+		<div class="pop_title">筛选收件人</div>
+		<div class="pop_content">
+			<div class="al_center">
+				<p><img src='/static/img/loading2.gif' style='margin-bottom:-5px;' />&nbsp;&nbsp;数据筛选处理中，您可以在筛选记录中查询结果。</p>
+			</div>
+			<div class='cmt_wrap'>
+				<input class='input_yes' type="button" value='确定' onclick="location.href='/datasource/selection/page';" />
+				<input class='input_no' type="button" value='新建筛选' onclick="closeDialog();" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="select_div"></div>
+</body>
+</html>

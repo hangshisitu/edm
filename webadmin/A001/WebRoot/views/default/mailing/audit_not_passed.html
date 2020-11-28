@@ -1,0 +1,58 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	$('#common').ajaxForm({
+		url: 'not_passed',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json',
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(".msg_content",".load_img_open");
+			var form = jqForm[0]; 
+			if (!form.suggestion.length > 60) {
+				$(".msg_ul .err").html("审核意见最多60个字符");
+				form.suggestion.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				$(".main_tr_" + data.taskId).remove();
+				del_loading();
+				close_msg();
+				error_message(data.message, 0, 0, 1000, '/mailing/audit/page?m=completed');
+			} else {
+				 $(".msg_ul .err").html(data.message); 
+				 del_loading();
+			}
+		}   
+	}); 
+}); 
+</script>
+<form id="common" action="not_passed" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="taskId" value="${taskId}" />
+	<div class="msg_content">
+		<h1 class="title">审核不通过</h1>
+		<ul class="msg_ul">
+			<li>请输入审核意见</li>
+			<li>
+				<textarea class='msg_txt' name="suggestion" rows="4" cols="80"></textarea>
+			</li>
+			<li class="err"></li>
+		</ul>
+		
+		<ul class="msg_btn clearfix m_t20">
+			<li>
+				<input type="submit" value="确定" class="input_yes" />
+			</li>
+			<li>
+				<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+			</li>
+		</ul>
+	</div>
+</form>

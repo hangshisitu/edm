@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.HourMapper">
+	
+	<resultMap id="Hour" type="cn.edm.domain.Hour">
+		<result column="corp_id" property="corpId"/>
+		<result column="task_id" property="taskId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="hour" property="hour"/>
+		<result column="read_count" property="readCount" />
+		<result column="read_user_count" property="readUserCount" />
+		<result column="click_count" property="clickCount" />
+		<result column="click_user_count" property="clickUserCount" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		corp_id,task_id,template_id,hour,read_count,read_user_count,click_count,click_user_count
+	</sql>
+	
+	<select id="selectByTaskId" resultMap="Hour" parameterType="map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM result_by_hour 
+		WHERE 
+		task_id = #{taskId}
+		AND 
+		corp_id = #{corpId}
+	</select>
+	
+	
+	<!-- 活动发送统计 -->
+	<select id="selectCampaignHour" parameterType="Integer" resultMap="Hour">
+		SELECT
+		r.hour,
+		SUM(r.read_count) readCount,
+		SUM(r.read_user_count) readUserCount,
+		SUM(r.click_count) clickCount,
+		SUM(r.click_user_count) clickUserCount
+		FROM
+			result_by_hour r,
+			task t
+		WHERE
+			t.type in (0,4)
+		AND t.campaign_id = #{campaignId}
+		AND t.task_id = r.task_id
+		AND t.corp_id = r.corp_id
+		AND t.task_status IN (26,27)
+		GROUP BY r.hour
+	</select>
+	
+</mapper>
+
+

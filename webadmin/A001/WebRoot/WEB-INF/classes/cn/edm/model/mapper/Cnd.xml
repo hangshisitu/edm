@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Cnd">
+
+	<typeAlias alias="cnd" type="cn.edm.model.Cnd" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Cnd.mapper">
+		c.task_id taskId,
+		c.email_list emailList,
+		c.file_id fileId,
+		c.include_ids includeIds,
+		c.exclude_ids excludeIds,
+		c.includes includes,
+		c.excludes excludes
+	</sql>
+	
+	<sql id="Cnd.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="taskId">
+			c.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="fileIds">
+			c.file_id in <iterate property="fileIds" open="(" close=")" conjunction=",">#fileIds[]#</iterate>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Cnd.save" parameterClass="cnd">
+		insert into task_cnd (
+			task_id,
+			email_list,
+			file_id,
+			include_ids,
+			exclude_ids,
+			includes,
+			excludes
+		) values (
+			#taskId#,
+			#emailList#,
+			#fileId#,
+			#includeIds#,
+			#excludeIds#,
+			#includes#,
+			#excludes#
+		)
+		on duplicate key update
+		email_list = values(email_list),
+		file_id = values(file_id),
+		include_ids = values(include_ids),
+		exclude_ids = values(exclude_ids),
+		includes = values(includes),
+		excludes = values(excludes)
+	</insert>
+	
+	<select id="Cnd.query" parameterClass="mb" resultClass="cnd">
+		select
+			t.task_status status,
+			<include refid="Cnd.mapper" />
+		from task_cnd c
+		left join task t on t.task_id = c.task_id
+		<dynamic>
+			<include refid="Cnd.where" />
+		</dynamic>
+	</select>
+
+</sqlMap>

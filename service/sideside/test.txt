@@ -1,0 +1,6 @@
+/usr/local/webserver/nginx/html/temp/result/
+mv 152.22135.6751.txt 152.23135.6751.txt
+GET /?filePath=/WEB-INF/static/upload/task/201304/5.159.110.txt HTTP/1.1
+HOST: 127.0.0.1
+
+GET /?filePath=/16.19936.6768.txt

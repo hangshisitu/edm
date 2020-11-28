@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.TaskSettingMapper">
+	
+	<resultMap id="TaskSetting" type="cn.edm.domain.TaskSetting">
+		<result column="task_id" property="taskId"/>
+		<result column="rand" property="rand"/>
+		<result column="robot" property="robot"/>
+		<result column="template" property="template"/>
+	</resultMap>
+	
+	<sql id="base_columns">
+		task_id,rand,robot,template
+	</sql>
+	
+	<select id="selectByTaskId" resultMap="TaskSetting" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns"/>
+		FROM task_setting 
+		WHERE 
+		task_id = #{taskId}
+	</select>
+	
+</mapper>
+
+

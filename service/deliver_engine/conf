@@ -1,0 +1,195 @@
+[application]
+DeliverEngineLogPath="log/deliverengine.log"
+DispatchSvrPort=@MAILLIST_PORT@
+dispatchsvrIP=@MAILLIST_IP@
+#绑定外网ip
+VIP=@IP@
+
+#本地配置的mail from、auth login
+From="service@easymail.mail.10086.cn"
+AuthInfo="emlwbWluZA==|T2RYc1NOQWQ5djgyVkRGOHFRT2M="
+IsAuth="fault"
+
+CircleIterval="10"      #请求间隔时间
+ReportIterval="60"      #状态上报间隔时间
+TemplateIterval="3600"  #模版请求间隔时间
+
+
+#短信保存路径
+SmsFilePath = "deliverengine/sms/"
+WorkThreadNum = "2"		#投递工作线程数
+RetrySendIterval = "120"    #失败重试间隔
+RetrySendCount = "3"		#重试次数
+
+#投递状态统计配置，（可不配置）
+[deliverhelper]
+bind = @DELIVERY_HELP_IP@
+port = @DELIVERY_HELP_PORT@
+
+#域名别名配置，用于域名状态统计
+[domainAlias]
+#qq邮箱地址
+qq.com = "qq.com"
+vip.qq.com   =  "qq.com"
+foxmail.com = "qq.com"
+
+#新浪邮箱地址
+sina.com =  "sina.com"
+vip.sina.com  = "sina.com"
+vip.sina.com.cn = "sina.com"
+sina.cn = "sina.com"
+sina.com.cn =  "sina.com"
+
+
+#雅虎邮箱地址
+yahoo.com.cn = "yahoo.com.cn"
+yahoo.com = "yahoo.com.cn"
+yahoo.cn = "yahoo.com.cn"
+yahoo.hk = "yahoo.com.cn"
+ymail.com = "yahoo.com.cn"
+xilu.com = "yahoo.com.cn"
+
+#163邮箱地址
+188.com = "163.com"
+yeah.net = "163.com"
+126.com = "163.com"
+163.com = "163.com"
+vip.126.com = "163.com"
+vip.163.com = "163.com"
+
+#139邮箱地址
+139.com = "139.com"
+
+#搜狐邮箱地址
+sohu.com = "sohu.com"
+vip.sohu.com = "sohu.com"
+sohu.net = "sohu.com"
+
+#中华网邮箱地址
+china.com.cn = "china.com.cn"
+
+#畅捷网苑邮箱地址
+2911.net = "2911.net"
+
+#尚邮邮箱地址
+shangmail.com = "shangmail.com"
+
+#和讯邮箱地址
+hexun.com = "hexun.com"
+
+#吸铁石邮箱
+citiz.net = "citiz.net"
+vip.citiz.net = "citiz.net"
+
+#蓝天数码免费企业邮箱地址
+sky263.com = "sky263.com"
+
+#琴岛邮箱地址
+qingdaonews.com = "qingdaonews.com"
+
+#世纪邮箱
+21cn.com = "21cn.com"
+21cn.net = "21cn.com"
+
+#谷歌邮箱地址
+gmail.com = "gmail.com"
+google.com = "gmail.com"
+
+#189邮箱地址
+189.cn = "189.cn"
+
+#tom的邮箱地址
+tom.com = "tom.com"
+tom.com.cn = "tom.com"
+163.net = "tom.com"
+vip.tom.com = "tom.com"
+
+#搜狗邮箱地址
+sogou.com = "sogou.com"
+
+#亿邮的邮箱地址
+eyou.com = "eyou.com"
+
+#联通手机邮箱地址
+wo.com.cn = "wo.com.cn"
+
+#263邮箱地址
+263.com = "263.com"
+263.net.cn= "263.com"
+x263.net = "263.com"
+263.net = "263.com"
+
+#51邮箱的地址
+51.com = "51.com"
+
+#香港多域名多语言选择免费邮箱地址
+hellokitty.com = "hellokitty.com"
+mymelody.com = "hellokitty.com"
+kuririnmail.com = "hellokitty.com"
+hellokitty.com.my = "hellokitty.com"
+hellokitty.com.sg = "hellokitty.com"
+
+#中国人的邮箱地址
+chinaren.com = "chinaren.com"
+
+#人人网邮箱地址
+renren.com = "renren.com"
+
+#微软的邮箱地址
+hotmail.com = "hotmail.com"
+live.cn = "hotmail.com"
+msn.com = "hotmail.com"
+
+#域名映射
+[domain_map]
+163.com="mopen.163.com"
+126.com="mopen.126.com"
+
+#加速dns解析
+[transport]
+#139.com="221.176.9.178:25"
+#sina.com="21.176.119.178:25"
+#163.com="21.176.119.178:25"
+#qq.com="21.176.119.178:25"
+
+#邮件请求能力配置
+#d为天的衡量标准，如果上一天的发送情况良好，当前每2s仍然要20个，如果发送情况不好，会减半，发送情况特别差，会减为0
+#h为小时的衡量标准
+#m为分钟的衡量标准
+#q为15分钟衡量标准
+#建议用q，15分钟重新评估一次。
+[ability]
+qq.com=3|q
+163.com=3|q
+gmail.com=2|q
+sina.com=2|q
+21cn.com=2|q
+126.com=3|q
+sohu.com=3|q
+yahoo.com.cn=2|q
+china.com.cn=2|q
+2911.net=2|q
+shangmail.com=2|q
+hexun.com=2|q
+citiz.net=2|q
+sky263.com=2|q
+qingdaonews.com=2|q
+21cn.com=2|q
+gmail.com=2|q
+189.cn=2|q
+tom.com=2|q
+sogou.com=2|q
+eyou.com=2|q
+wo.com.cn=2|q
+263.com=2|q
+hotmail.com=2|q
+renren.com=2|q
+chinaren.com=2|q
+hellokitty.com=2|q
+51.com=2|q
+other=6|q
+139.com=3|q
+
+[HELO]
+helo="easymail.mail.10086.cn"
+

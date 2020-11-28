@@ -1,0 +1,9 @@
+1. ±‡“Î‘¥¬Î
+  1) cd src
+  2) make
+  3) cp faceside ..
+  4) cd ..
+
+2. ‘À––
+  1) chmod +x faceside
+  2) ./faceside -c=./etc/demo.conf

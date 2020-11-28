@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Template">
+
+	<typeAlias alias="template" type="cn.edm.model.Template" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Template.mapper">
+		t.template_id templateId,
+		t.corp_id corpId,
+		t.user_id userId,
+		t.category_id categoryId,
+		t.template_name templateName,
+		t.file_path filePath,
+		t.subject subject,
+		t.sender_name senderName,
+		t.sender_email senderEmail,
+		t.reveiver reveiver,
+		t.robot_email robotEmail,
+		t.is_rand isRand,
+		t.attrs attrs,
+		t.create_time createTime,
+		t.modify_time modifyTime
+	</sql>
+	
+	<sql id="Template.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="templateId">
+			t.template_id = #templateId#
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryId">
+			<isEqual property="categoryCnd" compareValue="eq">
+				t.category_id = #categoryId#
+			</isEqual>
+			<isEqual property="categoryCnd" compareValue="!eq">
+				t.category_id != #categoryId#
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateIds">
+			t.template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="templateName">
+			<isEqual property="nameCnd" compareValue="eq">
+				t.template_name = #templateName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				t.template_name like concat('%', #templateName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ t.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ t.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Template.save" parameterClass="template">
+		insert into template (
+			corp_id,
+			user_id,
+			category_id,
+			template_name,
+			file_path,
+			subject,
+			sender_name,
+			sender_email,
+			reveiver,
+			robot_email,
+			is_rand,
+			attrs,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#categoryId#,
+			#templateName#,
+			#filePath#,
+			#subject#,
+			#senderName#,
+			#senderEmail#,
+			#reveiver#,
+			#robotEmail#,
+			#isRand#,
+			#attrs#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="templateId">
+			select @@IDENTITY as template_id
+		</selectKey>
+	</insert>
+	
+	<update id="Template.update" parameterClass="template">
+		update template t set
+			t.corp_id = #corpId#,
+			t.user_id = #userId#,
+			t.category_id = #categoryId#,
+			t.template_name = #templateName#,
+			t.file_path = #filePath#,
+			t.subject = #subject#,
+			t.sender_name = #senderName#,
+			t.sender_email = #senderEmail#,
+			t.reveiver = #reveiver#,
+			t.robot_email = #robotEmail#,
+			t.is_rand = #isRand#,
+			t.attrs = #attrs#,
+			t.modify_time = now()
+		where t.template_id = #templateId#
+	</update>
+	
+	<delete id="Template.delete" parameterClass="mb">
+		delete from template 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="templateId">
+				template_id = #templateId#
+			</isNotNull>
+			<isNotNull prepend="and" property="templateIds">
+				template_id in <iterate property="templateIds" open="(" close=")" conjunction=",">#templateIds[]#</iterate>
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Template.query" parameterClass="mb" resultClass="template">
+		select
+			c.category_name categoryName,
+			c2.company company,
+			<include refid="Template.mapper" />
+		from template t
+		left join category c on c.category_id = t.category_id
+		left join corp c2 on c2.corp_id = t.corp_id
+		<dynamic>
+			<include refid="Template.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="Template.md5" parameterClass="mb" resultClass="template">
+		select
+			t.template_id templateId,
+			t.file_path filePath
+		from template t
+		<dynamic>
+			where md5(CONCAT(user_id, template_id)) = #templateId#
+			and (select count(*) from template_setting s where <![CDATA[ s.template_id = t.template_id) < 1 ]]>
+			limit 1
+		</dynamic>
+	</select>
+
+	<select id="Template.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from template t
+		<dynamic>
+			<include refid="Template.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Template.index" parameterClass="mb" resultClass="template">
+		select
+			c.category_name categoryName,
+			c2.company company,
+			(select count(*) from template_setting s where s.parent_id = t.template_id) bindTouchCount,
+			(select count(*) from template_setting s where s.template_id = t.template_id) settingCount,
+			<include refid="Template.mapper" />
+		from template t
+		left join category c on c.category_id = t.category_id
+		left join corp c2 on c2.corp_id = t.corp_id
+		<dynamic>
+			<include refid="Template.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by t.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+	
+</sqlMap>

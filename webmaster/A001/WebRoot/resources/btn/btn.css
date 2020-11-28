@@ -1,0 +1,55 @@
+input.groovybutton {
+	font-size: 14px;
+	color: #FFFFFF;
+	height: 28px;
+	line-height: 25px;
+	border-style: none;
+	cursor: pointer;
+	padding: 0 10px;
+	border-radius: 3px;
+	background-color: #099;
+	background-image: linear-gradient(to top, #099, #32A095 28%, #3cc);
+	border: 1px solid #048191;
+	box-shadow: 0 1px rgba(255, 255, 255, 0.19) inset;
+}
+input.groovybutton:hover {
+	background-color: #32A095;
+	background-image: linear-gradient(to top, #32A095, #99E2E1);
+	color:#fff;
+}
+ul.blue {
+	list-style: none;
+	float: left;
+	clear: left;
+}
+ul.blue li {
+	float: left;
+}
+ul.blue li a {
+	float: left;
+	text-decoration: none;
+	color: #ccc;
+	padding: 4px 15px 0 0;
+	font: 900 14px "Arial", Helvetica, sans-serif;
+}
+ul.blue li a span {
+	float: left;
+	padding-right: 15px;
+	display: block;
+	margin-top: -4px;
+	height: 24px;
+}
+ul.blue li a:hover {
+	color: #0d5f83;
+	background: url(images/blue.png) no-repeat top right;
+}
+ul.blue li a:hover span {
+	background: url(images/blue.png) no-repeat top left;
+}
+ul.blue li a.current {
+	background: url(images/blue.png) no-repeat top right;
+	color: #0d5f83;
+}
+ul.blue li a.current span {
+	background: url(images/blue.png) no-repeat top left;
+}

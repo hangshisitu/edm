@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 任务</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/report.plan.total.js?${version}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var datas = [
+       		${domain.sentCount?default(0)},
+       		${domain.reachCount?default(0)},
+       		${domain.softBounceCount?default(0) + domain.hardBounceCount?default(0)},
+       		${domain.readUserCount?default(0)},
+       		${domain.readCount?default(0)},
+       		${domain.clickUserCount?default(0)},
+       		${domain.clickCount?default(0)},
+       		${domain.unsubscribeCount?default(0)},
+       		${domain.forwardCount?default(0)}
+       	];
+		var nones = [
+     		${domain.beforeNoneCount?default(0)},
+     		${domain.afterNoneCount?default(0)}
+     	];
+     	
+     	var a = datas[0] == 0 ? 0 : 100;
+     	var b = (datas[0] - nones[0] - nones[1]) == 0 ? 0 : datas[1] * 100 / (datas[0] - nones[0] - nones[1]);
+     	var c = datas[1] == 0 ? 0 : datas[3] * 100 / datas[1];
+     	var d = datas[3] == 0 ? 0 : datas[5] * 100 / datas[3];
+	     	
+		$("#reach").text(b.toFixed(2) + " %");
+	   	$("#read").text(c.toFixed(2) + " %");
+	   	$("#click").text(d.toFixed(2) + " %");
+	});
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title">汇总&nbsp;&nbsp;<span>对所选任务进行合计</span></h1>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${totalItems}</span>个任务</p>
+			</div>
+			<ul class="btn">
+				<#if view.funcAuth('report/task/page', 6)>
+					<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+					<#if _9>
+					<li><a class="btn_icon btn_icon_down" href="javascript:exports('${checkedIds}');">导出</a></li>
+					</#if>
+					</@sec.authorize>
+				</#if>
+				<li>
+					<a class="btn_icon btn_icon_imp" href="${ctx}/report/plan/page">返回</a>
+				</li>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th>发送总数</th>
+					<th>成功总数</th>
+					<th>弹回总数</th>
+					<th>打开总人数</th>
+					<th>打开总次数</th>
+					<th>点击总人数</th>
+					<th>点击总次数</th>
+					<th>成功率</th>
+					<th>打开率</th>
+					<th>点击率</th>
+				</tr>
+				<tr>
+					<td>${domain.sentCount?default(0)}</td>
+					<td>${domain.reachCount?default(0)}</td>
+					<td>${domain.softBounceCount?default(0) + domain.hardBounceCount?default(0)}</td>
+					<td>${domain.readUserCount?default(0)}</td>
+					<td>${domain.readCount?default(0)}</td>
+					<td>${domain.clickUserCount?default(0)}</td>
+					<td>${domain.clickCount?default(0)}</td>
+					<td id="reach"></td>
+					<td id="read"></td>
+					<td id="click"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

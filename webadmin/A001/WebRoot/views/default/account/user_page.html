@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 子账号</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/account.user.js?${version}"></script>
+<script type="text/javascript" charset="utf-8">
+var corp_list = [
+	["", "全部"],
+	["${corp.corpId}", "${corp.company}"]<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+    <#list corpChildren as c>
+	["${c.corpId}", "${c.company}"]<#if c_has_next>,</#if>
+	</#list>
+];
+
+var role_list = [
+    ["", "全部"],
+    <#list roleList as r>
+	['${r.roleId}','${r.roleName}'],
+	</#list>
+];
+</script>
+</head>
+
+<body>
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix ">
+	<#include "/left.html" />
+	<div id="main"  class="clearfix">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>子账号&nbsp;&nbsp;<span>对子账号进行管理</span></h1>
+		<#if mb.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<input type="hidden" id="status" name="status" value="${status}" />
+			<input type="hidden" id="roleId" name="roleId" value="${mb.roleId}" />
+			<input type="hidden" id="corpId" name="corpId" value="${mb.corpId}" />
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>子账号名</li>
+				<li>
+					<input type="text" name="userId" value="${xss.filter(mb.userId)}" maxlength="20" />
+				</li>
+				<li>角色</li>
+				<li>
+					<a id="role_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择角色</a>
+				</li>
+				<li>状态</li>
+				<li>
+					<a id="status_list" class="but_select" style="width:65px;" href="javascript:void(0)">请选择状态</a>
+				</li>
+				<li>机构</li>
+				<li>
+					<a id="corp_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择机构</a>
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<li class="now"><a href="/account/user/page">子账号</a></li>
+			<li><a href="/account/corp/page">子机构</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${userList?size}</span>个子账号</p>
+			</div>
+			<ul class="btn">
+				<li><a href="add" class="btn_icon btn_icon_add">新建子账号</a></li>
+			</ul>
+		</div>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="main_table role_table">
+			<tr>
+				<th width="10%">账号名</th>
+				<th>角色</th>
+				<th>功能范围</th>
+				<th>状态</th>
+				<th>机构</th>
+				<th>创建人</th>
+				<th width="12%">创建时间</th>
+				<th width="12%">更新时间</th>
+				<th width="16%">操作</th>
+			</tr>
+			<#list userList as u>
+			<tr>
+				<td>
+					<input type="hidden" name="checkedIds" value="${xss.filter(u.userId)}" />
+					<a href="add?userId=${xss.filter(u.userId)}" title="${xss.filter(u.userId)}">${xss.filter(u.userId)}</a> 
+				</td>
+				<td>${xss.filter(u.roleName)}</td>
+				<td>
+					<#if u.role.menuFuncList?? && u.role.menuFuncList?size gt 0>
+					<div class="moreInfo J_hook_more clearfix">
+						<#assign func="" />
+						<#list u.role.menuFuncList as menuFunc>
+							<#if menuFunc_index gt 0>
+								<#break>
+							</#if>
+							<#assign func=menuFunc />
+						</#list>
+						<div class="txt f_l">${xss.filter(func)}</div>
+					  	<span class="arrow f_l">▼</span>
+						<ul class="none">
+							<#list u.role.menuFuncList as menuFunc>
+						    	<li>${xss.filter(menuFunc)}</li>
+						    </#list>
+						</ul>
+					</div>
+					</#if>
+				</td>
+				<td><#if u.status == 1>有效<#elseif u.status == 2>已冻结</#if></td>
+				<td>${xss.filter(u.company)}</td>
+				<td>${xss.filter(u.managerId)}${currentUser.userId}</td>
+				<td><#if u.createTime??>${u.createTime?datetime}</#if></td>
+				<td><#if u.updateTime??>${u.updateTime?datetime}</#if></td>
+				<td class="edit">
+					<ul class="f_ul">
+					<#if currentUser.username == u.userId>
+						<li><font color="#f5f5f5">修改</font></li>
+						<li><font color="#f5f5f5">删除</font></li>
+						<#if u.status == 1>
+						<li><li><font color="#f5f5f5">冻结</font></li></li>
+						<#else>
+						<li><li><font color="#f5f5f5">激活</font></li>
+						</#if>
+					<#else>
+						<li><a href="add?userId=${xss.filter(u.userId)}">修改</a></li>
+						<li><a href="javascript:open_msg('del?userId=${xss.filter(u.userId)}',0);">删除</a></li>
+						<#if u.status == 1>
+						<li><a href="javascript:open_msg('freeze?userId=${xss.filter(u.userId)}',0);">冻结</a></li>
+						<#else>
+						<li><a href="javascript:open_msg('enabled?userId=${xss.filter(u.userId)}',0);">激活</a></li>
+						</#if>
+					</#if>
+					</ul>
+				</td>
+			</tr>
+			</#list>
+		</table>
+		<#if !userList?? || userList?size == 0>
+			<div class="no_data">
+				<#if search>
+					没有匹配的任务列表！
+				<#else>
+					您还没有子账号，现在就<a href="add" class="green">创建</a>一个
+				</#if>
+			</div>
+		</#if>
+		<div class="ribbon clearfix">
+			<ul class="page"><li>&nbsp;</li></ul>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

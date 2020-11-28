@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.IpMapper">
+	
+	<resultMap id="Ip" type="cn.edm.domain.Ip">
+		<result column="nip1" property="nip1"/>
+		<result column="nip2" property="nip2"/>
+		<result column="sip1" property="sip1"/>
+		<result column="sip2" property="sip2"/>
+		<result column="region" property="region" />
+		<result column="isp" property="isp" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		nip1,nip2,sip1,sip2,region,isp
+	</sql>
+	
+	<select id="selectByIp" resultMap="Ip" parameterType="string">
+		SELECT
+		<include refid="base_columns"/>
+		FROM ip_region ip
+		WHERE 
+		<![CDATA[ ip.nip1 <= inet_aton(#{loginIp}) and nip2 >= inet_aton(#{loginIp}) ]]>
+	</select>
+	
+	
+</mapper>
+
+

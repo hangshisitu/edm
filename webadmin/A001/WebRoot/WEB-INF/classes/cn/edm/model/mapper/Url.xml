@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Url">
+
+	<typeAlias alias="url" type="cn.edm.model.Url" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Url.mapper">
+		u.corp_id corpId,
+		u.task_id taskId,
+		u.template_id templateId,
+		u.url url,
+		u.click_count clickCount
+	</sql>
+	
+	<sql id="Url.mapperSum">
+		sum(u.click_count) clickCount
+	</sql>
+	
+	<sql id="Url.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+    </sql>
+
+	<select id="Url.query" parameterClass="mb" resultClass="url">
+		select
+			<include refid="Url.mapper" />
+		from result_by_url u
+		inner join task t on t.corp_id = u.corp_id and t.task_id = u.task_id
+		<dynamic>
+			<include refid="Url.where" />
+			order by u.click_count desc
+		</dynamic>
+	</select>
+	
+	<select id="Url.querySum" parameterClass="mb" resultClass="url">
+		select
+			u.url,
+			<include refid="Url.mapperSum" />
+		from result_by_url u
+		inner join task t on t.corp_id = u.corp_id and t.task_id = u.task_id
+		<dynamic>
+			<include refid="Url.where" />
+			group by u.url
+			order by sum(u.click_count) desc
+		</dynamic>
+	</select>
+	
+	<select id="Url.sum" parameterClass="mb" resultClass="url">
+		select
+			sum(u.click_count) sumClickCount
+		from result_by_url u
+		inner join task t on t.corp_id = u.corp_id and t.task_id = u.task_id
+		<dynamic>
+			<include refid="Url.where" />
+		</dynamic>
+	</select>
+
+</sqlMap>

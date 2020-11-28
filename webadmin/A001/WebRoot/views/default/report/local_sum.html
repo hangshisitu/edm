@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 总览</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/highcharts/modules/funnel.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.js?${version}"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.sum.js?${version}"></script>
+<script type="text/javascript">
+	var datas = [
+   		${total.sentCount?default(0)}, 
+   	    ${total.reachCount?default(0)},
+   	    ${total.readUserCount?default(0)},
+   	    ${total.clickUserCount?default(0)},
+   	    ${total.beforeNoneCount?default(0)},
+   	    ${total.afterNoneCount?default(0)}
+   	];
+
+   	var a = datas[0] == 0 ? 0 : 100;
+   	var b = (datas[0] - datas[4] - datas[5]) == 0 ? 0 : datas[1] * 100 / (datas[0] - datas[4] - datas[5]);
+   	var c = datas[1] == 0 ? 0 : datas[2] * 100 / datas[1];
+   	var d = datas[2] == 0 ? 0 : datas[3] * 100 / datas[2];
+	
+	var percents = [
+		["发送总数", a.toFixed(2)],
+		["成功总数", b.toFixed(2)],
+		["打开人数", c.toFixed(2)],
+		["点击人数", d.toFixed(2)]
+	];
+	var corp_list = [
+		["", "全部"],
+		["${corp.corpId}", "${corp.company}"]<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+	    <#list corpChildren as c>
+		["${c.corpId}", "${c.company}"]<#if c_has_next>,</#if>
+		</#list>
+	];
+</script>
+
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>总览&nbsp;&nbsp;<span>对账户下投递的任务进行汇总统计</span></h1>
+		<#if mb.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="sum" method="get" onsubmit="return chkfrm_find();">
+			<input type="hidden" id="group" name="group" value="${xss.filter(mb.group)}" />
+			<input type="hidden" id="cycle" name="cycle" value="${xss.filter(mb.cycle)}" />
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>机构</li>
+				<li>
+					<a id="corp_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择机构</a>
+					<input type="hidden" id="corpId" name="corpId" value="${mb.corpId}" />
+				</li>
+				<li>投递时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<a id="cycle_list" class="but_select" style="width:88px;" href="javascript:void(0)">时间选择</a>
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<#if isTriger || isJoin>
+		<ul class="tab clearfix">
+			<li class="now"><a href="${ctx}/report/local/sum">平台投递</a></li>
+			<li><a href="${ctx}/report/api/sum">API投递</a></li>
+		</ul>
+		</#if>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>历史发送总览</p>
+			</div>
+			<ul class="btn">
+				<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+				<#if view.funcAuth('report/local/sum', 6)>
+				<li><a class="btn_icon btn_icon_down" href="javascript:exports('local');">导出</a></li>
+				</#if>
+				</@sec.authorize>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th>域名</th>
+					<th>发送总数</th>
+					<th>成功总数</th>
+					<th>弹回总数</th>
+					<th>打开总人数</th>
+					<th>打开总次数</th>
+					<th>点击总人数</th>
+					<th>点击总次数</th>
+					<th>退订总数</th>
+					<th>转发总数</th>
+					<th>成功率</th>
+					<th>打开率</th>
+					<th>点击率</th>
+				</tr>
+				<#if domains?size gt 0>
+				<#list domains as d>
+				<tr>
+					<td>${d.emailDomain}</td>
+					<td>${d.sentCount?default(0)}</td>
+					<td>${d.reachCount?default(0)}</td>
+					<td>${d.softBounceCount?default(0) + d.hardBounceCount?default(0)}</td>
+					<td>${d.readUserCount?default(0)}</td>
+					<td>${d.readCount?default(0)}</td>
+					<td>${d.clickUserCount?default(0)}</td>
+					<td>${d.clickCount?default(0)}</td>
+					<td>${d.unsubscribeCount?default(0)}</td>
+					<td>${d.forwardCount?default(0)}</td>
+					<td>${view.result_reach(d.sentCount?default(0),d.reachCount?default(0),d.afterNoneCount?default(0))}&nbsp;%</td>
+					<td>${view.result_read(d.reachCount?default(0),d.readUserCount?default(0))}&nbsp;%</td>
+					<td>${view.result_click(d.readUserCount?default(0),d.clickUserCount?default(0))}&nbsp;%</td>
+				</tr>
+				</#list>
+				</#if>
+				<tr>
+					<td>${other.emailDomain}</td>
+					<td>${other.sentCount?default(0)}</td>
+					<td>${other.reachCount?default(0)}</td>
+					<td>${other.softBounceCount?default(0) + other.hardBounceCount?default(0)}</td>
+					<td>${other.readUserCount?default(0)}</td>
+					<td>${other.readCount?default(0)}</td>
+					<td>${other.clickUserCount?default(0)}</td>
+					<td>${other.clickCount?default(0)}</td>
+					<td>${other.unsubscribeCount?default(0)}</td>
+					<td>${other.forwardCount?default(0)}</td>
+					<td>${view.result_reach(other.sentCount?default(0),other.reachCount?default(0),other.afterNoneCount?default(0))}&nbsp;%</td>
+					<td>${view.result_read(other.reachCount?default(0),other.readUserCount?default(0))}&nbsp;%</td>
+					<td>${view.result_click(other.readUserCount?default(0),other.clickUserCount?default(0))}&nbsp;%</td>
+				</tr>
+				<tr style="font-weight: bolder;">
+					<td>合计</td>
+					<td>${total.sentCount?default(0)}</td>
+					<td>${total.reachCount?default(0)}</td>
+					<td>${total.softBounceCount?default(0) + total.hardBounceCount?default(0)}</td>
+					<td>${total.readUserCount?default(0)}</td>
+					<td>${total.readCount?default(0)}</td>
+					<td>${total.clickUserCount?default(0)}</td>
+					<td>${total.clickCount?default(0)}</td>
+					<td>${total.unsubscribeCount?default(0)}</td>
+					<td>${total.forwardCount?default(0)}</td>
+					<td>${view.result_reach(total.sentCount?default(0),total.reachCount?default(0),total.afterNoneCount?default(0))}&nbsp;%</td>
+					<td>${view.result_read(total.reachCount?default(0),total.readUserCount?default(0))}&nbsp;%</td>
+					<td>${view.result_click(total.readUserCount?default(0),total.clickUserCount?default(0))}&nbsp;%</td>
+				</tr>
+			</tbody>
+		</table>
+		<#if total?? && total.sentCount gt 0>
+		<div class="charts">
+			<div id="task_funnel" style="width: 480px; height: 240px; margin: 0 auto;"></div>
+		</div>
+		<#else>
+		<div class="no_data">平台投递总览没有匹配的数据！</div>
+		</#if>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

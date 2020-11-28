@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 模板</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/mailing.category.js?${version}"></script>
+<script type="text/javascript">
+	var category_list = new Array(<#list categoryList as c>[${c.categoryId}, "${xss.filter(c.categoryName)}"]<#if c_has_next>,</#if></#list>);
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>类别&nbsp;&nbsp;<span>对邮件模板进行分类管理</span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>类别名称</li>
+				<li>
+					<input type="text" name="categoryName" value="${xss.filter(mb.categoryName)}" maxlength="20" />
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${xss.filter(mb.beginTime)}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${xss.filter(mb.endTime)}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<li><a href="${ctx}/mailing/template/page">模板</a></li>
+			<li class="now"><a href="${ctx}/mailing/category/page">类别</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个类别</p>
+			</div>
+			<ul class="btn">
+				<#if view.funcAuth('mailing/template/page', 2)>
+					<li>
+						<a class="btn_icon btn_icon_add" href="javascript:open_msg('add',0);">新建</a>
+					</li>
+				</#if>
+				<#if view.funcAuth('mailing/template/page', 4)>
+					<li>
+						<a class="btn_icon btn_icon_del" href="javascript:del();">删除</a>
+					</li>
+				</#if>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25"><input type="checkbox" id="all_checkbox" /></th>
+					<th>类别名称</th>
+					<th>描述</th>
+					<th>模板数</th>
+					<th width="12%">创建时间</th>
+					<th width="12%">更新时间</th>
+					<th width="16%">操作</th>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as c>
+				<tr>
+					<td><input type="checkbox" name="checkedIds" value="${c.categoryId}" /></td>
+					<td>
+					<#if c.keyword>
+					${xss.filter(c.categoryName)}
+					<#else>
+					<a href="javascript:open_msg('add?categoryId=${c.categoryId}',0);" title="${xss.filter(c.categoryName)}">${xss.filter(c.categoryName)}</a></td>
+					</#if>
+					<td title="${xss.filter(c.categoryDesc)}">${xss.filter(c.categoryDesc)}</td>
+					<td>${c.count}</td>
+					<td><#if c.createTime??>${c.createTime?datetime}</#if></td>
+					<td><#if c.modifyTime??>${c.modifyTime?datetime}</#if></td>
+					<td class="edit">
+						<ul class="f_ul">
+						<#if c.keyword>
+							<#if view.funcAuth('mailing/template/page', 3)>
+								<li><font color="#f5f5f5">修改</font></li>
+							</#if>
+							<#if view.funcAuth('mailing/template/page', 4)>
+							<li><font color="#f5f5f5">删除</font></li>
+							</#if>
+						<#else>
+							<#if view.funcAuth('mailing/template/page', 3)>
+								<li><a href="javascript:open_msg('add?categoryId=${c.categoryId}',0);">修改</a></li>
+							</#if>
+							<#if view.funcAuth('mailing/template/page', 4)>
+								<li><#if c.count gt 0><font color="#f5f5f5">删除</font><#else><a href="javascript:open_msg('del?checkedIds=${c.categoryId}',0);">删除</a></#if></li>
+							</#if>
+						</#if>
+						</ul>
+					</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data">
+				<#if page.search>
+					没有匹配的类别列表！
+				<#else>
+					您还没有类别，现在就
+					<#if view.funcAuth('mailing/template/page', 2)>
+						<a href="javascript:open_msg('add',0);" class="green">创建</a>一个
+					</#if>
+				</#if>
+			</div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

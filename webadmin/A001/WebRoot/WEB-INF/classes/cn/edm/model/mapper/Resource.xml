@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Resource">
+
+	<typeAlias alias="resource" type="cn.edm.model.Resource" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Resource.mapper">
+		r.resource_id resourceId,
+		r.resource_name resourceName,
+		r.sender_list senderList,
+		r.helo_list heloList,
+		r.skip_list skipList,
+		r.modify_time modifyTime
+	</sql>
+	
+	<sql id="Resource.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="resourceId">
+			<isEqual property="idCnd" compareValue="eq">
+				r.resource_id = #resourceId#
+			</isEqual>
+			<isEqual property="idCnd" compareValue="!eq">
+				r.resource_id != #resourceId#
+			</isEqual>
+		</isNotNull>
+    </sql>
+	
+	<select id="Resource.query" parameterClass="mb" resultClass="resource">
+		select
+			<include refid="Resource.mapper" />
+		from resource r
+		<dynamic>
+			<include refid="Resource.where" />
+		</dynamic>
+	</select>
+</sqlMap>

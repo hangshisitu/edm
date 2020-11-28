@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.CategoryMapper">
+
+	<resultMap id="Category" type="cn.edm.model.Category">
+		<id column="category_id" property="categoryId" />
+		<result column="corp_id" property="corpId" />
+		<result column="user_id" property="userId" />
+		<result column="category_name" property="categoryName" />
+		<result column="category_desc" property="categoryDesc" />
+		<result column="type" property="type" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+	</resultMap>
+
+
+
+	<insert id="insert" parameterType="cn.edm.model.Category">
+		insert into category (
+		corp_id,
+		user_id,
+		category_name,
+		category_desc,
+		type,
+		create_time,
+		modify_time
+		) values (
+		#{corpId},
+		#{userId},
+		#{categoryName},
+		#{categoryDesc},
+		#{type},
+		now(),
+		now()
+		)
+		<selectKey resultType="java.lang.Integer" keyProperty="category_id">
+			select @@IDENTITY as category_id
+		</selectKey>
+
+	</insert>
+
+	<insert id="insertBatch" parameterType="java.util.List">
+		insert into category(corp_id,
+		user_id,
+		category_name,
+		category_desc,
+		type,
+		create_time,
+		modify_time) values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			( #{item.corpId},
+			#{item.userId},
+			#{item.categoryName},
+			#{item.categoryDesc},
+			#{item.type},
+			now(),
+			now() )
+		</foreach>
+	</insert>
+
+	<select id="selectByUserIdAndCatalogName" resultMap="Category"
+		parameterType="map">
+		SELECT * FROM category
+		WHERE user_id = #{userId}
+		AND category_name = #{categoryName}
+		LIMIT 1
+	</select>
+
+	<delete id="deleteCategoryByUserId" parameterType="java.lang.String">
+		DELETE FROM category
+		WHERE
+		user_id = #{userId}
+	</delete>
+
+
+</mapper>
+
+

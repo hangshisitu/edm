@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.CndMapper">
+	
+	<resultMap id="Cnd" type="cn.edm.domain.Cnd">
+		<result column="task_id" property="taskId"/>
+		<result column="email_list" property="emailList"/>
+		<result column="file_id" property="fileId"/>
+		<result column="include_ids" property="includeIds"/>
+		<result column="exclude_ids" property="excludeIds" />
+		<result column="includes" property="includes" />
+		<result column="excludes" property="excludes" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		task_id,email_list,file_id,include_ids,exclude_ids,includes,excludes
+	</sql>
+	
+	<select id="selectByTaskIds" resultMap="Cnd" parameterType="map">
+		SELECT
+		<include refid="base_columns"/>
+		FROM task_cnd
+		WHERE
+		task_id  IN <foreach collection="taskIds" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+	</select>
+	
+</mapper>
+
+

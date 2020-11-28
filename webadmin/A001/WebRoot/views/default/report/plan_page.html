@@ -1,0 +1,143 @@
+<#assign sec=JspTaglibs["http://www.springframework.org/security/tags"] />
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 任务</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/report.js?${version}"></script>
+<script type="text/javascript">
+<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_RDR,ROLE_ALL">
+var corp_list = [
+	["", "全部"],
+	["${corp.corpId}", "${corp.company}"]<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+    <#list corpChildren as c>
+	["${c.corpId}", "${c.company}"]<#if c_has_next>,</#if>
+	</#list>
+];
+</@sec.authorize>
+</script>
+</head>
+
+<body>
+<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>任务&nbsp;&nbsp;<span>对平台上创建的任务进行数据统计</span></h1>
+		<#if page.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>任务名称</li>
+				<li>
+					<input type="text" name="taskName" value="${xss.filter(mb.taskName)}" maxlength="20" />
+				</li>
+				<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_RDR,ROLE_ALL">
+				<li>机构</li>
+				<li>
+					<a id="corp_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择机构</a>
+					<input type="hidden" id="corpId" name="corpId" value="${mb.corpId}" />
+				</li>
+				</@sec.authorize>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<li><a href="${ctx}/report/task/page?m=formal">单项任务</a></li>
+			<li class="now"><a href="${ctx}/report/plan/page">周期任务</a></li>
+			<li><a href="${ctx}/report/task/page?m=test">测试任务</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${page.totalItems}</span>个任务</p>
+			</div>
+			<ul class="btn">
+				<#if view.funcAuth('report/task/page', 1)>
+				<li>
+					<a class="btn_icon btn_icon_web" href="javascript:action('total', '汇总')">汇总</a>
+				</li>
+				</#if>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="25"><input type="checkbox" id="all_checkbox" /></th>
+					<th width="120">任务名称</th>
+					<th>发送总数</th>
+					<th>成功数</th>
+					<th>打开人数</th>
+					<th>点击人数</th>
+					<th>成功率</th>
+					<th>打开率</th>
+					<th>点击率</th>
+					<th>触发计划</th>
+					<th>状态</th>
+					<th>机构</th>
+					<th>创建人</th>
+					<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+					<th width="12%">操作</th>
+					</@sec.authorize>
+				</tr>
+				<#if page.result?? && page.result?size gt 0>
+					<#list page.result as t>
+				<tr>
+					<td><input type="checkbox" name="checkedIds" value="${t.planId}" /></td>
+					<td>
+						<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+						<a href="${ctx}/report/detail/plan/cover?planId=${t.planId}" title="${xss.filter(t.taskName)}">${xss.filter(t.taskName)}</a>
+						</@sec.authorize>
+						<@sec.authorize ifAnyGranted="ROLE_RDR">
+						<span title="${xss.filter(t.taskName)}">${xss.filter(t.taskName)}</span>
+						</@sec.authorize>
+					</td>
+					<td>${t.sentCount?default(0)}</td>
+					<td>${t.reachCount?default(0)}</td>
+					<td>${t.readUserCount?default(0)}</td>
+					<td>${t.clickUserCount?default(0)}</td>
+					<td>${view.result_reach(t.sentCount?default(0),t.reachCount?default(0),t.afterNoneCount?default(0))}&nbsp;%</td>
+					<td>${view.result_read(t.reachCount?default(0),t.readUserCount?default(0))}&nbsp;%</td>
+					<td>${view.result_click(t.readUserCount?default(0),t.clickUserCount?default(0))}&nbsp;%</td>
+					<td><#if t.touchCount gt 0>有<#else>无</#if></td>
+					<td>${view.task_status(t.status)}</td>
+					<td>${t.company}</td>
+					<td>${t.userId}</td>
+					<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+					<td class="edit">
+						<ul class="f_ul">
+							<#if _8>
+								<#if view.funcAuth('report/task/page', 1)>
+								<li><a href="${ctx}/report/detail/plan/cover?planId=${t.planId}">报告</a></li>
+								</#if>
+							</#if>
+							<#if _9>
+								<#if view.funcAuth('report/task/page', 6)>
+								<li><a href="${ctx}/report/export/plan?planId=${t.planId}">导出</a></li>
+								</#if>
+							</#if>
+						</ul>
+					</td>
+					</@sec.authorize>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if !page.result?? || page.result?size == 0>
+			<div class="no_data">没有匹配的任务列表！</div>
+		</#if>
+		
+		<div class="ribbon clearfix">
+			<@fm.page page=page />
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

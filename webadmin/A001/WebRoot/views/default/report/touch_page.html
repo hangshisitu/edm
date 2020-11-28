@@ -1,0 +1,132 @@
+<#assign sec=JspTaglibs["http://www.springframework.org/security/tags"] />
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<#include "/common/meta.html" />
+		<title>${pageTitle} - 触发计划</title>
+		<#include "/common/css.html" />
+		<#include "/common/js.html" />
+		<script type="text/javascript">
+			<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_RDR,ROLE_ALL">
+				$(document).ready(function() {
+					var corp_list = [
+		             	["", "全部"],
+		             	["${corp.corpId}", "${corp.company}"]<#if corpChildren?? && corpChildren?size gt 0>,</#if>
+		                 <#list corpChildren as c>
+		             	["${c.corpId}", "${c.company}"]<#if c_has_next>,</#if>
+		             	</#list>
+		             ];
+					$("#corp_list").UIselect({
+						width: 118,
+						id_id: "#corpId",
+						arrdata: corp_list
+					});
+				});
+			</@sec.authorize>
+		</script>
+	</head>
+	
+	<body>
+		<input type="hidden" id="pageSize" name="pageSize" value="${page.pageSize}" />
+		<#include "top.html" />
+		<div id="wrapper" class="clearfix">
+			<#include "left.html" />
+			<div id="main" class="clearfix" style="">
+				<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>触发计划&nbsp;&nbsp;<span>以模板维度统计触发计划的相关数据报告</span></h1>
+				<#if page.search>
+					<#assign search_css = "" />
+				</#if>
+				<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+					<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+						<li>模板名称</li>
+						<li>
+							<input type="text" name="templateName" value="${xss.filter(mb.templateName)}" maxlength="30" />
+						</li>
+						<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_RDR,ROLE_ALL">
+						<li>机构</li>
+						<li>
+							<a id="corp_list" class="but_select" style="width:90px;" href="javascript:void(0)">请选择机构</a>
+							<input type="hidden" id="corpId" name="corpId" value="${mb.corpId}" />
+						</li>
+						</@sec.authorize>
+						<li>
+							<input type="submit" value="" class="search_but btn_icon" />
+						</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+					</ul>
+				</form>
+				
+				<div class="ribbon clearfix">
+					<div class="note">
+						<p>共<span>${page.totalItems}</span>个触发计划</p>
+					</div>
+				</div>
+				<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+					<tbody>
+						<tr>
+							<th width="120">模板名称</th>
+							<th>关联任务</th>
+							<th>触发总数</th>
+							<th>成功数</th>
+							<th>打开人数</th>
+							<th>打开次数</th>
+							<th>点击人数</th>
+							<th>点击次数</th>
+							<th>成功率</th>
+							<th>打开率</th>
+							<th>点击率</th>
+							<th>机构</th>
+							<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+								<th width="12%">操作</th>
+							</@sec.authorize>
+						</tr>
+						<#if page.result?? && page.result?size gt 0>
+							<#list page.result as d>
+								<tr>
+									<td title="${d.templateName}">${d.templateName}</td>
+									<td>${d.templateCount}</td>
+									<td>${d.touchCount?default(0)}</td>
+									<td>${d.reachCount?default(0)}</td>
+									<td>${d.readUserCount?default(0)}</td>
+									<td>${d.readCount?default(0)}</td>
+									<td>${d.clickUserCount?default(0)}</td>
+									<td>${d.clickCount?default(0)}</td>
+									<td>${view.result_reach(d.sentCount?default(0), d.reachCount?default(0), d.afterNoneCount?default(0))}&nbsp;%</td>
+									<td>${view.result_read(d.reachCount?default(0), d.readUserCount?default(0))}&nbsp;%</td>
+									<td>${view.result_click(d.readUserCount?default(0), d.clickUserCount?default(0))}&nbsp;%</td>
+									<td>${d.company}</td>
+									<@sec.authorize ifAnyGranted="ROLE_ADM,ROLE_MGR,ROLE_BSN,ROLE_BUK,ROLE_ALL">
+										<td class="edit">
+											<ul class="f_ul">
+												<#if _8>
+													<#if view.funcAuth('report/touch/page', 1)>
+														<li><a href="${ctx}/report/detail/touch/cover?touchId=${d.touchId}&templateId=${d.templateId}">报告</a></li>
+													</#if>
+												</#if>
+												<#if _9>
+													<#if view.funcAuth('report/touch/page', 6)>
+														<li><a href="${ctx}/report/export/touch/cover?touchId=${d.touchId}&templateId=${d.templateId}">导出</a></li>
+													</#if>
+												</#if>
+												<#if view.funcAuth('mailing/template/page', 1)>
+													<li><a href="${ctx}/mailing/template/view?action=touch&touchId=${d.touchId}&templateId=${d.templateId}" target="_blank">预览</a></li>
+												</#if>
+											</ul>
+										</td>
+									</@sec.authorize>
+								</tr>
+							</#list>
+						</#if>
+					</tbody>
+				</table>
+				<#if !page.result?? || page.result?size == 0>
+					<div class="no_data">没有匹配的任务列表！</div>
+				</#if>
+				
+				<div class="ribbon clearfix">
+					<@fm.page page=page />
+				</div>
+			</div>
+		</div>
+		<div class="select_div"></div>
+	</body>
+</html>

@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.UserMapper">
+	
+	<resultMap id="User" type="cn.edm.domain.User">
+		<id column="user_id" property="userId" jdbcType="VARCHAR" />
+		<id column="manager_id" property="managerId" jdbcType="VARCHAR" />
+		<result column="corp_id" property="corpId" jdbcType="INTEGER" />
+		<result column="role_id" property="roleId" jdbcType="INTEGER" />
+		<result column="password" property="password" jdbcType="CHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="true_name" property="trueName" jdbcType="VARCHAR" />
+		<result column="phone" property="phone" jdbcType="VARCHAR" />
+		<result column="job" property="job" jdbcType="VARCHAR" />
+		<result column="rand_code" property="randCode" jdbcType="VARCHAR" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="expire_time" property="expireTime" jdbcType="TIMESTAMP" />
+		<result column="moderate" property="moderate" jdbcType="INTEGER" />
+		<result column="open_sms" property="openSms" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		u.user_id,u.corp_id,u.role_id,u.password,u.email,u.true_name,u.phone,u.job,rand_code,u.status,
+		u.create_time,u.update_time,u.expire_time,u.moderate,u.open_sms
+	</sql>
+	
+	<sql id="where">
+		WHERE 1=1
+		<if test="userId != null">
+			AND u.user_id like concat('%',#{userId},'%')
+		</if>
+		<if test="trueName != null">
+			AND u.true_name like concat('%',#{trueName},'%')
+		</if>
+		<if test="status != null">
+			AND u.status in <foreach collection="status" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+		</if>
+		<if test="singleStatus != null">
+			AND u.status = #{singleStatus}
+		</if>
+		 
+		<if test="roleIds != null">
+			AND u.role_id in <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">#{roleId}</foreach>
+		</if>
+		  
+		<if test="roleId != null">
+			AND u.role_id = #{roleId} 
+		</if>  
+		 
+		<if test="beginTimeStr != null">
+			<![CDATA[
+			AND	date_format(u.create_time, '%Y-%m-%d') >= date_format(#{beginTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTimeStr != null">
+			<![CDATA[
+			AND	date_format(u.create_time, '%Y-%m-%d') <= date_format(#{endTimeStr}, '%Y-%m-%d')
+			]]>
+		</if>
+		<if test="companyName != null">
+			AND c.company like concat('%', #{companyName}, '%')
+		</if>
+		<choose>
+			<when test="cosId != null and cosId !='10000000' and cosId != '11111111'">
+				AND c.cos_id = #{cosId}
+			</when>
+			<when test="cosId != null and cosId =='10000000'">
+				AND s.type = 0
+			</when>
+			<when test="cosId != null and cosId =='11111111'">
+				AND s.type = 1
+			</when>
+		</choose>
+		<if test="way != null">
+			<if test="way=='custom'">
+				AND (c.way != 'system' or c.way is null or c.way = '')
+			</if>
+			<if test="way=='system'">
+				AND c.way = 'system'
+			</if>
+		</if>
+		<if test="formalId != null">
+			AND c.formal_id = #{formalId}
+		</if>
+		<if test="types != null">
+			and r.type in <foreach collection="types" item="type" open="(" close=")" separator=",">#{type}</foreach>
+		</if>
+		<if test="corpPath != null">
+			AND c.corp_path like concat('%',#{corpPath},'%')
+		</if>
+		 
+	</sql>
+	
+	<!-- 根据用户id查询用户 -->
+	<select id="selectByUserId" resultMap="User" parameterType="java.lang.String">
+		SELECT
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		user_id = #{userId}
+	</select>
+	
+	<select id="selectUsers" resultMap="User" parameterType="java.util.Map">
+		SELECT
+		(select count(*) 
+			from user 
+			where status = 1 
+			and role_id in (2,3)
+			and corp_id = c.corp_id) subUserCount,
+		c.way way,
+		c.company company,
+		c.audit_path auditPath,
+		c.formal_id formalId,
+		c.contact contact,
+		s.cos_name cosName,
+		r.role_name roleName,
+		<include refid="base_columns"/>
+		FROM user u
+		LEFT JOIN corp c ON c.corp_id = u.corp_id
+		LEFT JOIN class_of_service s ON s.cos_id = c.cos_id
+		LEFT JOIN role r ON r.id = u.role_id
+		<include refid="where"/>
+		AND c.status in <foreach collection="status" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+		order by u.update_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectUsersCount" resultType="java.lang.Long" parameterType="java.util.Map">
+		SELECT
+		COUNT(*)
+		FROM user u
+		LEFT JOIN corp c ON c.corp_id = u.corp_id
+		LEFT JOIN class_of_service s ON s.cos_id = c.cos_id
+		LEFT JOIN role r ON r.id = u.role_id
+		<include refid="where"/>
+		AND c.status in <foreach collection="status" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+	</select>
+	
+	<!-- 更新状态 -->
+	<update id="updateUserStatus" parameterType="java.util.Map">
+		UPDATE user u
+		SET u.status = #{status}
+		WHERE 
+		u.status != 3 AND u.corp_id = #{corpId}
+	</update>		
+	
+	<insert id="insertUser" parameterType="cn.edm.domain.User">
+		insert into user(
+			user_id,
+			corp_id,
+			role_id,
+			password,
+			email,
+			true_name,
+			phone,
+			job,
+			rand_code,
+			open_sms,
+			status,
+			create_time,
+			update_time,
+			expire_time,
+			moderate
+		)values(
+			#{userId},
+			#{corpId},
+			#{roleId},
+			#{password},
+			#{email},
+			#{trueName},
+			#{phone},
+			#{job},
+			#{randCode},
+			#{openSms},
+			#{status},
+			#{createTime},
+			#{updateTime},
+			#{expireTime},
+			#{moderate}
+		)
+	</insert>
+	
+	<update id="updateUser" parameterType="cn.edm.domain.User">
+		update user set
+			corp_id = #{corpId},
+			role_id = #{roleId},
+			password = #{password},
+			email = #{email},
+			true_name = #{trueName},
+			phone = #{phone},
+			job = #{job},
+			rand_code = #{randCode},
+			open_sms = #{openSms},
+			status = #{status},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			expire_time =#{expireTime},
+			moderate =#{moderate}
+		where user_id = #{userId} and status != 3
+	</update>
+	
+	<select id="selectByCorpIdAndRoleId" resultMap="User" parameterType="java.util.Map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		corp_id = #{corpId}
+		AND role_id = #{roleId}
+		limit 1
+	</select>
+	
+	<select id="selectUsersByCorpIdAndRoleId" resultType="java.lang.Long" parameterType="java.util.Map">
+	    SELECT 
+	    COUNT(*)
+		FROM user u 
+		LEFT JOIN role r ON u.role_id = r.id 
+		WHERE 
+		u.corp_id = #{corpId}
+		AND r.type = #{type}
+	</select>
+	
+	
+	<select id="selectResourceList" resultMap="User" parameterType="java.util.Map">
+		SELECT
+		c.cos_id cosId,
+		c.way way,
+		c.corp_path corpPath,
+		c.formal_id formalId,
+		s.cos_name cosName,
+		<include refid="base_columns"/>
+		FROM user u
+		LEFT JOIN corp c ON c.corp_id = u.corp_id
+		LEFT JOIN class_of_service s ON s.cos_id = c.cos_id
+		LEFT JOIN role r ON r.id = u.role_id
+		<include refid="where"/>
+		order by u.create_time desc
+		limit #{startIndex}, #{pageSize}
+	</select>
+	
+	<select id="selectResourceCount" resultType="java.lang.Long" parameterType="java.util.Map">
+		SELECT
+		COUNT(*)
+		FROM user u
+		LEFT JOIN corp c ON c.corp_id = u.corp_id
+		LEFT JOIN class_of_service s ON s.cos_id = c.cos_id
+		LEFT JOIN role r ON r.id = u.role_id
+		<include refid="where"/>
+	</select>
+	
+	<select id="selectByRoleId" resultMap="User" parameterType="int">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		role_id = #{roleId}
+		LIMIT 1
+	</select>
+	
+	<!-- 更新状态 -->
+	<update id="updateStatusByUserId" parameterType="java.util.Map">
+		UPDATE user u
+		SET u.status = #{status}
+		WHERE 
+		u.status != 3 AND u.user_id = #{userId}
+	</update>
+	
+	<select id="selectByEmail" resultMap="User" parameterType="string">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		u.email = #{email}
+		LIMIT 1
+	</select>
+	
+	<select id="selectByCorpId" resultMap="User" parameterType="int">
+		select
+		u.user_id userId
+		from user u
+		where u.status = 1 
+		and u.role_id in (2,3)
+		and u.corp_id = #{corpId}
+	</select>
+	
+	
+	<select id="selectByEmailAndUserId" resultMap="User" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		u.email = #{email}
+		AND u.user_id != #{userId}
+		LIMIT 1
+	</select>
+	
+	<select id="selectByUserIdAndRoleId" resultMap="User" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		u.user_id = #{userId}
+		AND 
+		u.role_id = #{roleId}
+	</select>
+	
+	<!-- 删除账号相关信息 -->
+	<delete id="deleteByUserId" parameterType="java.lang.String">
+	    DELETE FROM user WHERE user_id = #{userId};
+	</delete>
+	<delete id="deleteCampaignByUserId" parameterType="java.lang.String">
+	    DELETE FROM campaign WHERE user_id = #{userId};
+	</delete>
+	<delete id="deleteCategoryByUserId" parameterType="java.lang.String">
+	    DELETE FROM category WHERE user_id = #{userId};
+	</delete>
+	<delete id="deleteCopyRecipientTriggerByUserId" parameterType="java.lang.String">
+	    DELETE FROM copy_recipient_trigger WHERE user_id = #{userId};
+	</delete>
+	
+	<delete id="deleteCopyTagTriggerByUserId" parameterType="java.lang.String">
+	    DELETE FROM copy_tag_trigger WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteFileByUserId" parameterType="java.lang.String">
+	    DELETE FROM file WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteFilterByUserId" parameterType="java.lang.String">
+	    DELETE FROM filter WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteFormByUserId" parameterType="java.lang.String">
+	    DELETE FROM form WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteLoginHistoryByUserId" parameterType="java.lang.String">
+	    DELETE FROM login_history WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deletePlanByUserId" parameterType="java.lang.String">
+	    DELETE FROM plan WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deletePropByUserId" parameterType="java.lang.String">
+	    DELETE FROM prop WHERE user_id = #{userId};
+	</delete>	
+	
+	<delete id="deleteRecipientByUserId" parameterType="java.lang.String">
+	    DELETE FROM recipient WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteSelectionByUserId" parameterType="java.lang.String">
+	    DELETE FROM selection WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteSenderByUserId" parameterType="java.lang.String">
+	    DELETE FROM sender WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteTagByUserId" parameterType="java.lang.String">
+	    DELETE FROM tag WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteTaskByUserId" parameterType="java.lang.String">
+	    DELETE FROM task WHERE user_id = #{userId};
+	</delete>	
+	
+	<delete id="deleteTemplateByUserId" parameterType="java.lang.String">
+	    DELETE FROM template WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteTemplateSettingByUserId" parameterType="java.lang.String">
+	    DELETE FROM template_setting WHERE user_id = #{userId};	
+	</delete>	
+	<delete id="deleteTouchByUserId" parameterType="java.lang.String">
+	    DELETE FROM touch WHERE user_id = #{userId};
+	</delete>	
+	<delete id="deleteTrigerApiByUserId" parameterType="java.lang.String">
+	    DELETE FROM triger_api WHERE user_id = #{userId};
+	</delete>	
+
+	 
+	<select id="getSubUserByManagerId" resultMap="User" parameterType="java.lang.String">
+		SELECT
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		manager_id = #{managerId}
+	</select>
+	
+	<select id="selectAllUserByCorpId" resultMap="User" parameterType="java.lang.String">
+		SELECT
+		<include refid="base_columns"/>
+		FROM user u
+		WHERE 
+		corp_id = #{corpId}
+	</select>
+	 
+</mapper>
+
+

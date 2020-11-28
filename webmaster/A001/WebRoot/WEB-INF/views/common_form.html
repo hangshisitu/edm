@@ -1,0 +1,67 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	$('#common').ajaxForm({
+		url: '${m}',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json',
+		success: function(data) {
+			$(".msg_ul .err").html('');
+			location.reload();
+		},
+		error:function(){
+			$("#common .err").html('提交失败'); 
+		}
+	}); 
+}); 
+</script>
+
+<div style="width:400px" class="limiter">
+	<div class="pop_title">删除</div>
+	<div class="pop_content">
+		<form id="common" action="${m}" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<input type="hidden" name="action" value="${action}" />
+			<input type="hidden" name="${name}" value="${value}" />
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" style="" class="edit_tab">
+				<tbody>
+					<tr>
+						<td>
+							<strong>删除所选标签</strong>
+						</td>
+					</tr>
+					<tr>
+						<td>
+						
+						<#if checkedName??>
+						您确定${operate}“<span class="green">${checkedName}</span>”吗？${operate}后无法恢复。
+						<#else>
+						您确定${operate}${message}吗？${operate}后无法恢复。
+						</#if>
+						</td>
+					</tr>				
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tbody>
+					<tr>
+						<td width="75">&nbsp;</td>
+						<td><span class="err"></span>
+						<ul class="f_ul">
+							<li>
+								<input type="submit" value="确定" class="input_yes" />
+							</li>
+							<li>
+								<input type="button" value="取消" onclick="close_msg();" class="input_no" />
+							</li>
+						</ul></td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
+</div>

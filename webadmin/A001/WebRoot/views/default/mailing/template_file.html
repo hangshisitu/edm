@@ -1,0 +1,111 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	$('#file').ajaxForm({
+		url: '${ctx}/mailing/template/file',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: "html", 
+		timeout: 60000,
+		beforeSubmit: function(formData, jqForm, options) {
+			loading(".msg_content",".load_img_open");
+			$(".msg_ul .err").html(""); 
+			var form = jqForm[0]; 
+			if (!form.upload.value) {
+				$(".msg_ul .err").html("请选择需要上传的文件");
+				form.upload.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+			if(suff(form.upload.value, 'htm,html') == false){
+				$(".msg_ul .err").html("您选择的文件格式不正确");
+				form.upload.focus();
+				del_loading(".load_img_open");
+				return false;
+			}
+		},
+		success: function(data) {
+			var arr = data.split('---------- NextPart ----------');
+			var code = arr[0].split(':')[1];
+			var message = arr[1].split(':')[1];
+			var GB2312 = arr[2];
+			var UTF8 = arr[3];
+
+			codeResource={};
+			codeResource.UTF8=UTF8;
+			codeResource.GB2312=GB2312;
+			
+			if(code == 1 || code == 2) {
+			  if($('#pc').hasClass('now') || $('#pc').length < 1){
+				if (eModel == "WYSIWYG") {
+					K.html(UTF8);
+				} else {
+					$("#templateContent").val(UTF8);
+				}
+			   }else if($('#phone').hasClass('now')){				   
+					if (eModelPhone == "WYSIWYG") {
+						K1.html(UTF8);
+					} else {
+						$("#phoneContent").val(UTF8);
+					}				   
+			   }
+				
+				del_loading(".load_img_open");
+				close_msg();
+
+				if (code == 1) {
+					error_message(message);
+				} else {
+					error_message(message, 1);
+				}
+				if($('#pc').hasClass('now') || $('#pc').length < 1){
+					openSlideBox("#workMode","#codeTips",60,"right");
+				}
+				
+				if($('#phone').hasClass('now')){
+					openSlideBox("#phone_workMode","#codeTips",60,"right");
+				}
+				
+			 } else {
+				 $(".msg_ul .err").html(message); 
+				 del_loading(".load_img_open");
+			 }
+		},
+		error: function(e) {
+			$(".msg_ul .err").html("上传文件超时"); 
+			del_loading(".load_img_open");
+		}
+	}); 
+});
+
+</script>
+<form id="file" action="${ctx}/mailing/template/file" method="post" enctype="multipart/form-data">
+	<input type="hidden" name="token" value="${token}" />
+	<div class="msg_content">
+		<h1 class="title">上传文件</h1>
+		<ul class="msg_ul">
+			<li>请选择需要上传的文件<span class="f666">（只能上传文件格式：htm和html）</span></li>
+			<li>
+				<div class="file_tank">
+					<input type="file" class="file" onchange="getFilePath(this)" name="upload" size="1" maxlength="60" />
+					<div class="fake_file">
+						<input type="text" class="file_txt" id="file_txt" readonly="true"/>
+						<span class="select_file">浏览...</span>
+					</div>
+				</div>
+			</li>
+			<li class="err"></li>
+		</ul>
+		<div class="msg_foot m_t20 clearfix">
+			<ul class='f_l load_img_open'>
+			<li><img src="/static/img/loading2.gif"  /></li>
+			</ul>
+			<ul class="msg_btn">
+				<li><input type="submit" value="确定" class="input_yes" /></li>
+				<li><input type="button" value="取消" class="input_no" onclick="close_msg()" /></li>
+			</ul>
+		</div>
+	</div>
+</form>

@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" ?>
+<project name="EDM" default="makewar" basedir=".">
+	
+	<property environment="env"></property>
+	<property name="build" location="${basedir}/build"></property>
+	<property name="edm.src.dir" location="${basedir}/src/cn/edm"/>
+	<property name="edm.web.dir" location="${basedir}/WebRoot/WEB-INF"/>
+	<property name="edm.file.dir" location="${build}/edm"></property>
+	<property name="edm.build.dir" location="${edm.file.dir}/WEB-INF/classes"></property>
+	<!--<property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter" />-->
+	
+    <path id="edm.classpath">
+         <fileset dir="${edm.web.dir}/lib">
+		<include name="*.jar" />
+	 </fileset>
+    </path>    
+	
+    <target name="copy">
+        <delete dir="${build}" quiet="true" />
+		<mkdir dir="${build}/edm"/>
+		<mkdir dir="${build}/temp"/>
+		
+		<copy todir="${build}/edm">     
+        	<fileset dir="${basedir}/WebRoot"> 
+           	</fileset>	
+    	</copy> 
+		
+		<copy todir="${build}/temp">     
+        	<fileset dir="WebRoot/WEB-INF/build">			
+				<exclude name="cn/**"/>
+				<!--<exclude name="test/**"/>-->
+				<exclude name="app.properties"/>
+				<exclude name="logback.xml"/>
+			</fileset>
+		</copy>
+		
+		<!--<copy todir="${edm.build.dir}">     
+        	<fileset dir="${basedir}/resources">  
+			<exclude name="app.properties"/>
+			<exclude name="logback.xml"/>
+			</fileset>	
+    	</copy>-->
+		
+		<mkdir dir="${edm.build.dir}/cn/edm/model/mapper"/>
+		<copy todir="${edm.build.dir}/cn/edm/model/mapper">     
+        	<fileset dir="${edm.src.dir}/model/mapper"/>     
+    	</copy> 
+		
+		<mkdir dir="${edm.src.dir}/modules"/>
+		<copy todir="${edm.src.dir}/modules">     
+        	<fileset dir="${basedir}/core/cn/edm/modules"/>     
+    	</copy> 
+		
+    </target>
+
+    <target name="compile" depends="copy">
+        <mkdir dir="${edm.file.dir}/WEB-INF/classes"/>
+        <javac includeAntRuntime="false" encoding="utf-8" debug="true" srcdir="${edm.src.dir}" destdir="${edm.build.dir}" >
+        <classpath refid="edm.classpath" />
+        </javac> 
+		
+		<copy todir="${edm.build.dir}">     
+        	<fileset dir="${build}/temp">			
+			</fileset>
+		</copy>		
+		
+	   <delete dir="${edm.file.dir}/WEB-INF/build" quiet="true" />
+	   
+    </target>
+  	
+    <target name="makewar" depends="compile">  
+        <war warfile="${build}/edm.war" basedir="${edm.file.dir}" webxml="${edm.web.dir}/web.xml" > 
+        <lib dir="${edm.web.dir}/lib">  
+        </lib>  
+        </war> 
+   </target>
+	
+</project>
+   
+    
+    

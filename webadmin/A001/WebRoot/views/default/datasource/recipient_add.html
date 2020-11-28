@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 收件人</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.recipient.add.js?${version}"></script>
+<script type="text/javascript">
+	var props = new Array(
+		["", "请选择"]<#if propList?size gt 0>,</#if>
+		<#list propList as p>
+		["${xss.filter(p.propName)}", "${xss.filter(p.propName)}"]<#if p_has_next>,</#if>
+		</#list>
+	);
+	var _ids = new Array();
+	
+	var prop_text = "";
+	
+	var catedata = {
+		<#list groupMap?keys as k>
+			"${xss.filter(k)}": [
+				<#list groupMap[k] as t>
+					{"id": ${t.tagId}, "title": "${xss.filter(t.tagName)}（${t.emailCount}）","count": ${t.emailCount}}
+					<#if t_has_next>,</#if>
+				</#list>
+			]
+			<#if k_has_next>,</#if>
+		</#list>
+	};
+	var category_list = new Array(<#list categoryList as c>[${c.categoryId}, "${xss.filter(c.categoryName)}"]<#if c_has_next>,</#if></#list>);
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+	<h1 class="title border_b"><#if recipient.email != "">修改<#else>新建</#if>收件人</h1>
+		<#if parameterMap?size == 1 && parameterMap[""]??>
+			<#assign props_swt = "swtclose" />
+			<#assign props_css = "display: none;" />
+		</#if>
+		<form id="add" action="add" method="post">
+			<input type="hidden" name="token" value="${token}" />
+			<#if recipient.email != "">
+			<input type="hidden" name="orgTagId" value="${tagId}" />
+			</#if>
+			<input type="hidden" name="orgEmail" value="${xss.filter(recipient.email)}" />
+			<table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+            	<tr>
+                    <td width="150" align="right">邮箱地址：</td>
+                    <td width="10" class="red">*</td>
+                    <td width="370">
+                    	<input type="text" id="email" class="add_text" name="email" value="${xss.filter(recipient.email)}" />
+                    </td>
+                   	<td></td>
+                </tr>
+                <tr>
+                    <td align="right">所属标签：</td>
+                    <td class="red">*</td>
+                    <td>
+                    	<textarea class="add_area rad_area" id="tag" style="width:340px;"></textarea>
+                   		<input type="hidden" id="tagId" name="tagId" value="${tagId}" />
+                    </td>
+                    <td>
+						<a id="customMore" class="swtbtn ${props_swt?default('swtpand')}" href="javascript:void(0)">自定义信息</a>
+                    </td>
+                </tr>
+			</table>
+			<table id="props" width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table" style="${props_css?default('')}">
+                <#assign i = 0 />
+                <#list parameterMap?keys as k>
+                <#assign prop_css = "" />
+                <#if isForm && !formMap[k]??>
+                	<#assign prop_css = "display: none;" />
+                </#if>
+                <tr style="${prop_css}">
+                    <td width="150" align="right">
+                    	<#if isForm>
+                    	<input type="text" value="${xss.filter(k)}" disabled="disabled" />
+                    	<#else>
+                    	<a id="prop_list_${i}" class="a_select" style="width:100px"><#if k == "">请选择<#else>${xss.filter(k)}</#if></a>
+                    	</#if>
+                    	<input type="hidden" class="i_select" id="prop_${i}" name="prop_${i}" value="${xss.filter(k)}" />
+                    </td>
+                    <td width="10" class="red"></td>
+                    <td width="370">
+                    	<input type="text" id="parameter_${i}" class="add_text" name="parameter_${i}" value="${xss.filter(parameterMap[k])}" />
+                    </td>
+                   	<td>
+                   		<#if isForm>
+                   		<span>&nbsp;</span>
+                   		<#else>
+                   		<#if i == 0>
+                   		<span class="add_set" title='添加' onclick="add_prop()"></span>
+                   		<#else>
+                   		<span class="del_set" title='删除' onclick="del_prop(${i})"></span>
+                   		</#if>
+                   		</#if>
+                   	</td>
+                </tr>
+                <#assign i = i + 1 />
+                </#list>
+			</table>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t10">
+                <tr>
+                    <td align="right" width="160">&nbsp;</td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input class="input_yes" type="submit" value="确定" /></li>
+                            <#assign referer = "/datasource/recipient/page?m=" + m + "&tagId=" + tagId />
+                            <#if m == "tag">
+                            	<#assign referer = "/datasource/tag/page" />
+                            </#if>
+                            <li><input class="input_no" type="button" value="返回" onclick="location.assign('${referer}')" /></li>
+							<li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </form>
+	</div>
+</div>
+
+<div class="searchBox" id="slideSearch" style="display:none">
+	<div class="limiter" style="width:360px">
+		<div class="pop_content">
+			<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+			<div class="search_result"></div>
+			<div class="oprate_pad">
+				<p class="select_foot">
+					<a class="highlight f_l" href="javascript:open_msg('${ctx}/datasource/tag/add?action=recipient',0);">新建标签</a>
+					<a class="highlight f_r" href="javascript:reloadSearch('#tag');">刷新</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="select_div"></div>
+</body>
+</html>

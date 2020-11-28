@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.OsMapper">
+	
+	<resultMap id="Os" type="cn.edm.domain.Os">
+		<result column="corp_id" property="corpId"/>
+		<result column="task_id" property="taskId"/>
+		<result column="template_id" property="templateId"/>
+		<result column="os" property="os"/>
+		<result column="open_count" property="openCount" />
+		<result column="click_count" property="clickCount" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		corp_id,task_id,template_id,os,open_count,click_count
+	</sql>
+	
+	<select id="selectOs" parameterType="Integer" resultMap="Os">
+		SELECT 
+		r.os,
+		SUM(r.open_count) open_count,
+		SUM(r.click_count) click_count
+		FROM result_by_os r
+		LEFT JOIN  task t
+		ON r.corp_id=t.corp_id
+		AND r.task_id=t.task_id
+		WHERE t.type in (0,4)
+		AND t.campaign_id = #{campaignId}
+		AND t.task_status IN (26,27)
+		GROUP BY r.os
+	</select>
+	
+</mapper>
+
+

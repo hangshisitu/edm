@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 表单</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/datasource.form.add.js?${version}"></script>
+<script type="text/javascript">
+	var category_list = new Array(
+		[${category.categoryId}, "${xss.filter(category.categoryName)}"]
+	);
+	var catedata = [
+	<#list tagList as t> 
+	{"id":"${t.tagId}", "title":"${xss.filter(t.tagName)}（${t.emailCount}）","count": "${t.emailCount}"}<#if t_has_next>,</#if>
+	</#list>
+	];
+</script>
+</head>
+<body>
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix ">
+	<#include "/left.html" />
+	<div id="main"  class="clearfix">
+		<h1 class="title border_b"><#if form.formId??>修改<#else>新建</#if>表单&nbsp;&nbsp;<span>设置表单基础信息</span></h1>
+		<form id="add" action="add" method="post" AUTOCOMPLETE="OFF">
+			<input type="hidden" name="token" value="${xss.filter(token)}" />
+			<input type="hidden" name="formId" value="${form.formId}" />
+            <table width="100%"  border="0" cellspacing="0" cellpadding="0" class="user_table  m_t20">
+        		<tr>
+                    <td width="100" align="right">表单名称：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="400">
+                   		<input type="text" class="task_text" id="formName" name="formName" value="${xss.filter(form.formName)}" maxlength="20" />
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+        		<tr>
+                    <td width="100" align="right">表单用途：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="400">
+                   		<input type="text" class="task_text" id="formDesc" name="formDesc" value="${xss.filter(form.formDesc)}" maxlength="100" />
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+        		<tr class="ltrow">
+                    <td colspan="2"></td>
+                   	<td colspan="2">
+                   		<label>请简要填写，如：<span class='highlight'>惠美家居账号注册</span>、<span class='highlight'>一趣网资讯订阅</span>等。将在验证邮件中使用。</label>
+                   	</td>
+           		</tr>
+           		<tr>
+                    <td width="100" align="right">表单类型：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="400">
+                   		<#if form.formId??>
+                   		<input type="text" class="task_text" value="${view.form_type(form.type?default(0))}" disabled="disabled" />
+                   		<#else>
+                   		<a class="a_select" id="form_list" style="width:370px" ></a>
+                   		</#if>
+                   		<input type="hidden" id="formType" name="type" value="${form.type?default(0)}" />
+                   	</td>
+                   	<td>
+                   		<#if form.emailConfirm == 1 || form.emailPrompt == 1>
+			            	<#assign more_css = "" />
+			            	<#assign swt_css = "swtpand" />
+			            </#if>
+                   		<a id="formMore" class="swtbtn ${swt_css?default('swtclose')}" href="javascript:void(0)">高级选项</a>
+                   	</td>
+           		</tr>
+           		<tr class="sperow" id='moreTank' style="${more_css?default('display:none')}">
+                	<td colspan="2"></td>
+                    <td valign="top" colspan="2">
+                    	<#assign confirm_css = "display: none;" />
+                   		<#assign confirm_on = "" />
+                   		<#assign confirm_off = "checked='checked'" />
+                   		<#if (form.type == 0 || form.type == 1) && form.emailConfirm == 1>
+                   			<#assign confirm_css = "" />
+                    		<#assign confirm_on = "checked='checked'" />
+                    		<#assign confirm_off = "" />
+                   		</#if>
+                   		<div id="confirm" style="${confirm_css}">
+	                   		<p id="confirm_txt" class="clearfix"></p>
+	                   		<label for="confirm_on"><input type="radio" id="confirm_on" class="df_input" name="emailConfirm" value="1" ${confirm_on} />&nbsp;需要&nbsp;&nbsp;</label>
+	                   		<label for="confirm_off"><input type="radio" id="confirm_off" class="df_input" name="emailConfirm" value="0" ${confirm_off} />&nbsp;不需要&nbsp;&nbsp;</label>
+							<br />
+						</div>
+						<#assign prompt_on = "" />
+                   		<#assign prompt_off = "checked='checked'" />
+                   		<#if form.emailPrompt == 1>
+                    		<#assign prompt_on = "checked='checked'" />
+                    		<#assign prompt_off = "" />
+                   		</#if>
+                   		<div id="prompt">
+	                   		<p id="prompt_txt" class="clearfix"></p>
+	                   		<label for="prompt_on"><input type="radio" id="prompt_on" class="df_input" name="emailPrompt" value="1" ${prompt_on} />&nbsp;需要&nbsp;&nbsp;</label>
+	                   		<label for="prompt_off"><input type="radio" id="prompt_off" class="df_input" name="emailPrompt" value="0" ${prompt_off} />&nbsp;不需要&nbsp;&nbsp;</label>
+	                    	<div style='height:10px; clear:both'></div>
+                    	</div>
+                    </td>
+                </tr>
+           		<tr class="mul_cate">
+                    <td width="100" align="right">数据储存：</td>
+                    <td width="10" class="red">*</td>
+                   	<td width="400">
+                   		<textarea class="add_area rad_area" id="dataStore" name="dataStore" style="height:28px;width:370px;"></textarea>
+                   		<input type="hidden" id="dataStoreId" name="tagId" value="${form.tagId}" />
+                   	</td>
+                   	<td>&nbsp;</td>
+           		</tr>
+           		<tr class="ltrow">
+                    <td colspan="2"></td>
+                   	<td colspan="2">
+                   		<label>新建一个标签，将表单收集到的收件人数据存储到该标签中查询使用</label>
+                   	</td>
+           		</tr>
+            </table>
+            
+        	<table width="100%" border="0" cellspacing="0" cellpadding="0" class="user_table m_t20">
+                <tr>
+                	<td width="100" align="right"></td>
+                    <td width="10" class="red"></td>
+                    <td>
+                        <ul class="f_ul">
+                            <li><input type="button" id="smt" class="input_yes" value="确定"/></li>
+                            <li><input type="button" class="input_no" value="取消" onclick="location.href='page';" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </form>
+	</div>
+	</div>
+	<div class="searchBox" id="slideSearch" style="display:none">
+		<div class="limiter" style="width:390px">
+			<div class="pop_content">
+				<div class="search_box"><input type="text" class="search_input placehold" placeholder="输入搜索关键字" /></div>
+				<div class="search_result"></div>
+				<div class="oprate_pad">
+					<p class="select_foot"><a class="highlight f_l" href="javascript:open_msg('${ctx}/datasource/tag/add?action=form&categoryId=${category.categoryId}',0);">新建标签</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="popBox searchBox" id="confirmCancle" style="display:none;">
+		<div class="pop_close">X</div>
+		<div class="limiter" style="width:400px">
+			<div class="pop_title">编辑表单</div>
+			<div class="pop_content">
+				<div class='lft_pad'>表单已创建，请根据表单的使用流程设计对应的界面或邮件。</div>
+				<div class='cmt_wrap'>
+					<input class='input_yes' type="button" value='确定' onclick="closeDialog();$('#add').submit();" />
+					<input class='input_no' type="button" value='取消' onclick="closeDialog();" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="select_div"></div>
+</body>
+</html>

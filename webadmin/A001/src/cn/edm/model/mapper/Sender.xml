@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Sender">
+
+	<typeAlias alias="sender" type="cn.edm.model.Sender" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Sender.mapper">
+		s.corp_id corpId,
+		s.user_id userId,
+		s.sender_email senderEmail,
+		s.sender_name senderName,
+		s.required required,
+		s.rand_code randCode,
+		s.status status,
+		s.create_time createTime,
+		s.modify_time modifyTime
+	</sql>
+	
+	<sql id="Sender.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			s.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			s.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="senderEmail">
+			s.sender_email = #senderEmail#
+		</isNotNull>
+		<isNotNull prepend="and" property="required">
+			s.required = #required#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			s.status = #status#
+		</isNotNull>
+    </sql>
+	
+	<insert id="Sender.save" parameterClass="sender">
+		insert into sender (
+			corp_id,
+			user_id,
+			sender_email,
+			sender_name,
+			required,
+			rand_code,
+			status,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#senderEmail#,
+			#senderName#,
+			#required#,
+			#randCode#,
+			#status#,
+			now(),
+			now()
+		)
+	</insert>
+	
+	<update id="Sender.batchUpdate" parameterClass="mb">
+		update sender s set
+			s.required = 0
+		where s.corp_id = #corpId# and s.user_id = #userId#
+	</update>
+	
+	<update id="Sender.update" parameterClass="sender">
+		update sender s set
+			s.sender_name = #senderName#,
+			s.required = #required#,
+			s.rand_code = #randCode#,
+			s.status = #status#,
+			s.modify_time = now()
+		where s.corp_id = #corpId# and s.user_id = #userId# and s.sender_email = #senderEmail#
+	</update>
+	
+	<delete id="Sender.delete" parameterClass="mb">
+		delete from sender 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="senderEmail">
+				sender_email = #senderEmail#
+			</isNotNull>
+		</dynamic>
+	</delete>
+
+	<select id="Sender.query" parameterClass="mb" resultClass="sender">
+		select
+			<include refid="Sender.mapper" />
+		from sender s
+		<dynamic>
+			<include refid="Sender.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by s.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+	<select id="Sender.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from sender s
+		<dynamic>
+			<include refid="Sender.where" />
+		</dynamic>
+	</select>
+	
+</sqlMap>

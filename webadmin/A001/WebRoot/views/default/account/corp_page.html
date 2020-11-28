@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 子机构</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/account.corp.js?${version}"></script>
+<script>
+	var corp_list = [];
+</script>
+</head>
+
+<body>
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix ">
+	<#include "/left.html" />
+	<div id="main"  class="clearfix">
+		<h1 class="title"><span class="search_top f_r"><a class="search_hide" href="javascript:void(0)">查找</a></span>子机构&nbsp;&nbsp;<span>对子机构进行管理</span></h1>
+		<#if mb.search>
+			<#assign search_css = "" />
+		</#if>
+		<form id="page" action="page" method="get" onsubmit="return chkfrm_find();">
+			<ul class="search clearfix m_b10 ${search_css?default('no_display')}">
+				<li>子机构名</li>
+				<li>
+					<input type="text" name="company" value="${mb.company}" maxlength="20" />
+				</li>
+				<li>更新时间</li>
+				<li>
+					<input type="text" id="beginTime" class="date" name="beginTime" value="${mb.beginTime}" maxlength="10" />
+				</li>
+				<li>到</li>
+				<li>
+					<input type="text" id="endTime" class="date" name="endTime" value="${mb.endTime}" maxlength="10" />
+				</li>
+				<li>
+					<input type="submit" value="" class="search_but btn_icon" />
+				</li><li class="load_img"><img src="${ctx}/static/img/loading2.gif" /></li>
+			</ul>
+		</form>
+		<ul class="tab clearfix">
+			<li><a href="/account/user/page">子账号</a></li>
+			<li class="now"><a href="/account/corp/page">子机构</a></li>
+		</ul>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>3</span>个子机构</p>
+			</div>
+			<#if levelCount lt 6>
+			<ul class="btn">
+				<li><a href="javascript:void(0)" class="btn_icon btn_icon_add Jaddcorp">新建子机构</a></li>
+			</ul>
+			</#if>
+		</div>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0" class="main_table corp_table">
+			<tr>
+				<th width="12%">子机构名称</th>
+				<th>创建人</th>
+				<th>创建时间</th>
+				<th>更新时间</th>
+				<th width="16%">操作</th>
+			</tr>
+			<#list corpList as c>
+			<tr>
+				<td>
+					<input type="hidden" name="checkedIds" value="${c.corpId}" />
+					<a href="javascript:openPop('add?corpId=${c.corpId}',0);" title="${c.company}">${c.company}</a> 
+				</td>
+				<td>${c.managerId}</td>
+				<td>${c.createTime?datetime}</td>
+				<td>${c.modifyTime?datetime}</td>
+				<td class="edit">
+					<ul class="f_ul">
+						<li><a href="javascript:openPop('add?corpId=${c.corpId}',0);">修改</a></li>
+						<li><a href="javascript:open_msg('del?checkedIds=${c.corpId}',0);">删除</a></li>
+					</ul>
+				</td>
+			</tr>
+			</#list>
+		</table>
+		<#if !corpList?? || corpList?size == 0>
+			<div class="no_data">
+				<#if search>
+					没有匹配的机构列表！
+				<#else>
+					您还没有子机构<#if levelCount lt 6>，现在就<a href="javascript:void(0)" class="highlight Jaddcorp">创建</a>一个</#if>
+				</#if>
+			</div>
+		</#if>
+		<div class="ribbon clearfix">
+			<ul class="page"><li>&nbsp;</li></ul>
+		</div>
+	</div>
+</div>
+<div class="popBox" style="display: none;"></div>
+<div class="select_div"></div>
+</body>
+</html>

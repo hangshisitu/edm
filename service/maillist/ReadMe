@@ -1,0 +1,34 @@
+更新日志
+
+
+V2.5 2014-05-28
+
+  1) 新增投递任务优先级控制
+
+     - 编辑maillist的配置文件
+       新增/修改配置项 yxfile，设置任务优先级文件路径
+         e.g:  yxfile = "./yxtask.txt"
+
+     - 编辑脚本youxian.pl
+        根据生产环境，设置数据库信息
+        my $db   = "edm";             
+        my $host = "127.0.0.1:3306";
+        my $user = "web";
+        my $pwd  = "iedm";
+
+        设置任务优先级文件路径(使用完整全路径)
+        my $file = "yxtask.txt";
+
+     - 编辑crontab,增加定时加载任务优先级信息
+       e.g:  */5 * * * * perl youxian.pl >> /dev/null
+
+ VX.X 2014-12-01
+
+    1) youxian.pl脚本支持Oracle DB
+        my $user = "edm";
+        my $pwd = "edm";
+        my $connstr = "dbi:Oracle:edm";
+        # my $connstr = "dbi:mysql:edm:127.0.0.1:3306";
+
+      需要安装perl插件 DBD:Oracle
+      cpan install DBD::Oracle

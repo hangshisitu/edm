@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+	default-lazy-init="true">
+
+	<description>Quartz的本地Cron式执行任务配置</description>
+
+	<bean id="localQuartzScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" lazy-init="false">
+		<property name="triggers">
+			<list>
+				<ref bean="activeCronTrigger" />
+				<ref bean="cleanCronTrigger" />
+				<ref bean="taskCronTrigger" />
+				<ref bean="planCronTrigger" />
+				<ref bean="selectionCronTrigger" />
+				<ref bean="touchCronTrigger" />
+			</list>
+		</property>
+		<property name="quartzProperties">
+			<props>
+				<prop key="org.quartz.threadPool.threadCount">5</prop>
+			</props>
+		</property>
+		<property name="startupDelay" value="3" />
+	</bean>
+
+	<bean id="activeCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="activeDetail" />
+		<property name="cronExpression" value="0 0/15 * ? * *" />
+	</bean>
+	<bean id="cleanCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="cleanDetail" />
+		<property name="cronExpression" value="0 0 0/1 ? * *" />
+	</bean>
+	<bean id="taskCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="taskDetail" />
+		<property name="cronExpression" value="0 0/1 * ? * *" />
+	</bean>
+	<bean id="planCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="planDetail" />
+		<property name="cronExpression" value="0 0/1 * ? * *" />
+	</bean>
+	<bean id="selectionCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="selectionDetail" />
+		<property name="cronExpression" value="0 0/1 * ? * *" />
+	</bean>
+	<bean id="touchCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="touchDetail" />
+		<property name="cronExpression" value="0 0/1 * ? * *" />
+	</bean>
+	
+	<bean id="activeDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="activeJob" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="cleanDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="cleanJob" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="taskDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="taskJob" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="planDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="planJob" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="selectionDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="selectionJob" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	<bean id="touchDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="touchJob" />
+		<property name="targetMethod" value="execute" />
+		<property name="concurrent" value="false" />
+	</bean>
+	
+	<bean id="activeJob" class="cn.edm.app.schedule.ActiveJob" />
+	<bean id="cleanJob" class="cn.edm.app.schedule.CleanJob" />
+	<bean id="taskJob" class="cn.edm.app.schedule.TaskJob" />
+	<bean id="planJob" class="cn.edm.app.schedule.PlanJob" />
+	<bean id="selectionJob" class="cn.edm.app.schedule.SelectionJob" />
+	<bean id="touchJob" class="cn.edm.app.schedule.TouchJob" />
+	
+</beans>

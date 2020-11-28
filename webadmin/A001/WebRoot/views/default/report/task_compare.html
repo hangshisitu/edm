@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - <#if m == "join">API<#else>任务</#if></title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/highcharts/modules/funnel.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.task.compare.js?${version}"></script>
+<script type="text/javascript">
+	var names = ["发送总数", "成功总数", "打开人数", "点击人数", "退订人数"];
+	var datas = [
+	<#if resultList?? && resultList?size gt 0>
+	<#list resultList?reverse as t>
+		{ name: "${t.taskName}", data: [ ${t.sentCount?default(0)}, ${t.reachCount?default(0)}, ${t.readUserCount?default(0)}, ${t.clickUserCount?default(0)}, ${t.unsubscribeCount?default(0)}] }<#if t_has_next>,</#if>
+	</#list>
+	</#if>
+	];
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix" style="">
+		<h1 class="title">对比&nbsp;&nbsp;<span>对所选任务进行对比</span></h1>
+		<div class="ribbon clearfix">
+			<div class="note">
+				<p>共<span>${totalItems}</span>个任务</p>
+			</div>
+			<ul class="btn">
+				<li>
+					<a class="btn_icon btn_icon_imp" href="${ctx}/report/task/page?m=${m}">返回</a>
+				</li>
+			</ul>
+		</div>
+		<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+			<tbody>
+				<tr>
+					<th width="130">任务名称</th>
+					<th>发送总数</th>
+					<th>成功数</th>
+					<th>弹回数</th>
+					<th>打开人数</th>
+					<th>打开次数</th>
+					<th>点击人数</th>
+					<th>点击次数</th>
+					<th>退订人数</th>
+					<th>转发人数</th>
+					<th>无效人数</th>
+					<th>成功率</th>
+					<th>打开率</th>
+					<th>点击率</th>
+				</tr>
+				<#assign compare = false />
+				<#if resultList?? && resultList?size gt 0>
+					<#list resultList as t>
+					<#if !compare && t.sentCount?default(0) gt 0>
+						<#assign compare = true />
+					</#if>
+				<tr>
+					<td title="${xss.filter(t.taskName)}"><span class="color_grid"></span>${t.taskName}</td>
+					<td>${t.sentCount?default(0)}</td>
+					<td>${t.reachCount?default(0)}</td>
+					<td>${t.softBounceCount?default(0) + t.hardBounceCount?default(0)}</td>
+					<td>${t.readUserCount?default(0)}</td>
+					<td>${t.readCount?default(0)}</td>
+					<td>${t.clickUserCount?default(0)}</td>
+					<td>${t.clickCount?default(0)}</td>
+					<td>${t.unsubscribeCount?default(0)}</td>
+					<td>${t.forwardCount?default(0)}</td>
+					<td>${t.afterNoneCount?default(0)}</td>
+					<td>${view.result_reach(t.sentCount?default(0),t.reachCount?default(0),t.afterNoneCount?default(0))}&nbsp;%</td>
+					<td>${view.result_read(t.reachCount?default(0),t.readUserCount?default(0))}&nbsp;%</td>
+					<td>${view.result_click(t.readUserCount?default(0),t.clickUserCount?default(0))}&nbsp;%</td>
+				</tr>
+					</#list>
+				</#if>
+			</tbody>
+		</table>
+		<#if compare>
+		<div class="charts">
+			<div id="task_bar" style="width: 910px; height: 380px; margin: 0 auto;"></div>
+		</div>
+		<#else>
+		<div class="no_data">没有匹配的对比数据！</div>
+		</#if>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>

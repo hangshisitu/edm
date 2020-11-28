@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.CampaignMapper">
+	
+	<resultMap id="Campaign" type="cn.edm.domain.Campaign">
+		<id column="campaign_id" property="campaignId"/>
+		<result column="corp_id" property="corpId"/>
+		<result column="user_id" property="userId"/>
+		<result column="campaign_name" property="campaignName" />
+		<result column="campaign_desc" property="campaignDesc" />
+		<result column="create_time" property="createTime" />
+		<result column="modify_time" property="modifyTime" />
+	</resultMap>
+	
+	
+	<sql id="base_columns">
+		campaign_id,corp_id,user_id,campaign_name,campaign_desc,create_time,modify_time
+	</sql>
+	
+	<select id="selectById" parameterType="java.lang.Integer" resultMap="Campaign">
+		SELECT
+		<include refid="base_columns"/>
+		FROM campaign
+		WHERE 
+		campaign_id = #{campaignId}
+	</select>
+	
+	
+	<select id="selectTaskNumById" parameterType="java.lang.Integer" resultType="long">
+		SELECT COUNT(t.task_id) FROM task t RIGHT JOIN result r ON t.corp_id=r.corp_id AND t.task_id=r.task_id WHERE t.type in (0,4) AND t.campaign_id = #{campaignId} AND t.task_status in (26,27)
+	</select>
+	
+	<select id="selectLatestDeliveryTime" parameterType="java.lang.Integer" resultType="java.lang.String">
+		SELECT DATE_FORMAT(MAX(t.delivery_time),'%Y-%m-%d %T') FROM task t RIGHT JOIN result r ON t.corp_id=r.corp_id AND t.task_id=r.task_id
+		WHERE t.type in (0,4) AND t.campaign_id = #{campaignId} AND t.task_status IN (26,27)
+	</select>
+	
+	<delete id="delCampaignByUserId" parameterType="java.lang.String" >
+   		DELETE FROM campaign
+   		WHERE 
+   		user_id = #{userId}
+    </delete>
+	
+</mapper>
+
+

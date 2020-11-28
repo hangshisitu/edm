@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Label">
+
+	<typeAlias alias="label" type="cn.edm.model.Label" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Label.mapper">
+		l.label_id labelId,
+		l.parent_id parentId,
+		l.category_id categoryId,
+		l.label_name labelName,
+		l.label_desc labelDesc
+	</sql>
+	
+	<sql id="Label.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="labelId">
+			l.label_id = #labelId#
+		</isNotNull>
+		<isNotNull prepend="and" property="categoryId">
+			l.category_id = #categoryId#
+		</isNotNull>
+    </sql>
+	
+	<select id="Label.query" parameterClass="mb" resultClass="label">
+		select
+			<include refid="Label.mapper" />
+		from label l
+		<dynamic>
+			<include refid="Label.where" />
+			<isEqual property="orderBy" compareValue="categoryId">
+				order by l.category_id $order$
+			</isEqual>
+		</dynamic>
+	</select>
+
+</sqlMap>

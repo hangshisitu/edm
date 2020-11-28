@@ -1,0 +1,74 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	$('#add').ajaxForm({
+		url: 'add',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(".msg_content",".load_img_open");
+			var form = jqForm[0]; 
+			if (!form.fileName.value) {
+				$(".msg_ul .err").html("请输入文件名称");
+				form.fileName.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				$("input[name=checkedIds]").each(function(i) {
+					if($(this).val() == data.fileId) {
+						$(this).closest('tr').children("td:eq(1)").children("a").html(data.fileName).attr("title",data.fileName);
+						$(this).closest('tr').children("td:eq(2)").html(data.fileDesc).attr("title",data.fileDesc);
+						$(this).closest('tr').children("td:eq(7)").html(data.modifyTime);
+					}
+				});
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);		
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			} 
+		}   
+	}); 
+});
+</script>
+
+<div class="msg_content clearfix">
+<h1 class="title"><#if file.fileId??>修改<#else>上传</#if>文件</h1>
+<form id="add" action="add" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="fileId" value="${file.fileId}" />
+	<input type="hidden" name="orgFileName" value="${xss.filter(file.fileName)}" />
+	<ul class="msg_ul">
+		<li>文件名称<span class="f666">（必填）</span></li>
+		<li><input type="text" name="fileName" value="${xss.filter(file.fileName)}" class="msg_txt" maxlength="20" /></li>
+		<li>文件描述</li>
+		<li>
+			<textarea class="msg_txt desc_area" name="fileDesc" value="${xss.filter(file.fileDesc)}">${xss.filter(file.fileDesc)}</textarea>
+		</li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+	
+	<ul class="f_l">
+		<li class="load_img_open"><img src="${ctx}/static/img/loading2.gif" /></li>
+	</ul>
+	
+	<ul class="msg_btn">
+		<li>
+			<input type="submit" value="确定" class="input_yes" />
+		</li>
+		<li>
+			<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+		</li>
+	</ul>
+	</div>
+</form>
+</div>

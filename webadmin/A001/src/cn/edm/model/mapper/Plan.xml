@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Plan">
+
+	<typeAlias alias="plan" type="cn.edm.model.Plan" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Plan.mapper">
+		p.plan_id planId,
+		p.corp_id corpId,
+		p.user_id userId,
+		p.cron cron,
+		p.begin_time beginTime,
+		p.end_time endTime
+	</sql>
+	
+	<sql id="Plan.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="last">
+			p.plan_id > #last#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			p.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpId">
+			p.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			p.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="planId">
+			p.plan_id = #planId#
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ p.begin_time <= concat(#beginTime#, ' 23:59:59') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ p.end_time >= concat(#endTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="planIds">
+			p.plan_id in <iterate property="planIds" open="(" close=")" conjunction=",">#planIds[]#</iterate>
+		</isNotNull>
+    </sql>
+	
+	<insert id="Plan.save" parameterClass="plan">
+		insert into plan (
+			corp_id,
+			user_id,
+			cron,
+			begin_time,
+			end_time
+		) values (
+			#corpId#,
+			#userId#,
+			#cron#,
+			#beginTime#,
+			#endTime#
+		)
+		<selectKey resultClass="Integer" keyProperty="planId">
+			select @@IDENTITY as plan_id
+		</selectKey>
+	</insert>
+	
+	<update id="Plan.update" parameterClass="plan">
+		update plan p set
+			p.corp_id = #corpId#,
+			p.cron = #cron#,
+			p.begin_time = #beginTime#,
+			p.end_time = #endTime#
+		where p.user_id = #userId# and p.plan_id = #planId#
+	</update>
+
+	<select id="Plan.query" parameterClass="mb" resultClass="plan">
+		select
+			<include refid="Plan.mapper" />
+		from plan p
+		<dynamic>
+			<include refid="Plan.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Plan.iter" parameterClass="mb" resultClass="plan">
+		select
+			<include refid="Plan.mapper" />
+		from plan p
+		<dynamic>
+			<include refid="Plan.where" />
+			order by p.plan_id asc
+		</dynamic>
+		limit #row#
+	</select>
+	
+	<select id="Plan.exclude" parameterClass="mb" resultClass="Integer">
+		select
+			p.plan_id planId
+		from plan p
+		inner join task t on p.plan_id = t.plan_id
+		<dynamic>
+			where t.task_status=27 and t.type=2
+			<isNotNull prepend="and" property="planId">
+				p.plan_id = #planId#
+			</isNotNull>
+		</dynamic>
+	</select>
+	
+</sqlMap>

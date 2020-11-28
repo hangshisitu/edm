@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Corp">
+
+	<typeAlias alias="corp" type="cn.edm.domain.Corp" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Corp.mapper">
+		c.corp_id corpId,
+		c.parent_id parentId,
+		c.corp_path corpPath,
+		c.cos_id cosId,
+		c.company company,
+		c.website website,
+		c.address address,
+		c.contact contact,
+		c.email email,
+		c.telephone telephone,
+		c.mobile mobile,
+		c.fax fax,
+		c.zip zip,
+		c.industry industry,
+		c.email_quantity emailQuantity,
+		c.send_quantity sendQuantity,
+		c.understand understand,
+		c.promise promise,
+		c.agreement agreement,
+		c.way way,
+		c.audit_path auditPath,
+		c.formal_id formalId,
+		c.tested_id testedId,
+		c.sender_validate senderValidate,
+		c.status status,
+		c.create_time createTime,
+		c.expire_time expireTime
+	</sql>
+	
+	<sql id="Corp.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			c.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="statuses">
+			c.status in <iterate property="statuses" open="(" close=")" conjunction=",">#statuses[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="roleId">
+			u.role_id = #roleId#
+		</isNotNull>
+    </sql>
+	
+	<insert id="Corp.save" parameterClass="corp">
+		insert into corp (
+			cos_id,
+			company,
+			website,
+			address,
+			contact,
+			email,
+			telephone,
+			mobile,
+			fax,
+			zip,
+			industry,
+			email_quantity,
+			send_quantity,
+			understand,
+			promise,
+			agreement,
+			way,
+			audit_path,
+			formal_id,
+			tested_id,
+			sender_validate,
+			status,
+			create_time,
+			expire_time
+		) values (
+			#cosId#,
+			#company#,
+			#website#,
+			#address#,
+			#contact#,
+			#email#,
+			#telephone#,
+			#mobile#,
+			#fax#,
+			#zip#,
+			#industry#,
+			#emailQuantity#,
+			#sendQuantity#,
+			#understand#,
+			#promise#,
+			#agreement#,
+			#way#,
+			#auditPath#,
+			#formalId#,
+			#testedId#,
+			#senderValidate#,
+			#status#,
+			now(),
+			null
+		)
+		<selectKey resultClass="Integer" keyProperty="corpId">
+			select @@IDENTITY as corp_id
+		</selectKey>
+	</insert>
+	
+	<update id="Corp.update" parameterClass="corp">
+		update corp c set
+			c.cos_id = #cosId#,
+			c.company = #company#,
+			c.website = #website#,
+			c.address = #address#,
+			c.contact = #contact#,
+			c.email = #email#,
+			c.telephone = #telephone#,
+			c.mobile = #mobile#,
+			c.fax = #fax#,
+			c.zip = #zip#,
+			c.industry = #industry#,
+			c.email_quantity = #emailQuantity#,
+			c.send_quantity = #sendQuantity#,
+			c.understand = #understand#,
+			c.promise = #promise#,
+			c.agreement = #agreement#,
+			c.way = #way#,
+			c.audit_path = #auditPath#,
+			c.formal_id = #formalId#,
+			c.tested_id = #testedId#,
+			c.sender_validate = #senderValidate#,
+			c.status = #status#,
+			c.expire_time = #expireTime#
+		where c.corp_id = #corpId#
+	</update>
+	
+	<select id="Corp.query" parameterClass="mb" resultClass="corp">
+		select
+			<include refid="Corp.mapper" />
+		from corp c
+		<dynamic>
+			<include refid="Corp.where" />
+			order by c.company asc
+		</dynamic>
+	</select>
+	
+	<select id="Corp.group" parameterClass="mb" resultClass="corp">
+		select
+			c.corp_id corpId,
+			c.company company
+		from corp c
+		inner join user u on u.corp_id = c.corp_id
+		<dynamic>
+			<include refid="Corp.where" />
+			group by c.corp_id
+		</dynamic>
+	</select>
+</sqlMap>

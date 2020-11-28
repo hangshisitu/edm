@@ -1,0 +1,39 @@
+package cn.edm.utils.web;
+
+import org.springframework.ui.ModelMap;
+
+import cn.edm.constant.Config;
+import cn.edm.constant.Value;
+import cn.edm.modules.orm.MapBean;
+import cn.edm.modules.utils.Props;
+
+public class Views {
+
+	public static String _404() {
+		return redirect("404");
+	}
+
+	public static String redirect(String result) {
+		result = Props.getStr(Config.APP_URL) + "/" + result;
+		return "redirect:" + result;
+	}
+	
+	public static void map(ModelMap map, String m, String action, String operate, String message, String name, Object value) {
+		map.put("m", m);
+		map.put("action", action);
+		map.put("operate", operate);
+		map.put("message", message);
+		map.put("name", name);
+		map.put("value", value);
+	}
+	
+	public static void ok(MapBean mb, String message) {
+		mb.put("code", Value.T);
+		mb.put("message", message);
+	}
+
+	public static void error(MapBean mb, String message) {
+		mb.put("code", Value.F);
+		mb.put("message", message);
+	}
+}

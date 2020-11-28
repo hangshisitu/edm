@@ -1,0 +1,75 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	$('#snatch').ajaxForm({
+		url: '${ctx}/datasource/form/snatch',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json', 
+		timeout: 30000,
+		beforeSubmit: function(formData, jqForm, options) {
+			loading(".msg_content",".load_img_open");
+			$(".msg_ul .err").html(""); 
+			var form = jqForm[0]; 
+			if (!form.snatchUrl.value || form.snatchUrl.value == "http://") {
+				$(".msg_ul .err").html("请输入网页地址") 
+				form.snatchUrl.focus();
+				del_loading(".load_img_open");
+				return false; 
+			}
+		},
+		success: function(data) { 
+			if (data.code == 1 || data.code == 2) {
+				codeResource=data;
+				
+				if (eModel == "WYSIWYG") {
+					K.html(data.UTF8);
+				} else {
+					$("#templateContent").val(data.UTF8);
+				}
+				del_loading(".load_img_open");
+				close_msg();
+				
+				if (data.code == 1) {
+					error_message(data.message);
+				} else {
+					error_message(data.message, 1);
+				}
+				
+				openSlideBox("#workMode","#codeTips",60,"right");
+			} else {
+				 $(".msg_ul .err").html(data.message); 
+				 del_loading(".load_img_open");
+			} 
+		},
+		error:function(){
+			$(".msg_ul .err").html("抓取网页失败"); 
+			del_loading(".load_img_open");
+		} 
+	}); 
+});
+
+</script>
+<div class="msg_content clearfix">
+<h1 class="title">抓取网页</h1>
+<form id="snatch" action="${ctx}/datasource/form/snatch" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="t" value="${t}" />
+	<ul class="msg_ul">
+		<li>网页地址<span class="f666">（请输入完整的URL地址）</span></li>
+		<li><input name="snatchUrl" type="text" value="http://" maxlength="256" class="msg_txt" /></li>
+		<li class="err"></li>
+	</ul>
+	<div class="msg_foot m_t20 clearfix">
+		<ul class='f_l load_img_open'>
+			<li><img src="/static/img/loading2.gif" /></li>
+		</ul>
+		<ul class="msg_btn">
+			<li><input type="submit" value="确定" class="input_yes" /></li>
+			<li><input type="button" value="取消" class="input_no" onclick="close_msg()" /></li>
+		</ul>
+	</div>
+</form>
+</div>

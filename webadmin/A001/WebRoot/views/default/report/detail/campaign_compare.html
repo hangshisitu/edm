@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/highcharts/modules/funnel.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.detail.compare.js?${version}"></script>
+<script type="text/javascript">
+	var cid = "${campaign.campaignId}";
+	var names = ["发送总数", "成功总数", "打开人数", "点击人数", "退订人数"];
+	var datas = [
+	<#if domainList?? && domainList?size gt 0>
+	<#list domainList?reverse as d>
+		{ name: "${d.compareName}", data: [ ${d.sentCount?default(0)}, ${d.reachCount?default(0)}, ${d.readUserCount?default(0)}, ${d.clickUserCount?default(0)}, ${d.unsubscribeCount?default(0)}] }<#if d_has_next>,</#if>
+	</#list>
+	</#if>
+	];
+	
+	var dateArr = [['','请选择']],seasonArr = [['','请选择']];
+	//生成月季数组
+	createDateArr();
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix posfix">
+		<div class="posfix">
+			<h1 class="title">对比&nbsp;&nbsp;<span>提供活动下周度、月度、季度投递数据的对比分析</span></h1>
+			<ul class="tab clearfix">
+				<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${campaign.campaignId}">概览</a></li>
+				<li><a href="${ctx}/report/detail/campaign/send?campaignId=${campaign.campaignId}">发送</a></li>
+				<li><a href="${ctx}/report/detail/campaign/open?campaignId=${campaign.campaignId}">打开</a></li>
+				<li><a href="${ctx}/report/detail/campaign/click?campaignId=${campaign.campaignId}">点击</a></li>
+				<li><a href="${ctx}/report/detail/campaign/domain?campaignId=${campaign.campaignId}">域名</a></li>
+				<li><a href="${ctx}/report/detail/campaign/region?campaignId=${campaign.campaignId}">地域</a></li>
+				<!-- <li><a href="${ctx}/report/detail/campaign/client?campaignId=${campaign.campaignId}">终端</a></li> -->
+				<li><a href="${ctx}/report/detail/campaign/history?campaignId=${campaign.campaignId}">历史</a></li>
+				<li class="now"><a href="${ctx}/report/detail/campaign/compare?campaignId=${campaign.campaignId}">对比</a></li>
+				<#if (campaign.touchCount)?if_exists gt 0>
+					<li><a href="${ctx}/report/detail/campaign/touch?campaignId=${campaign.campaignId}&templateId=110">触发</a></li>
+				</#if>
+			</ul>
+			<div class="ribbon clearfix">
+				<div class="note">
+					<p>共<span>${domainList?size}</span>个投递任务&nbsp;&nbsp;活动历时<span>${last}</span></p>
+				</div>
+				<ul class="btn">
+					<li>
+						<a id="period_list" class="but_select" style="width:80px;" href="javascript:void(0)"></a>
+						<input type="hidden" id="periodId" value="${m}" />
+					</li>
+					<li id='weekBox' class='prd_box none'>
+						<a id="week_list" class="but_select" style="width:80px;" href="javascript:void(0)"></a>
+						<input type="hidden" id="weekId" value="${recents?default(2)}" />
+					</li>
+					<li id='monthBox' class='prd_box none'>
+						<a id="month_list" class="but_select" style="width:80px;" href="javascript:void(0)"></a>
+						<input type="hidden" id="monthId" value="${recents?default(2)}" />
+					</li>
+					<li id='seasonBox' class='prd_box none'>
+						<a id="season_list" class="but_select" style="width:80px;" href="javascript:void(0)"></a>
+						<input type="hidden" id="seasonId" value="${recents?default(2)}" />
+					</li>
+					<#if _9>
+						<#if view.funcAuth('mailing/campaign/page', 6)>
+						<li><a class="btn_icon btn_icon_down" href="javascript:campaign_exports('${campaign.campaignId}');">导出</a></li>
+						</#if>
+					</#if>
+				</ul>
+			</div>
+			<#include "/default/report/detail/campaign.html" />
+			<#assign compare = false />
+			<#if recent?? && domainList?? && domainList?size gt 0>
+				<#list domainList as d>
+				<#if !compare && d.sentCount?default(0) gt 0>
+					<#assign compare = true />
+				</#if>
+				</#list>
+			</#if>	
+			<#if compare>
+			<div class="charts">
+				<div id="bar" style="width: 910px; height: 380px; margin: 0 auto;"></div>
+			</div>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+				<tbody>
+					<tr>
+						<th width="130">对比名称</th>
+						<th>发送总数</th>
+						<th>成功数</th>
+						<th>弹回数</th>
+						<th>打开人数</th>
+						<th>打开次数</th>
+						<th>点击人数</th>
+						<th>点击次数</th>
+						<th>退订人数</th>
+						<th>转发人数</th>
+						<th>无效人数</th>
+						<th>成功率</th>
+						<th>打开率</th>
+						<th>点击率</th>
+					</tr>
+					<#list domainList as d>
+					<tr>
+						<td title="${xss.filter(d.compareName)}"><span class="color_grid"></span>${d.compareName}</td>
+						<td>${d.sentCount?default(0)}</td>
+						<td>${d.reachCount?default(0)}</td>
+						<td>${d.softBounceCount?default(0) + d.hardBounceCount?default(0)}</td>
+						<td>${d.readUserCount?default(0)}</td>
+						<td>${d.readCount?default(0)}</td>
+						<td>${d.clickUserCount?default(0)}</td>
+						<td>${d.clickCount?default(0)}</td>
+						<td>${d.unsubscribeCount?default(0)}</td>
+						<td>${d.forwardCount?default(0)}</td>
+						<td>${d.afterNoneCount?default(0)}</td>
+						<td>${view.result_reach(d.sentCount?default(0),d.reachCount?default(0),d.afterNoneCount?default(0))}&nbsp;%</td>
+						<td>${view.result_read(d.reachCount?default(0),d.readUserCount?default(0))}&nbsp;%</td>
+						<td>${view.result_click(d.readUserCount?default(0),d.clickUserCount?default(0))}&nbsp;%</td>
+					</tr>
+					</#list>
+				</tbody>
+			</table>
+			<#else>
+			<div class="no_data">没有匹配的数据！</div>
+			</#if>
+		</div>
+	</div>
+</div>
+<div id="monthPad" class="popBox" style="display:none">
+	<div class="pop_close">X</div>
+	<div style="width:400px" class="limiter">
+		<div class="pop_title">其他月份数据对比</div>
+		<div class="pop_content">
+			<form class='setting' autocomplete="off">
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" style="" class="edit_tab">
+				<tbody>
+					<#if m == "month" && checkeds??>
+					<#assign months = checkeds?split(",") />
+					<#else>
+					<#assign months = [] />
+					</#if>
+					<#list [0, 1, 2, 3] as i>
+					<tr>
+						<td width="60">对比项${i + 1}</td>
+						<td width='10' class='red'><#if i lt 2>*<#else>&nbsp;</#if></td>
+						<td>
+							<a style="width:240px" id='m_list_${i}' class="a_select b_select">请选择</a>
+							<input type='hidden' id='m_${i}' name='mth' value="${months[i]}" />
+						</td>
+					</tr>
+					</#list>
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tbody>
+					<tr>
+						<td width="70">&nbsp;</td>
+						<td><span class="err"></span>
+						<ul class="f_ul">
+							<li>
+								<input type="button" value="对比" id="smt" class="input_yes" />
+							</li>
+							<li>
+								<input type="button" value="取消" onclick="closeDialog();" class="input_no" />
+							</li>
+						</ul></td>
+					</tr>
+				</tbody>
+			</table>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div id="seasonPad" class="popBox" style="display:none">
+	<div class="pop_close">X</div>
+	<div style="width:400px" class="limiter">
+		<div class="pop_title">其他季度数据对比</div>
+		<div class="pop_content">
+			<form class='setting' autocomplete="off">
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" style="" class="edit_tab">
+				<tbody>
+					<#if m == "season" && checkeds??>
+					<#assign seasons = checkeds?split(",") />
+					<#else>
+					<#assign seasons = [] />
+					</#if>
+					<#list [0, 1, 2, 3] as i>
+					<tr>
+						<td width="60">对比项${i + 1}</td>
+						<td width='10' class='red'><#if i lt 2>*<#else>&nbsp;</#if></td>
+						<td>
+							<a style="width:240px" id='s_list_${i}' class="a_select b_select">请选择</a>
+							<input type='hidden' id='s_${i}' name='sth' value="${seasons[i]}" />
+						</td>
+					</tr>
+					</#list>
+				</tbody>
+			</table>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<tbody>
+					<tr>
+						<td width="70">&nbsp;</td>
+						<td><span class="err"></span>
+						<ul class="f_ul">
+							<li>
+								<input type="button" value="对比" id="seasonBtn" class="input_yes" />
+							</li>
+							<li>
+								<input type="button" value="取消" onclick="closeDialog();" class="input_no" />
+							</li>
+						</ul></td>
+					</tr>
+				</tbody>
+			</table>
+			</form>
+		</div>
+	</div>
+</div>
+
+<div class="select_div"></div>
+</body>
+</html>

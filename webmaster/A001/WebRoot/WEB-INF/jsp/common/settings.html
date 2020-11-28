@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<title>${pageTitle} - 重置密码</title>
+	<#include "/common/meta.html" />
+	<link rel="stylesheet" type="text/css" href="${ctx}/static/styles/global.css?t=${version}" />
+	<link rel="stylesheet" type="text/css" href="${ctx}/static/styles/password.css?t=${version}" />
+    <script type="text/javascript" src="${ctx}/static/scripts/jquery/jquery-1.7.1.min.js?t=${version}"></script>
+	<script>
+		$(document).ready(function() { 
+			$('#submit').hover(function(){
+				$(this).css("background-image","url(${ctx}/static/images/pass_but1_2.png)"); 
+			},function(){
+				$(this).css("background-image","url(${ctx}/static/images/pass_but1.png)"); 
+			});
+			$('#reset').hover(function(){
+				$(this).css("background-image","url(${ctx}/static/images/pass_but2_2.png)"); 
+			},function(){
+				$(this).css("background-image","url(${ctx}/static/images/pass_but2.png)"); 
+			});
+		});
+
+		function chkfrm(obj){	
+			if (!obj.password.value) { 
+				$(".pass1_tit").html("* 请输入密码");
+				obj.password.focus();
+				$("input[name=password]").addClass("input_err"); 
+		        return false; 
+		    } else {
+				$(".pass1_tit").html("*");
+				$("input[name=password]").removeClass("input_err"); 
+			}
+			
+			if (!obj.passwordConfirm.value) { 
+				$(".pass2_tit").html("* 请输入密码确认");
+				obj.passwordConfirm.focus();
+				$("input[name=passwordConfirm]").addClass("input_err"); 
+		        return false; 
+		    } else {
+				if(obj.passwordConfirm.value == obj.password.value) {
+					$(".pass2_tit").html("*");
+					$("input[name=passwordConfirm]").removeClass("input_err"); 
+				} else {
+					$(".pass2_tit").html("* 二次输入的密码不相同");
+					$("input[name=passwordConfirm]").removeClass("input_err");
+					 return false; 
+				}
+			}
+		}
+	</script>
+</head>
+
+<body class="inx_body">
+	<div class="inx_top">
+		<div class="inx_maun"><a href="${website}" target="_blank">M.target官网</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="${website}/contact_us.php" target="_blank">联系我们</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="${website}/faq.php" target="_blank">帮助</a></div><a href="${website}" target="_blank" title="M.target官网" class="logo_mi"></a>
+	</div>
+
+	<div class="pass_main">
+		<div class="pass_maincen">
+			<h1 class="pass_h1">重置密码</h1>
+		</div>
+	</div>
+
+	<div class="pass_maincen">
+		<div class="pass_cut">
+			<h1>修改帐户密码<span>（请输入您的密码，我们会将重置密码。）</span></h1>
+			<form id="settings" name="settings" action="settings" method="post" onsubmit="return chkfrm(this);">
+				<input type="hidden" name="SID" value="${SID}" />
+				<input type="hidden" name="R" value="${R}" />
+				<ul>
+					<li class="f_l">用户名：</li>
+					<li>${userId}</li>
+					<li class="f_l">电子邮件：</li>
+					<li>${email}</li>
+					<li class="f_l">密码：</li>
+					<li><input name="password" type="password" class="pass" /><span class="redfont pass1_tit">*</span></li>
+					<li class="f_l">密码确认：</li>
+					<li><input name="passwordConfirm" type="password" class="pass" /><span class="redfont pass2_tit">*</span></li>
+					<li class="f_l" style="padding-top: 50px;"></li>
+					<li style="padding-top: 50px;"><input name="submit" type="submit" id="submit" value="提交" /><input name="reset" type="reset" id="reset" value="取消" /></li>
+				</ul>
+			</form>
+			<div class="clear"></div>
+		</div>
+	</div>
+
+ 	<div class="inx_bot">
+		mtarget.asia&nbsp;&nbsp;<a href="${website}/anti_spam.php?id=26">隐私与服务协议</a>&nbsp;&nbsp;<a href="${website}/anti_spam.php">反垃圾邮件政策</a>&nbsp;&nbsp;京ICP备11035441号
+	</div>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 设计模板</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+</head>
+<body>
+	<#include "/top.html" />
+	<div id="wrapper" class="clearfix ">
+	<#include "/left.html" />
+		<div id="main"  class="clearfix">
+			<h1 class="title border_b">${form.formName}</h1>
+			<form id="add" action="" method="post">
+				<input type="hidden" name="token" value="${xss.filter(token)}" />
+				<input type="hidden" name="formId" value="${form.formId}" />
+				<h3 class="fm_title">
+					<span class='f666'><#if form.status = 1>该表单已完成，可在设计邮件模板时，通过高级选项中的插入表单链接来使用<#else>该表单尚未完成，补充完全后才能使用</#if></span>
+				</h3>
+				<table border="0" cellspacing="0" cellpadding="0" class="m_t10 fm_table m_l20">
+					<tr>
+						<td width="70">表单类型</td>
+						<td class='special'>${view.form_type(form.type)}</td>
+					</tr>
+					<tr>
+						<td width="70">数据储存</td>
+						<td class='special'>
+							<a href='${ctx}/datasource/recipient/page?action=form.5&formId=${form.formId}&tagId=${tag.tagId}'>${xss.filter(tag.tagName)}</a>
+						</td>
+					</tr>
+					<tr>
+						<td width="70">设计界面</td>
+						<td class='special'>
+							<ul>
+								<#if view.form_path(form.inputPath)>
+								<li><a href="${ctx}/datasource/form/view?t=input&formId=${form.formId}&token=${xss.filter(token)}" target="_blank">表单填写界面</a></li>
+								<#else>
+								<li>表单填写界面&nbsp;<span class="red">待完成</span></li>
+								</#if>
+								
+								<#if view.form_path(form.submitPath)>
+								<li><a href="${ctx}/datasource/form/view?t=submit&formId=${form.formId}&token=${xss.filter(token)}" target="_blank">表单提交界面</a></li>
+								<#else>
+								<li>表单提交界面&nbsp;<span class="red">待完成</span></li>
+								</#if>
+								
+								<#if form.emailConfirm = 1>
+								<#if view.form_path(form.confirmPath)>
+								<li><a href="${ctx}/datasource/form/view?t=confirm&formId=${form.formId}&token=${xss.filter(token)}" target="_blank">邮件验证</a></li>
+								<#else>
+								<li>邮件验证&nbsp;<span class="red">待完成</span></li>
+								</#if>
+								</#if>
+								
+								<#if form.emailPrompt = 1>
+								<#if view.form_path(form.promptPath)>
+								<li><a href="${ctx}/datasource/form/view?t=prompt&formId=${form.formId}&token=${xss.filter(token)}" target="_blank">成功提示邮件 </a></li>
+								<#else>
+								<li>成功提示邮件&nbsp;<span class="red">待完成</span></li>
+								</#if>
+								</#if>
+							</ul>
+						</td>
+					</tr>
+					<#if form.status == 1>
+					<tr>
+						<td width="70">表单链接</td>
+						<td class='special'>
+							<a href='${appUrl}/form/input?id=${form.formId}&r=${xss.filter(form.randCode)}&m=$iedm_to$' target="_blank">${appUrl}/form/input?id=${form.formId}&r=${xss.filter(form.randCode)}&m=$iedm_to$</a>
+						</td>
+					</tr>
+					</#if>
+				</table>
+				<table border="0" cellspacing="0" cellpadding="0" class="IE6_table m_t20 m_l20">
+					<tr>
+						<td width="90"></td>
+						<td>
+							<div class="f_l">
+								<ul class="btn btn_spe m_t20">
+								<#if form.status == 1>
+									<li><input type="button" onclick="javascript:location.assign('add?formId=${form.formId}')" class="input_yes" value="修改" /></li>
+								<#else>
+									<#if form.emailPrompt = 1><#if !view.form_path(form.promptPath)><#assign step = "4" /></#if></#if>
+									<#if form.emailConfirm = 1><#if !view.form_path(form.confirmPath)><#assign step = "3" /></#if></#if>
+									<#if !view.form_path(form.submitPath)><#assign step = "2" /></#if>
+									<#if !view.form_path(form.inputPath)><#assign step = "1" /></#if>
+									<li><input type="button" onclick="javascript:location.assign('${step}?formId=${form.formId}')" class="input_yes" value="补充" /></li>
+								</#if>
+									<li><input type="button" onclick="javascript:location.assign('page')" class="input_no" value="返回列表" /></li>
+								</ul>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</form>	
+		</div>
+	</div> 
+	<div class="select_div"></div>
+</body>
+</html>

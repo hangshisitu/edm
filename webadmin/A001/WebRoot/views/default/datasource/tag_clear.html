@@ -1,0 +1,57 @@
+<script type="text/javascript">
+$(document).ready(function() {
+	var headers = {};
+	headers['token'] = "${token}";
+	
+	var main = $(".main_table").length > 0;
+	
+	$('#clear').ajaxForm({
+		url: 'clear',
+		type: 'post',
+		headers: headers,
+		resetForm: false,
+		dataType: 'json',
+		beforeSubmit: function(formData, jqForm, options) {
+			$(".msg_ul .err").html("");
+			loading(0,".load_img_open");
+		},
+		success: function(data) {
+			if (data.code == 1) {
+				$("input[name=checkedIds][value="+ data.checkedIds +"]").parents('tr')
+				.find("td").eq(3).find("a").text("0");
+				del_loading(".load_img_open");
+				close_msg();
+				error_message(data.message);
+			} else {
+				$(".msg_ul .err").html(data.message); 
+				del_loading(".load_img_open");
+			}
+		}
+	}); 
+}); 
+</script>
+<form id="clear" action="clear" method="post">
+	<input type="hidden" name="token" value="${token}" />
+	<input type="hidden" name="tagId" value="${tag.tagId}" />
+	<div class="msg_content">
+		<h1 class="title">清空标签</h1>
+		<ul class="msg_ul">
+			<li>您确定清空“<span class="green">${xss.filter(tag.tagName)}</span>”吗？清空后无法恢复。</li>
+			<li class="err"></li>
+		</ul>
+		<div class="msg_foot m_t20 clearfix">
+			<ul class="f_l">
+				<li class="load_img_open"><img src="/static/img/loading2.gif"></li>
+			</ul>
+			<ul class="msg_btn">
+				<li>
+					<input type="submit" value="确定" class="input_yes" />
+				</li>
+				<li>
+					<input type="button" value="取消" class="input_no" onclick="close_msg()" />
+				</li>
+			</ul>
+		</div>
+		
+	</div>
+</form>

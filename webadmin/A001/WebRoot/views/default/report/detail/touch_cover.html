@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<#include "/common/meta.html" />
+		<title>M.target做中国最优秀的邮件营销平台 - 触发计划</title>
+		<#include "/common/css.html" />
+		<#include "/common/js.html" />
+		<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+		<script type="text/javascript" src="${ctx}/static/js/report.touch.detail.js?${version}"></script>
+		<script type="text/javascript">
+			var open_names = [
+ 				<#if domainList?? && domainList?size gt 0>
+ 					<#list domainList as d>
+ 						[${d_index}, "${d.taskName}", ${d.touchCount}]<#if d_has_next>,</#if>
+ 					</#list>
+ 				</#if>
+ 			];
+			var open_datas = [
+				<#if domainList?? && domainList?size gt 0>
+					<#list domainList as d>
+						[${d_index}, ${d.touchCount}]<#if d_has_next>,</#if>
+					</#list>
+				</#if>
+			];
+			var click_names = [
+				<#if domainList?? && domainList?size gt 0>
+					<#list domainList as d>
+						[${d_index}, "${d.taskName}", ${d.readUserCount}]<#if d_has_next>,</#if>
+					</#list>
+				</#if>
+			];
+			var click_datas = [
+				<#if domainList?? && domainList?size gt 0>
+					<#list domainList as d>
+						[${d_index}, ${d.readUserCount}]<#if d_has_next>,</#if>
+					</#list>
+				</#if>
+			];
+		</script>
+	</head>
+	
+	<body>
+		<#include "top.html" />
+		<div id="wrapper" class="clearfix">
+			<#include "left.html" />
+			<div id="main" class="clearfix posfix" style="">
+				<div class="posfix">
+					<h1 class="title">${setting.templateName?if_exists}</h1>
+					<div class="ribbon clearfix">
+						<div class="note">
+							<p></p>
+						</div>
+						<ul class="btn">
+							<#if view.funcAuth('report/touch/page', 1)>
+								<li><a class="btn_icon btn_icon_web" href="${ctx}/mailing/template/view?action=touch&touchId=${touchId}&templateId=${templateId}" target="_blank">预览模板</a></li>
+							</#if>
+							<#if _9>
+								<#if view.funcAuth('report/touch/page', 6)>
+									<li><a class="btn_icon btn_icon_down" href="javaScript:cover_exports('${touchId}', '${templateId}');">导出报告</a></li>
+								</#if>
+							</#if>
+						</ul>
+					</div>
+					<#if domainList?exists && domainList?size gt 0>
+						<table cellspacing="0" cellpadding="0" width="100%" border="0" class="main_table">
+							<tbody>
+								<tr>
+									<th>模板名称</th>
+									<th>模板编号</th>
+<!-- 									<th>创建时间</th> -->
+<!-- 									<th>更新时间</th> -->
+								</tr>
+								<tr>
+									<th title="${setting.templateName?if_exists}" style="border: 0;">${setting.templateName?if_exists}</th>
+									<th style="border: 0;">${view.templateId(setting.userId, setting.templateId)}</th>
+								</tr>
+							</tbody>
+						</table>
+						<div class="charts">
+							<div id="open_pie" style="width: 480px; height: 240px; float:left;"></div>
+							<div id="click_pie" style="width: 480px; height: 240px; float:left;"></div>
+						</div>
+						<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+							<tbody>
+								<tr>
+									<th width="80px;">任务来源</th>
+									<th>触发总数</th>
+									<th>成功数</th>
+									<th>打开人数</th>
+									<th>打开次数</th>
+									<th>点击人数</th>
+									<th>点击次数</th>
+									<th>退订人数</th>
+									<th>转发人数</th>
+									<th>触发率</th>
+									<th>成功率</th>
+									<th>打开率</th>
+									<th>点击率</th>
+									<th>操作</th>
+								</tr>
+								<#list domainList?if_exists as d>
+									<tr>
+										<td title="${d.taskName?if_exists}">${d.taskName?if_exists}</td>
+										<td>${d.touchCount?default(0)}</td>
+										<td>${d.reachCount?default(0)}</td>
+										<td>${d.readUserCount?default(0)}</td>
+										<td>${d.readCount?default(0)}</td>
+										<td>${d.clickUserCount?default(0)}</td>
+										<td>${d.clickCount?default(0)}</td>
+										<td>${d.unsubscribeCount?default(0)}</td>
+										<td>${d.forwardCount?default(0)}</td>
+										<td>${view.result_touch(d.touchCount?default(0), d.parentReadUserCount?default(0))}&nbsp;%</td>
+										<td>${view.result_reach(d.sentCount?default(0), d.reachCount?default(0), d.afterNoneCount?default(0))}&nbsp;%</td>
+										<td>${view.result_read(d.reachCount?default(0), d.readUserCount?default(0))}&nbsp;%</td>
+										<td>${view.result_click(d.readUserCount?default(0), d.clickUserCount?default(0))}&nbsp;%</td>
+										<td class='edit'>
+											<ul class="f_ul">
+												<#if view.funcAuth('report/touch/page', 1)>
+													<li><a href="${ctx}/mailing/template/view?action=task&taskId=${d.taskId}" target="_blank">预览</a></li>
+												</#if>
+												<#if _9>
+													<#if view.funcAuth('report/touch/page', 6)>
+														<li><a href="javascript:recipients_exports('${d.touchId}', '${d.templateId}');">导出</a></li>
+													</#if>
+												</#if>
+											</ul>					
+										</td>		
+									</tr>
+								</#list>
+								<tr>
+									<td><strong>总计</strong></td>
+									<td><strong>${totalDomain.touchCount}</strong></td>
+									<td><strong>${totalDomain.reachCount}</strong></td>
+									<td><strong>${totalDomain.readUserCount}</strong></td>
+									<td><strong>${totalDomain.readCount}</strong></td>
+									<td><strong>${totalDomain.clickUserCount}</strong></td>
+									<td><strong>${totalDomain.clickCount}</strong></td>
+									<td><strong>${totalDomain.unsubscribeCount}</strong></td>
+									<td><strong>${totalDomain.forwardCount}</strong></td>
+									<td><strong>${view.result_touch(totalDomain.touchCount?default(0), totalDomain.parentReadUserCount?default(0))}&nbsp;%</strong></td>
+									<td><strong>${view.result_reach(totalDomain.sentCount?default(0), totalDomain.reachCount?default(0), totalDomain.afterNoneCount?default(0))}&nbsp;%</strong></td>
+									<td><strong>${view.result_read(totalDomain.reachCount?default(0), totalDomain.readUserCount?default(0))}&nbsp;%</strong></td>
+									<td><strong>${view.result_click(totalDomain.readUserCount?default(0), totalDomain.clickUserCount?default(0))}&nbsp;%</strong></td>
+									<td>&nbsp;</td>		
+								</tr>	
+							</tbody>
+						</table>
+					<#else>
+						<div class="no_data">没有匹配的数据！</div>
+					</#if>
+				</div>
+			</div>
+		</div>
+		<div class="select_div"></div>
+	</body>
+</html>

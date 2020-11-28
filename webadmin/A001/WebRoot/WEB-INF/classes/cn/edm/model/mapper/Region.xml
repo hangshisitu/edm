@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Region">
+
+	<typeAlias alias="region" type="cn.edm.model.Region" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+
+	<sql id="Region.mapper">
+		r.corp_id corpId,
+		r.task_id taskId,
+		r.template_id templateId,
+		r.region_id regionId,
+		r.read_count readCount,
+		r.read_user_count readUserCount,
+		r.click_count clickCount,
+		r.click_user_count clickUserCount,
+		r.unsubscribe_count unsubscribeCount,
+		r.forward_count forwardCount
+	</sql>
+	
+	<sql id="Region.mapperSum">
+		sum(r.read_count) readCount,
+		sum(r.read_user_count) readUserCount,
+		sum(r.click_count) clickCount,
+		sum(r.click_user_count) clickUserCount,
+		sum(r.unsubscribe_count) unsubscribeCount,
+		sum(r.forward_count) forwardCount
+	</sql>
+	
+	<sql id="Region.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			t.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			t.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="campaignId">
+			t.campaign_id = #campaignId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskIds">
+			t.task_id in <iterate property="taskIds" open="(" close=")" conjunction=",">#taskIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="type">
+			<isEqual property="typeCnd" compareValue="eq">
+				t.type = #type#
+			</isEqual>
+			<isEqual property="typeCnd" compareValue="!eq">
+				t.type != #type#
+			</isEqual>
+		</isNotNull>
+    </sql>
+    
+    <sql id="Region.trigerWhere">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpIds">
+			t.corp_id in <iterate property="corpIds" open="(" close=")" conjunction=",">#corpIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			a.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="taskId">
+			t.task_id = #taskId#
+		</isNotNull>
+    </sql>
+	
+	<select id="Region.query" parameterClass="mb" resultClass="region">
+		select
+			rn.province_name provinceName,
+			rn.city_name cityName,
+			<include refid="Region.mapper" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Region.where" />
+			order by rn.region_id asc
+		</dynamic>
+	</select>
+	
+	<select id="Region.querySum" parameterClass="mb" resultClass="region">
+		select
+			rn.province_name provinceName,
+			rn.city_name cityName,
+			<include refid="Region.mapperSum" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Region.where" />
+			group by rn.province_name, rn.city_name
+			order by rn.region_id asc
+		</dynamic>
+	</select>
+	
+	<select id="Region.trigerQuery" parameterClass="mb" resultClass="region">
+		select
+			rn.province_name provinceName,
+			rn.city_name cityName,
+			<include refid="Region.mapper" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		inner join triger t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Region.trigerWhere" />
+			order by rn.region_id asc
+		</dynamic>
+	</select>
+
+	<select id="Region.group" parameterClass="mb" resultClass="region">
+		select
+			rn.province_name provinceName,
+			<include refid="Region.mapperSum" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		inner join task t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		<dynamic>
+			<include refid="Region.where" />
+			group by floor(rn.region_id / 10000)
+			order by rn.region_id asc
+		</dynamic>
+	</select>
+
+	<select id="Region.trigerGroup" parameterClass="mb" resultClass="region">
+		select
+			rn.province_name provinceName,
+			<include refid="Region.mapperSum" />
+		from result_by_region r
+		inner join region rn on rn.region_id = r.region_id
+		inner join triger t on t.corp_id = r.corp_id and t.task_id = r.task_id
+		inner join triger_api a on a.triger_corp_id = t.corp_id
+		<dynamic>
+			<include refid="Region.trigerWhere" />
+			group by floor(rn.region_id / 10000)
+			order by rn.region_id asc
+		</dynamic>
+	</select>
+		
+</sqlMap>

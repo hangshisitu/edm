@@ -1,0 +1,35 @@
+V2.9.3 2015-10-26
+  1) 行为表增加 url字段，支持打开点击信息查询
+
+     a) 替换主程序
+        1. 通过ps 查询主进程id，然后使用kill(不能使用 kill -9) 杀死进程，
+           注意观察日志，当出现onRun exit，则说明退出完成
+        2. 删除bdb_cache和bdb_havior_history 文件，具体路径参考配置文件
+
+     b) 替换SyncHavior.pl 脚本,编辑脚本中的相关配置
+
+        通过crontab定时执行脚本
+        3 * * * * perl /home/cachedb/SyncHavior.pl >> /tmp/SyncHavior.log
+
+  2) 执行SQL
+     如果所在的月份是201510，则表名为 stat_havior_201510
+     如果月份是201511，则表名 为 stat_havior_201511，依次类推
+     alter table `stat_havior_201511` add column `url`  varchar(496) null;
+
+
+1) tb_corp_task_info -> task
+2) tb_corp_task_info_triger -> triger
+3) tb_corp_task_result -> result
+4) tb_stat_task_result_by_domain -> result_by_domain
+5) tb_stat_task_result_by_hour -> result_by_hour
+6) tb_stat_task_result_by_region -> result_by_region
+7) tb_stat_task_result_by_url -> result_by_url
+8) tb_stat_task_user_havior_yyyyMM ->stat_havior_yyyyMM
+9) tb_user_info -> user
+10) tb_corp_template_list -> template
+11) tb_region_info -> region
+
+2014/02/26
+优化打开点击入库效率:
+    通过合并相同任务的统计信息，避免每打开或点击一次就入库一次，
+    导致数据积压统计延迟的问题。推荐设置成30秒或者60秒入库一次。

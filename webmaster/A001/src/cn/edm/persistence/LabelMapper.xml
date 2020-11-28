@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.edm.persistence.LabelMapper">
+	
+	<resultMap id="Label" type="cn.edm.domain.Label">
+		<result column="label_id" property="lableId"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="category_id" property="categoryId"/>
+		<result column="label_name" property="labelName"/>
+		<result column="label_desc" property="labelDesc" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		label_id,parent_id,category_id,label_name,label_desc
+	</sql>
+	
+	<insert id="insert" parameterType="cn.edm.domain.Label">
+		insert into label(
+			parent_id,
+			category_id,
+			label_name,
+			label_desc
+		)values(
+			#{parentId},
+			#{categoryId},
+			#{labelName},
+			#{labelDesc}
+		)
+	</insert>
+	
+	<select id="selectByCategoryId" resultMap="Label" parameterType="int">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM label
+		WHERE 
+		category_id = #{categoryId}
+	</select>
+	
+	<select id="selectByName" resultMap="Label" parameterType="string">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM label
+		WHERE 
+		label_name = #{labelName}
+	</select>
+	
+	<select id="selectAll" resultMap="Label">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM label
+	</select>
+	
+	<select id="selectByLabelIds" resultMap="Label" parameterType="map">
+		SELECT 
+		<include refid="base_columns"/>
+		FROM label
+		WHERE 
+		label_id in <foreach collection="labelIds" item="stat" open="(" close=")" separator=",">#{stat}</foreach>
+	</select>
+	
+	
+</mapper>
+
+

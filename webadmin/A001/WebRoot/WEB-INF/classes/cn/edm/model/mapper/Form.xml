@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="File">
+
+	<typeAlias alias="form" type="cn.edm.model.Form" />
+	<typeAlias alias="mb" type="cn.edm.modules.orm.MapBean" />
+	
+	<sql id="Form.mapper">
+		f.form_id formId,
+		f.corp_id corpId,
+		f.user_id userId,
+		f.form_name formName,
+		f.form_desc formDesc,
+		f.type type,
+		f.tag_id tagId,
+		f.email_confirm emailConfirm,
+		f.email_prompt emailPrompt,
+		f.confirm_subject confirmSubject,
+		f.prompt_subject promptSubject,
+		f.input_path inputPath,
+		f.submit_path submitPath,
+		f.confirm_path confirmPath,
+		f.prompt_path promptPath,
+		f.rand_code randCode,
+		f.create_time createTime,
+		f.modify_time modifyTime,
+		f.status status
+	</sql>
+	
+	<sql id="Form.where">
+		where 1 = 1
+		<isNotNull prepend="and" property="corpId">
+			f.corp_id = #corpId#
+		</isNotNull>
+		<isNotNull prepend="and" property="userId">
+			f.user_id = #userId#
+		</isNotNull>
+		<isNotNull prepend="and" property="formId">
+			f.form_id = #formId#
+		</isNotNull>
+		<isNotNull prepend="and" property="formIds">
+			f.form_id in <iterate property="formIds" open="(" close=")" conjunction=",">#formIds[]#</iterate>
+		</isNotNull>
+		<isNotNull prepend="and" property="formName">
+			<isEqual property="nameCnd" compareValue="eq">
+				f.form_name = #formName#
+			</isEqual>
+			<isEqual property="nameCnd" compareValue="like">
+				f.form_name like concat('%', #formName#, '%')
+			</isEqual>
+		</isNotNull>
+		<isNotNull prepend="and" property="tagId">
+			tag_id = #tagId#
+		</isNotNull>
+		<isNotNull prepend="and" property="randCode">
+			f.rand_code = #randCode#
+		</isNotNull>
+		<isNotNull prepend="and" property="status">
+			f.status = #status#
+		</isNotNull>
+		<isNotNull prepend="and" property="beginTime">
+			<![CDATA[ f.modify_time >= concat(#beginTime#, ' 00:00:00') ]]>
+		</isNotNull>
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ f.modify_time <= concat(#endTime#, ' 23:59:59') ]]>
+		</isNotNull>
+    </sql>
+    
+    <insert id="Form.save" parameterClass="form">
+		insert into form (
+			corp_id,
+			user_id,
+			form_name,
+			form_desc,
+			type,
+			tag_id,
+			status,
+			email_confirm,
+			email_prompt,
+			confirm_subject,
+			prompt_subject,
+			input_path,
+			submit_path,
+			confirm_path,
+			prompt_path,
+			rand_code,
+			create_time,
+			modify_time
+		) values (
+			#corpId#,
+			#userId#,
+			#formName#,
+			#formDesc#,
+			#type#,
+			#tagId#,
+			#status#,
+			#emailConfirm#,
+			#emailPrompt#,
+			#confirmSubject#,
+			#promptSubject#,
+			#inputPath#,
+			#submitPath#,
+			#confirmPath#,
+			#promptPath#,
+			#randCode#,
+			now(),
+			now()
+		)
+		<selectKey resultClass="Integer" keyProperty="formId">
+			select @@IDENTITY as form_id
+		</selectKey>
+	</insert>
+	
+	<update id="Form.update" parameterClass="form">
+		update form f set
+			form_name = #formName#,
+			form_desc = #formDesc#,
+			type = #type#,
+			tag_id = #tagId#,
+			email_confirm = #emailConfirm#,
+			email_prompt = #emailPrompt#,
+			confirm_subject = #confirmSubject#,
+			prompt_subject = #promptSubject#,
+			input_path = #inputPath#,
+			submit_path = #submitPath#,
+			confirm_path = #confirmPath#,
+			prompt_path = #promptPath#,
+			status = #status#,
+			modify_time = now()
+		where f.user_id = #userId# and f.form_id = #formId#
+	</update>
+	
+	<delete id="Form.delete" parameterClass="mb">
+		delete from form 
+		<dynamic>
+			where 1 = 1
+			<isNotNull prepend="and" property="corpId">
+				corp_id = #corpId#
+			</isNotNull>
+			<isNotNull prepend="and" property="userId">
+				user_id = #userId#
+			</isNotNull>
+			<isNotNull prepend="and" property="formId">
+				form_id = #formId#
+			</isNotNull>
+			<isNotNull prepend="and" property="tagId">
+				tag_id = #tagId#
+			</isNotNull>
+			<isNotNull prepend="and" property="formIds">
+				form_id in <iterate property="formIds" open="(" close=")" conjunction=",">#formIds[]#</iterate>
+			</isNotNull>
+			<isNotNull prepend="and" property="status">
+				status = #status#
+			</isNotNull>
+		</dynamic>
+	</delete>
+	
+    <select id="Form.query" parameterClass="mb" resultClass="form">
+		select
+			<include refid="Form.mapper" />
+		from form f
+		<dynamic>
+			<include refid="Form.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by f.modify_time $order$
+			</isEqual>
+		</dynamic>
+	</select>
+	
+	<select id="Form.count" parameterClass="mb" resultClass="Long">
+		select
+			count(*)
+		from form f
+		<dynamic>
+			<include refid="Form.where" />
+		</dynamic>
+	</select>
+	
+	<select id="Form.index" parameterClass="mb" resultClass="form">
+		select
+			<include refid="Form.mapper" />
+		from form f
+		<dynamic>
+			<include refid="Form.where" />
+			<isEqual property="orderBy" compareValue="modifyTime">
+				order by f.modify_time $order$
+			</isEqual>
+		</dynamic>
+		limit #firstResult#, #pageSize#
+	</select>
+
+</sqlMap>

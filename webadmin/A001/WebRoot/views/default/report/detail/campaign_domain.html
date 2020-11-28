@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<#include "/common/meta.html" />
+<title>${pageTitle} - 活动</title>
+<#include "/common/css.html" />
+<#include "/common/js.html" />
+<script type="text/javascript" src="${ctx}/static/js/highcharts/highcharts.js"></script>
+<script type="text/javascript" src="${ctx}/static/js/report.detail.domain.js?${version}"></script>
+<script type="text/javascript">
+	var open_names = [
+		<#if openList?? && openList?size gt 0>
+			<#assign i = 0 />
+			<#list openList as d>
+		[${i}, "${d.emailDomain}", ${d.sentCount?default(0)}, ${d.readUserCount?default(0)}]<#if d_has_next>,</#if>
+			<#assign i = i + 1 />
+			</#list>
+		</#if>
+	];
+	var open_datas = [
+		<#if openList?? && openList?size gt 0>
+		<#assign i = 0 />
+		<#list openList as d>
+			<#assign percent = 0 />
+			<#if d.sentCount?default(0) gt 0>
+			<#assign percent = d.readUserCount?default(0) * 100 / d.sentCount?default(0) />
+			</#if>
+		[${i}, ${percent}]<#if d_has_next>,</#if>
+		<#assign i = i + 1 />
+		</#list>
+		</#if>
+	];
+	var click_names = [
+   		<#if clickList?? && clickList?size gt 0>
+   			<#assign i = 0 />
+   			<#list clickList as d>
+   		[${i}, "${d.emailDomain}", ${d.sentCount?default(0)}, ${d.clickUserCount?default(0)}]<#if d_has_next>,</#if>
+   			<#assign i = i + 1 />
+   			</#list>
+   		</#if>
+   	];
+   	var click_datas = [
+   		<#if clickList?? && clickList?size gt 0>
+   		<#assign i = 0 />
+   		<#list clickList as d>
+   			<#assign percent = 0 />
+   			<#if d.sentCount?default(0) gt 0>
+   			<#assign percent = d.clickUserCount?default(0) * 100 / d.sentCount?default(0) />
+   			</#if>
+   		[${i}, ${percent}]<#if d_has_next>,</#if>
+   		<#assign i = i + 1 />
+   		</#list>
+   		</#if>
+   	];
+</script>
+</head>
+
+<body>
+<#include "top.html" />
+<div id="wrapper" class="clearfix">
+	<#include "left.html" />
+	<div id="main" class="clearfix posfix" style="">
+		<div class="posfix">
+			<h1 class="title">域名&nbsp;&nbsp;<span>针对邮件投递的主要域名提供图表分析</span></h1>
+			<ul class="tab clearfix">
+				<li><a href="${ctx}/report/detail/campaign/cover?campaignId=${campaign.campaignId}">概览</a></li>
+				<li><a href="${ctx}/report/detail/campaign/send?campaignId=${campaign.campaignId}">发送</a></li>
+				<li><a href="${ctx}/report/detail/campaign/open?campaignId=${campaign.campaignId}">打开</a></li>
+				<li><a href="${ctx}/report/detail/campaign/click?campaignId=${campaign.campaignId}">点击</a></li>
+				<li class="now"><a href="${ctx}/report/detail/campaign/domain?campaignId=${campaign.campaignId}">域名</a></li>
+				<li><a href="${ctx}/report/detail/campaign/region?campaignId=${campaign.campaignId}">地域</a></li>
+				<!-- <li><a href="${ctx}/report/detail/campaign/client?campaignId=${campaign.campaignId}">终端</a></li> -->
+				<li><a href="${ctx}/report/detail/campaign/history?campaignId=${campaign.campaignId}">历史</a></li>
+				<li><a href="${ctx}/report/detail/campaign/compare?campaignId=${campaign.campaignId}">对比</a></li>
+				<#if (campaign.touchCount)?if_exists gt 0>
+					<li><a href="${ctx}/report/detail/campaign/touch?campaignId=${campaign.campaignId}&templateId=110">触发</a></li>
+				</#if>
+			</ul>
+			<div class="ribbon clearfix">
+				<ul class="btn">
+					<#if _9>
+						<#if view.funcAuth('mailing/campaign/page', 6)>
+						<li><a class="btn_icon btn_icon_down" href="javascript:campaign_exports('${campaign.campaignId}');">导出</a></li>
+						</#if>
+					</#if>
+				</ul>
+			</div>
+			<#include "/default/report/detail/campaign.html" />
+			<#if recent?? && domainList?? && (openList?size gt 0 || clickList?size gt 0)>
+				<#if openList?size gt 0 && clickList?size gt 0>
+					<#assign pie_css = "float: left;" />
+				</#if>
+			<div class="charts">
+				<#if openList?size gt 0>
+				<div id="open_pie" style="width: 480px; height: 240px; ${pie_css?default('margin: 0 auto;')}"></div>
+				</#if>
+				<#if clickList?size gt 0>
+				<div id="click_pie" style="width: 480px; height: 240px; ${pie_css?default('margin: 0 auto;')}"></div>
+				</#if>
+			</div>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class="main_table">
+				<tbody>
+					<tr>
+						<th>域名</th>
+						<th>发送总数</th>
+						<th>成功数</th>
+						<th>弹回数</th>
+						<th>打开人数</th>
+						<th>打开次数</th>
+						<th>点击人数</th>
+						<th>点击次数</th>
+						<th>退订人数</th>
+						<th>转发人数</th>
+					</tr>
+					<#if domainList?? && domainList?size gt 0>
+						<#list domainList as d>
+					<tr>
+						<td>${d.emailDomain}</td>
+						<td>${d.sentCount?default(0)}</td>
+						<td>${d.reachCount?default(0)}</td>
+						<td>${d.softBounceCount?default(0) + d.hardBounceCount?default(0)}</td>
+						<td>${d.readUserCount?default(0)}</td>
+						<td>${d.readCount?default(0)}</td>
+						<td>${d.clickUserCount?default(0)}</td>
+						<td>${d.clickCount?default(0)}</td>
+						<td>${d.unsubscribeCount?default(0)}</td>
+						<td>${d.forwardCount?default(0)}</td>
+					</tr>	
+						</#list>
+					</#if>
+				</tbody>
+			</table>
+			<#else>
+			<div class="no_data">没有匹配的数据！</div>
+			</#if>
+		</div>
+	</div>
+</div>
+<div class="select_div"></div>
+</body>
+</html>
